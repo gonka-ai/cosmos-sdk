@@ -39,16 +39,19 @@ func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) (res 
 	}
 
 	for _, validator := range data.Validators {
-		if err := k.SetValidator(ctx, validator); err != nil {
+		// Clear unbonding IDs for genesis validators since there's no unbonding in Proof of Compute
+		validator.UnbondingIds = []uint64{}
+
+		if err := k.SetComputeValidator(ctx, validator); err != nil {
 			panic(err)
 		}
 
 		// Manually set indices for the first time
-		if err := k.SetValidatorByConsAddr(ctx, validator); err != nil {
+		if err := k.SetComputeValidatorByConsAddr(ctx, validator); err != nil {
 			panic(err)
 		}
 
-		if err := k.SetValidatorByPowerIndex(ctx, validator); err != nil {
+		if err := k.SetComputeValidatorByPowerIndex(ctx, validator); err != nil {
 			panic(err)
 		}
 
@@ -63,12 +66,8 @@ func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) (res 
 			}
 		}
 
-		// update timeslice if necessary
-		if validator.IsUnbonding() {
-			if err := k.InsertUnbondingValidatorQueue(ctx, validator); err != nil {
-				panic(err)
-			}
-		}
+		// Skip unbonding validator queue since there's no unbonding in Proof of Compute
+		// if validator.IsUnbonding() { ... }
 
 		switch validator.GetStatus() {
 		case types.Bonded:
@@ -100,7 +99,7 @@ func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) (res 
 			}
 		}
 
-		if err := k.SetDelegation(ctx, delegation); err != nil {
+		if err := k.SetComputeDelegation(ctx, delegation); err != nil {
 			panic(err)
 		}
 
@@ -112,30 +111,9 @@ func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) (res 
 		}
 	}
 
-	for _, ubd := range data.UnbondingDelegations {
-		if err := k.SetUnbondingDelegation(ctx, ubd); err != nil {
-			panic(err)
-		}
-
-		for _, entry := range ubd.Entries {
-			if err := k.InsertUBDQueue(ctx, ubd, entry.CompletionTime); err != nil {
-				panic(err)
-			}
-			notBondedTokens = notBondedTokens.Add(entry.Balance)
-		}
-	}
-
-	for _, red := range data.Redelegations {
-		if err := k.SetRedelegation(ctx, red); err != nil {
-			panic(err)
-		}
-
-		for _, entry := range red.Entries {
-			if err := k.InsertRedelegationQueue(ctx, red, entry.CompletionTime); err != nil {
-				panic(err)
-			}
-		}
-	}
+	// Skip unbonding delegations and redelegations since there's no unbonding in Proof of Compute
+	// for _, ubd := range data.UnbondingDelegations { ... }
+	// for _, red := range data.Redelegations { ... }
 
 	bondedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.BondDenom, bondedTokens))
 	notBondedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.BondDenom, notBondedTokens))

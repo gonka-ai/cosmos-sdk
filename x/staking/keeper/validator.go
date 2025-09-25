@@ -68,7 +68,7 @@ func (k Keeper) mustGetValidatorByConsAddr(ctx context.Context, consAddr sdk.Con
 }
 
 // SetValidator sets the main record holding validator details
-func (k Keeper) SetValidator(ctx context.Context, validator types.Validator) error {
+func (k Keeper) SetComputeValidator(ctx context.Context, validator types.Validator) error {
 	store := k.storeService.OpenKVStore(ctx)
 	bz := types.MustMarshalValidator(k.cdc, &validator)
 	str, err := k.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
@@ -78,8 +78,18 @@ func (k Keeper) SetValidator(ctx context.Context, validator types.Validator) err
 	return store.Set(types.GetValidatorKey(str), bz)
 }
 
+// SetValidator sets the main record holding validator details
+func (k Keeper) SetValidator(ctx context.Context, validator types.Validator) error {
+	return nil
+}
+
 // SetValidatorByConsAddr sets a validator by conesensus address
 func (k Keeper) SetValidatorByConsAddr(ctx context.Context, validator types.Validator) error {
+	return nil
+}
+
+// SetValidatorByConsAddr sets a validator by conesensus address
+func (k Keeper) SetComputeValidatorByConsAddr(ctx context.Context, validator types.Validator) error {
 	consPk, err := validator.GetConsAddr()
 	if err != nil {
 		return err
@@ -95,7 +105,7 @@ func (k Keeper) SetValidatorByConsAddr(ctx context.Context, validator types.Vali
 }
 
 // SetValidatorByPowerIndex sets a validator by power index
-func (k Keeper) SetValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
+func (k Keeper) SetComputeValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
 	// jailed validators are not kept in the power index
 	if validator.Jailed {
 		return nil
@@ -109,6 +119,17 @@ func (k Keeper) SetValidatorByPowerIndex(ctx context.Context, validator types.Va
 	return store.Set(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec), str)
 }
 
+// SetValidatorByPowerIndex sets a validator by power index
+func (k Keeper) SetValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
+	return nil
+}
+
+// DeleteValidatorByPowerIndex deletes a record by power index
+func (k Keeper) DeleteComputeValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
+	store := k.storeService.OpenKVStore(ctx)
+	return store.Delete(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec))
+}
+
 // DeleteValidatorByPowerIndex deletes a record by power index
 func (k Keeper) DeleteValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
 	store := k.storeService.OpenKVStore(ctx)
@@ -117,6 +138,11 @@ func (k Keeper) DeleteValidatorByPowerIndex(ctx context.Context, validator types
 
 // SetNewValidatorByPowerIndex adds new entry by power index
 func (k Keeper) SetNewValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
+	return nil
+}
+
+// SetNewValidatorByPowerIndex adds new entry by power index
+func (k Keeper) SetNewComputeValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
 	store := k.storeService.OpenKVStore(ctx)
 	str, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
 	if err != nil {

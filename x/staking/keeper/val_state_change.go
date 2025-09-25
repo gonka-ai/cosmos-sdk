@@ -346,8 +346,12 @@ func (k Keeper) unjailValidator(ctx context.Context, validator types.Validator) 
 	return k.SetValidatorByPowerIndex(ctx, validator)
 }
 
-// perform all the store operations for when a validator status becomes bonded
 func (k Keeper) bondValidator(ctx context.Context, validator types.Validator) (types.Validator, error) {
+	return validator, nil
+}
+
+// perform all the store operations for when a validator status becomes bonded
+func (k Keeper) bondComputeValidator(ctx context.Context, validator types.Validator) (types.Validator, error) {
 	// delete the validator by power index, as the key will change
 	if err := k.DeleteValidatorByPowerIndex(ctx, validator); err != nil {
 		return types.Validator{}, err

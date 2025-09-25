@@ -123,7 +123,7 @@ func (k Keeper) GetDelegatorDelegations(ctx context.Context, delegator sdk.AccAd
 }
 
 // SetDelegation sets a delegation.
-func (k Keeper) SetDelegation(ctx context.Context, delegation types.Delegation) error {
+func (k Keeper) SetComputeDelegation(ctx context.Context, delegation types.Delegation) error {
 	delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(delegation.DelegatorAddress)
 	if err != nil {
 		return err
@@ -145,8 +145,12 @@ func (k Keeper) SetDelegation(ctx context.Context, delegation types.Delegation) 
 	return store.Set(types.GetDelegationsByValKey(valAddr, delegatorAddress), []byte{})
 }
 
-// RemoveDelegation removes a delegation
-func (k Keeper) RemoveDelegation(ctx context.Context, delegation types.Delegation) error {
+// SetDelegation sets a delegation.
+func (k Keeper) SetDelegation(ctx context.Context, delegation types.Delegation) error {
+	return nil
+}
+
+func (k Keeper) RemoveComputeDelegation(ctx context.Context, delegation types.Delegation) error {
 	delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(delegation.DelegatorAddress)
 	if err != nil {
 		return err
@@ -169,6 +173,10 @@ func (k Keeper) RemoveDelegation(ctx context.Context, delegation types.Delegatio
 	}
 
 	return store.Delete(types.GetDelegationsByValKey(valAddr, delegatorAddress))
+}
+
+func (k Keeper) RemoveDelegation(ctx context.Context, delegation types.Delegation) error {
+	return nil
 }
 
 // GetUnbondingDelegations returns a given amount of all the delegator unbonding-delegations.
@@ -381,7 +389,7 @@ func (k Keeper) HasMaxUnbondingDelegationEntries(ctx context.Context, delegatorA
 }
 
 // SetUnbondingDelegation sets the unbonding delegation and associated index.
-func (k Keeper) SetUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
+func (k Keeper) SetComputeUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
 	delAddr, err := k.authKeeper.AddressCodec().StringToBytes(ubd.DelegatorAddress)
 	if err != nil {
 		return err
@@ -402,8 +410,12 @@ func (k Keeper) SetUnbondingDelegation(ctx context.Context, ubd types.UnbondingD
 	return store.Set(types.GetUBDByValIndexKey(delAddr, valAddr), []byte{}) // index, store empty bytes
 }
 
-// RemoveUnbondingDelegation removes the unbonding delegation object and associated index.
-func (k Keeper) RemoveUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
+// SetUnbondingDelegation sets the unbonding delegation and associated index.
+func (k Keeper) SetUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
+	return nil
+}
+
+func (k Keeper) RemoveComputeUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
 	delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(ubd.DelegatorAddress)
 	if err != nil {
 		return err
@@ -421,6 +433,10 @@ func (k Keeper) RemoveUnbondingDelegation(ctx context.Context, ubd types.Unbondi
 	}
 
 	return store.Delete(types.GetUBDByValIndexKey(delegatorAddress, addr))
+}
+
+func (k Keeper) RemoveUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
+	return nil
 }
 
 // SetUnbondingDelegationEntry adds an entry to the unbonding delegation at
@@ -868,6 +884,15 @@ func (k Keeper) Delegate(
 	ctx context.Context, delAddr sdk.AccAddress, bondAmt math.Int, tokenSrc types.BondStatus,
 	validator types.Validator, subtractAccount bool,
 ) (newShares math.LegacyDec, err error) {
+	return math.LegacyDec{}, nil
+}
+
+// Delegate performs a delegation, set/update everything necessary within the store.
+// tokenSrc indicates the bond status of the incoming funds.
+func (k Keeper) ComputeDelegate(
+	ctx context.Context, delAddr sdk.AccAddress, bondAmt math.Int, tokenSrc types.BondStatus,
+	validator types.Validator, subtractAccount bool,
+) (newShares math.LegacyDec, err error) {
 	// In some situations, the exchange rate becomes invalid, e.g. if
 	// Validator loses all tokens due to slashing. In this case,
 	// make all future delegations invalid.
@@ -902,66 +927,17 @@ func (k Keeper) Delegate(
 		return math.LegacyZeroDec(), err
 	}
 
-	// if subtractAccount is true then we are
-	// performing a delegation and not a redelegation, thus the source tokens are
-	// all non bonded
-	if subtractAccount && validator.Description.Details != "Created after Proof of Compute" {
-		if tokenSrc == types.Bonded {
-			panic("delegation token source cannot be bonded")
-		}
+	validator.Tokens = validator.Tokens.Sub(validator.Tokens).Add(bondAmt)
+	validator.DelegatorShares = validator.DelegatorShares.Sub(validator.DelegatorShares).Add(math.LegacyDec(bondAmt))
+	validator.Jailed = false
+	validator.Status = types.Bonded
 
-		var sendName string
+	delegation.Shares = delegation.Shares.Sub(delegation.Shares).Add(math.LegacyDec(bondAmt))
 
-		switch {
-		case validator.IsBonded():
-			sendName = types.BondedPoolName
-		case validator.IsUnbonding(), validator.IsUnbonded():
-			sendName = types.NotBondedPoolName
-		default:
-			panic("invalid validator status")
-		}
-
-		bondDenom, err := k.BondDenom(ctx)
-		if err != nil {
-			return math.LegacyDec{}, err
-		}
-
-		coins := sdk.NewCoins(sdk.NewCoin(bondDenom, bondAmt))
-		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delAddr, sendName, coins); err != nil {
-			return math.LegacyDec{}, err
-		}
-	} else if validator.Description.Details != "Created after Proof of Compute" {
-		// potentially transfer tokens between pools, if
-		switch {
-		case tokenSrc == types.Bonded && validator.IsBonded():
-			// do nothing
-		case (tokenSrc == types.Unbonded || tokenSrc == types.Unbonding) && !validator.IsBonded():
-			// do nothing
-		case (tokenSrc == types.Unbonded || tokenSrc == types.Unbonding) && validator.IsBonded():
-			// transfer pools
-			err = k.notBondedTokensToBonded(ctx, bondAmt)
-			if err != nil {
-				return math.LegacyDec{}, err
-			}
-		case tokenSrc == types.Bonded && !validator.IsBonded():
-			// transfer pools
-			err = k.bondedTokensToNotBonded(ctx, bondAmt)
-			if err != nil {
-				return math.LegacyDec{}, err
-			}
-		default:
-			panic("unknown token source bond status")
-		}
+	if err = k.SetComputeValidator(ctx, validator); err != nil {
+		return math.LegacyDec{}, err
 	}
-
-	_, newShares, err = k.AddValidatorTokensAndShares(ctx, validator, bondAmt)
-	if err != nil {
-		return newShares, err
-	}
-
-	// Update delegation
-	delegation.Shares = delegation.Shares.Add(newShares)
-	if err = k.SetDelegation(ctx, delegation); err != nil {
+	if err = k.SetComputeDelegation(ctx, delegation); err != nil {
 		return newShares, err
 	}
 

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"slices"
 	"strconv"
 	"time"
 
@@ -11,8 +10,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/math"
-
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -55,127 +52,8 @@ func NewMsgServerImpl(keeper *Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-// CreateValidator defines a method for creating a new validator
 func (k msgServer) CreateValidator(ctx context.Context, msg *types.MsgCreateValidator) (*types.MsgCreateValidatorResponse, error) {
-	valAddr, err := k.validatorAddressCodec.StringToBytes(msg.ValidatorAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
-	}
-
-	if err := msg.Validate(k.validatorAddressCodec); err != nil {
-		return nil, err
-	}
-
-	minCommRate, err := k.MinCommissionRate(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if msg.Commission.Rate.LT(minCommRate) {
-		return nil, errorsmod.Wrapf(types.ErrCommissionLTMinRate, "cannot set validator commission to less than minimum rate of %s", minCommRate)
-	}
-
-	// check to see if the pubkey or sender has been registered before
-	if _, err := k.GetValidator(ctx, valAddr); err == nil {
-		return nil, types.ErrValidatorOwnerExists
-	}
-
-	pk, ok := msg.Pubkey.GetCachedValue().(cryptotypes.PubKey)
-	if !ok {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidType, "Expecting cryptotypes.PubKey, got %T", pk)
-	}
-
-	// Validate the public key to ensure it won't cause panics
-	if err := safeValidatePublicKey(pk); err != nil {
-		return nil, err
-	}
-
-	if _, err := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pk)); err == nil {
-		return nil, types.ErrValidatorPubKeyExists
-	}
-
-	bondDenom, err := k.BondDenom(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if msg.Value.Denom != bondDenom {
-		return nil, errorsmod.Wrapf(
-			sdkerrors.ErrInvalidRequest, "invalid coin denomination: got %s, expected %s", msg.Value.Denom, bondDenom,
-		)
-	}
-
-	if _, err := msg.Description.EnsureLength(); err != nil {
-		return nil, err
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	cp := sdkCtx.ConsensusParams()
-	if cp.Validator != nil {
-		pkType := pk.Type()
-		hasKeyType := slices.Contains(cp.Validator.PubKeyTypes, pkType)
-		if !hasKeyType {
-			return nil, errorsmod.Wrapf(
-				types.ErrValidatorPubKeyTypeNotSupported,
-				"got: %s, expected: %s", pk.Type(), cp.Validator.PubKeyTypes,
-			)
-		}
-	}
-
-	validator, err := types.NewValidator(msg.ValidatorAddress, pk, msg.Description)
-	if err != nil {
-		return nil, err
-	}
-
-	commission := types.NewCommissionWithTime(
-		msg.Commission.Rate, msg.Commission.MaxRate,
-		msg.Commission.MaxChangeRate, sdkCtx.BlockHeader().Time,
-	)
-
-	validator, err = validator.SetInitialCommission(commission)
-	if err != nil {
-		return nil, err
-	}
-
-	validator.MinSelfDelegation = msg.MinSelfDelegation
-
-	err = k.SetValidator(ctx, validator)
-	if err != nil {
-		return nil, err
-	}
-
-	err = k.SetValidatorByConsAddr(ctx, validator)
-	if err != nil {
-		return nil, err
-	}
-
-	err = k.SetNewValidatorByPowerIndex(ctx, validator)
-	if err != nil {
-		return nil, err
-	}
-
-	// call the after-creation hook
-	if err := k.Hooks().AfterValidatorCreated(ctx, valAddr); err != nil {
-		return nil, err
-	}
-
-	// move coins from the msg.Address account to a (self-delegation) delegator account
-	// the validator account and global shares are updated within here
-	// NOTE source will always be from a wallet which are unbonded
-	_, err = k.Keeper.Delegate(ctx, sdk.AccAddress(valAddr), msg.Value.Amount, types.Unbonded, validator, true)
-	if err != nil {
-		return nil, err
-	}
-
-	sdkCtx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeCreateValidator,
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
-			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
-		),
-	})
-
-	return &types.MsgCreateValidatorResponse{}, nil
+	return nil, errorsmod.Wrapf(types.ErrCommissionLTMinRate, "MsgCreateValidator is prohibited")
 }
 
 // EditValidator defines a method for editing an existing validator
@@ -187,28 +65,6 @@ func (k msgServer) EditValidator(ctx context.Context, msg *types.MsgEditValidato
 
 	if msg.Description == (types.Description{}) {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
-	}
-
-	if msg.MinSelfDelegation != nil && !msg.MinSelfDelegation.IsPositive() {
-		return nil, errorsmod.Wrap(
-			sdkerrors.ErrInvalidRequest,
-			"minimum self delegation must be a positive integer",
-		)
-	}
-
-	if msg.CommissionRate != nil {
-		if msg.CommissionRate.GT(math.LegacyOneDec()) || msg.CommissionRate.IsNegative() {
-			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "commission rate must be between 0 and 1 (inclusive)")
-		}
-
-		minCommissionRate, err := k.MinCommissionRate(ctx)
-		if err != nil {
-			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, err.Error())
-		}
-
-		if msg.CommissionRate.LT(minCommissionRate) {
-			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "commission rate cannot be less than the min commission rate %s", minCommissionRate.String())
-		}
 	}
 
 	// validator must already be registered
@@ -225,33 +81,7 @@ func (k msgServer) EditValidator(ctx context.Context, msg *types.MsgEditValidato
 
 	validator.Description = description
 
-	if msg.CommissionRate != nil {
-		commission, err := k.UpdateValidatorCommission(ctx, validator, *msg.CommissionRate)
-		if err != nil {
-			return nil, err
-		}
-
-		// call the before-modification hook since we're about to update the commission
-		if err := k.Hooks().BeforeValidatorModified(ctx, valAddr); err != nil {
-			return nil, err
-		}
-
-		validator.Commission = commission
-	}
-
-	if msg.MinSelfDelegation != nil {
-		if !msg.MinSelfDelegation.GT(validator.MinSelfDelegation) {
-			return nil, types.ErrMinSelfDelegationDecreased
-		}
-
-		if msg.MinSelfDelegation.GT(validator.Tokens) {
-			return nil, types.ErrSelfDelegationBelowMinimum
-		}
-
-		validator.MinSelfDelegation = *msg.MinSelfDelegation
-	}
-
-	err = k.SetValidator(ctx, validator)
+	err = k.SetComputeValidator(ctx, validator)
 	if err != nil {
 		return nil, err
 	}

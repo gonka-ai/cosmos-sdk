@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"slices"
 
 	errorsmod "cosmossdk.io/errors"
@@ -41,6 +42,23 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 		validatorsAlreadyExisting[conPubKey.String()] = true
 	}
 
+	// Handle validators not in
+	for _, computeResult := range computeResults {
+		if computeResult.Power == 0 {
+			logger.Warn("Power is 0 for new validator, skipping validator", "address", computeResult.OperatorAddress, "key", computeResult.ValidatorPubKey.String())
+			continue
+		}
+		if _, ok := validatorsAlreadyExisting[computeResult.ValidatorPubKey.String()]; !ok {
+			logger.Info("Creating validator", "power", computeResult, "operator", computeResult.OperatorAddress)
+			newVal, err := k.createValidatorFromComputeResult(ctx, computeResult)
+			if err != nil {
+				logger.Error("Error creating validator", "error", err.Error())
+				return nil, err
+			}
+			return append(currentValidators, *newVal), nil
+		}
+	}
+
 	// Handle validators already in
 	for _, validator := range currentValidators {
 		conPubKey, err := validator.ConsPubKey()
@@ -62,22 +80,6 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 			if err != nil {
 				return nil, err
 			}
-		}
-	}
-	// Handle validators not in
-	for _, computeResult := range computeResults {
-		if computeResult.Power == 0 {
-			logger.Warn("Power is 0 for new validator, skipping validator", "address", computeResult.OperatorAddress, "key", computeResult.ValidatorPubKey.String())
-			continue
-		}
-		if _, ok := validatorsAlreadyExisting[computeResult.ValidatorPubKey.String()]; !ok {
-			logger.Info("Creating validator", "power", computeResult, "operator", computeResult.OperatorAddress)
-			newVal, err := k.createValidatorFromComputeResult(ctx, computeResult)
-			if err != nil {
-				logger.Error("Error creating validator", "error", err.Error())
-				return nil, err
-			}
-			return append(currentValidators, *newVal), nil
 		}
 	}
 	return k.GetAllValidators(ctx)
@@ -116,7 +118,7 @@ func (k Keeper) createValidatorFromComputeResult(ctx context.Context, computeRes
 		logger.Error("Error creating validator message", "error", err.Error())
 		return nil, err
 	}
-	_, err = k.CreateComputeValidator(ctx, createValidatorMsg)
+	_, err = k.createComputeValidator(ctx, createValidatorMsg)
 	if err != nil {
 		logger.Error("Error creating validator", "error", err.Error())
 		return nil, err
@@ -159,28 +161,35 @@ func (k Keeper) createValidatorFromComputeResult(ctx context.Context, computeRes
 
 func (k Keeper) updateValidatorFromComputeResults(ctx context.Context, validator types.Validator, computeResult ComputeResult) (types.Validator, error) {
 	logger := k.Logger(ctx)
-	power := validator.Tokens.Int64()
-	err := k.DeleteComputeValidatorByPowerIndex(ctx, validator)
+	power := computeResult.Power
+	valAddr, err := sdk.ValAddressFromBech32(computeResult.OperatorAddress)
+	if err != nil {
+		logger.Error("Error parsing operator address as valaddress", "address", computeResult.OperatorAddress, "error", err)
+		return validator, err
+	}
+	addr := sdk.AccAddress(valAddr)
+
+	err = k.DeleteComputeValidatorByPowerIndex(ctx, validator)
 	if err != nil {
 		logger.Error("Error deleting validator by power index", "error", err.Error())
 		return validator, err
 	}
 
-	validator.Tokens = math.NewInt(power)
-	err = k.SetComputeValidator(ctx, validator)
+	k.setCompute(ctx, addr, math.NewInt(power), validator)
+	validator, err = k.GetValidator(ctx, valAddr)
 	if err != nil {
-		logger.Error("Error setting validator", "error", err.Error())
-		return validator, err
+		logger.Error("Error getting validator", "error", err.Error())
 	}
 	err = k.SetComputeValidatorByPowerIndex(ctx, validator)
 	if err != nil {
 		logger.Error("Error setting validator by power index", "error", err.Error())
 		return validator, err
 	}
+
 	return validator, nil
 }
 
-func (k Keeper) CreateComputeValidator(ctx context.Context, msg *types.MsgCreateValidator) (*types.MsgCreateValidatorResponse, error) {
+func (k Keeper) createComputeValidator(ctx context.Context, msg *types.MsgCreateValidator) (*types.MsgCreateValidatorResponse, error) {
 	valAddr, err := k.validatorAddressCodec.StringToBytes(msg.ValidatorAddress)
 	if err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
@@ -263,6 +272,9 @@ func (k Keeper) CreateComputeValidator(ctx context.Context, msg *types.MsgCreate
 
 	validator.MinSelfDelegation = msg.MinSelfDelegation
 
+	// Clear unbonding IDs since there's no unbonding in Proof of Compute
+	validator.UnbondingIds = []uint64{}
+
 	err = k.SetComputeValidator(ctx, validator)
 	if err != nil {
 		return nil, err
@@ -283,11 +295,6 @@ func (k Keeper) CreateComputeValidator(ctx context.Context, msg *types.MsgCreate
 		return nil, err
 	}
 
-	_, err = k.ComputeDelegate(ctx, sdk.AccAddress(valAddr), msg.Value.Amount, types.Unbonded, validator, true)
-	if err != nil {
-		return nil, err
-	}
-
 	sdkCtx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCreateValidator,
@@ -297,4 +304,91 @@ func (k Keeper) CreateComputeValidator(ctx context.Context, msg *types.MsgCreate
 	})
 
 	return &types.MsgCreateValidatorResponse{}, nil
+}
+
+func (k Keeper) setCompute(
+	ctx context.Context, delAddr sdk.AccAddress, power math.Int,
+	validator types.Validator,
+) (newShares math.LegacyDec, err error) {
+	// In some situations, the exchange rate becomes invalid, e.g. if
+	// Validator loses all tokens due to slashing. In this case,
+	// make all future delegations invalid.
+	if validator.InvalidExRate() {
+		return math.LegacyZeroDec(), types.ErrDelegatorShareExRateInvalid
+	}
+
+	valbz, err := k.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+
+	// Get or create the delegation object and call the appropriate hook if present
+	delegation, err := k.GetDelegation(ctx, delAddr, valbz)
+	if err == nil {
+		// found
+		err = k.Hooks().BeforeDelegationSharesModified(ctx, delAddr, valbz)
+	} else if errors.Is(err, types.ErrNoDelegation) {
+		// not found
+		delAddrStr, err1 := k.authKeeper.AddressCodec().BytesToString(delAddr)
+		if err1 != nil {
+			return math.LegacyDec{}, err1
+		}
+
+		delegation = types.NewDelegation(delAddrStr, validator.GetOperator(), math.LegacyZeroDec())
+		err = k.Hooks().BeforeDelegationCreated(ctx, delAddr, valbz)
+	} else {
+		return math.LegacyZeroDec(), err
+	}
+
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+
+	// Validate power is not negative
+	if power.IsNegative() {
+		return math.LegacyZeroDec(), errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "power cannot be negative")
+	}
+
+	// Validate power is not zero when setting (unless explicitly removing validator)
+	if power.IsZero() {
+		validator.Status = types.Unbonded
+		validator.Jailed = true
+	} else {
+		validator.Status = types.Bonded
+		validator.Jailed = false
+	}
+
+	// Set validator tokens and shares
+	validator.Tokens = power
+	validator.DelegatorShares = math.LegacyNewDecFromInt(power)
+
+	// Clear unbonding IDs since there's no unbonding in Proof of Compute
+	validator.UnbondingIds = []uint64{}
+
+	// Set delegation shares
+	if power.IsZero() {
+		delegation.Shares = math.LegacyZeroDec()
+	} else {
+		delegation.Shares = math.LegacyNewDecFromInt(power)
+	}
+
+	if err = k.SetComputeValidator(ctx, validator); err != nil {
+		return math.LegacyDec{}, err
+	}
+
+	err = k.SetComputeValidatorByConsAddr(ctx, validator)
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
+
+	if err = k.SetComputeDelegation(ctx, delegation); err != nil {
+		return newShares, err
+	}
+
+	// Call the after-modification hook
+	if err := k.Hooks().AfterDelegationModified(ctx, delAddr, valbz); err != nil {
+		return newShares, err
+	}
+
+	return newShares, nil
 }

@@ -688,7 +688,15 @@ func (k Keeper) Delegate(
 	ctx context.Context, delAddr sdk.AccAddress, bondAmt math.Int, tokenSrc types.BondStatus,
 	validator types.Validator, subtractAccount bool,
 ) (newShares math.LegacyDec, err error) {
-	return math.LegacyDec{}, nil
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Allow delegation during genesis (block height <= 1), prohibit after
+	if sdkCtx.BlockHeight() > 1 {
+		return math.LegacyDec{}, nil
+	}
+
+	// For genesis, use the compute delegation logic
+	return k.SetCompute(ctx, delAddr, bondAmt, validator)
 }
 
 // Unbond unbonds a particular delegation and perform associated store operations.

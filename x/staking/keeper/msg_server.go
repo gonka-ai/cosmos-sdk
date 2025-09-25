@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"slices"
 
 	errorsmod "cosmossdk.io/errors"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -46,7 +47,134 @@ func NewMsgServerImpl(keeper *Keeper) types.MsgServer {
 var _ types.MsgServer = msgServer{}
 
 func (k msgServer) CreateValidator(ctx context.Context, msg *types.MsgCreateValidator) (*types.MsgCreateValidatorResponse, error) {
-	return nil, errorsmod.Wrapf(types.ErrCommissionLTMinRate, "MsgCreateValidator is prohibited")
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Prohibit CreateValidator after genesis (block height > 1)
+	if sdkCtx.BlockHeight() > 1 {
+		return nil, errorsmod.Wrapf(types.ErrCommissionLTMinRate, "MsgCreateValidator is prohibited after genesis")
+	}
+
+	valAddr, err := k.validatorAddressCodec.StringToBytes(msg.ValidatorAddress)
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
+	}
+
+	if err := msg.Validate(k.validatorAddressCodec); err != nil {
+		return nil, err
+	}
+
+	minCommRate, err := k.MinCommissionRate(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if msg.Commission.Rate.LT(minCommRate) {
+		return nil, errorsmod.Wrapf(types.ErrCommissionLTMinRate, "cannot set validator commission to less than minimum rate of %s", minCommRate)
+	}
+
+	// check to see if the pubkey or sender has been registered before
+	if _, err := k.GetValidator(ctx, valAddr); err == nil {
+		return nil, types.ErrValidatorOwnerExists
+	}
+
+	pk, ok := msg.Pubkey.GetCachedValue().(cryptotypes.PubKey)
+	if !ok {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidType, "Expecting cryptotypes.PubKey, got %T", pk)
+	}
+
+	// Validate the public key to ensure it won't cause panics
+	if err := safeValidatePublicKey(pk); err != nil {
+		return nil, err
+	}
+
+	if _, err := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pk)); err == nil {
+		return nil, types.ErrValidatorPubKeyExists
+	}
+
+	bondDenom, err := k.BondDenom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if msg.Value.Denom != bondDenom {
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest, "invalid coin denomination: got %s, expected %s", msg.Value.Denom, bondDenom,
+		)
+	}
+
+	if _, err := msg.Description.EnsureLength(); err != nil {
+		return nil, err
+	}
+
+	cp := sdkCtx.ConsensusParams()
+	if cp.Validator != nil {
+		pkType := pk.Type()
+		hasKeyType := slices.Contains(cp.Validator.PubKeyTypes, pkType)
+		if !hasKeyType {
+			return nil, errorsmod.Wrapf(
+				types.ErrValidatorPubKeyTypeNotSupported,
+				"got: %s, expected: %s", pk.Type(), cp.Validator.PubKeyTypes,
+			)
+		}
+	}
+
+	validator, err := types.NewValidator(msg.ValidatorAddress, pk, msg.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	commission := types.NewCommissionWithTime(
+		msg.Commission.Rate, msg.Commission.MaxRate,
+		msg.Commission.MaxChangeRate, sdkCtx.BlockHeader().Time,
+	)
+
+	validator, err = validator.SetInitialCommission(commission)
+	if err != nil {
+		return nil, err
+	}
+
+	validator.MinSelfDelegation = msg.MinSelfDelegation
+
+	// Clear unbonding IDs since there's no unbonding in Proof of Compute
+	validator.UnbondingIds = []uint64{}
+
+	err = k.SetComputeValidator(ctx, validator)
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.SetComputeValidatorByConsAddr(ctx, validator)
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.SetNewComputeValidatorByPowerIndex(ctx, validator)
+	if err != nil {
+		return nil, err
+	}
+
+	// call the after-creation hook
+	if err := k.Hooks().AfterValidatorCreated(ctx, valAddr); err != nil {
+		return nil, err
+	}
+
+	// move coins from the msg.Address account to a (self-delegation) delegator account
+	// the validator account and global shares are updated within here
+	// NOTE source will always be from a wallet which are unbonded
+	_, err = k.Keeper.Delegate(ctx, sdk.AccAddress(valAddr), msg.Value.Amount, types.Unbonded, validator, true)
+	if err != nil {
+		return nil, err
+	}
+
+	sdkCtx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCreateValidator,
+			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
+		),
+	})
+
+	return &types.MsgCreateValidatorResponse{}, nil
 }
 
 // EditValidator defines a method for editing an existing validator

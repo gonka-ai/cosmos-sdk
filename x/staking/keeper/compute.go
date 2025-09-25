@@ -7,6 +7,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -175,7 +176,7 @@ func (k Keeper) updateValidatorFromComputeResults(ctx context.Context, validator
 		return validator, err
 	}
 
-	k.setCompute(ctx, addr, math.NewInt(power), validator)
+	k.SetCompute(ctx, addr, math.NewInt(power), validator)
 	validator, err = k.GetValidator(ctx, valAddr)
 	if err != nil {
 		logger.Error("Error getting validator", "error", err.Error())
@@ -306,7 +307,7 @@ func (k Keeper) createComputeValidator(ctx context.Context, msg *types.MsgCreate
 	return &types.MsgCreateValidatorResponse{}, nil
 }
 
-func (k Keeper) setCompute(
+func (k Keeper) SetCompute(
 	ctx context.Context, delAddr sdk.AccAddress, power math.Int,
 	validator types.Validator,
 ) (newShares math.LegacyDec, err error) {
@@ -349,16 +350,26 @@ func (k Keeper) setCompute(
 		return math.LegacyZeroDec(), errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "power cannot be negative")
 	}
 
-	// Validate power is not zero when setting (unless explicitly removing validator)
+	// Handle zero power - remove validator entirely in Proof of Compute
 	if power.IsZero() {
-		validator.Status = types.Unbonded
-		validator.Jailed = true
-	} else {
-		validator.Status = types.Bonded
-		validator.Jailed = false
+		// Remove validator with zero power
+		if err = k.RemoveComputeValidator(ctx, valbz); err != nil {
+			return math.LegacyZeroDec(), err
+		}
+		// Remove delegation as well
+		if err = k.RemoveComputeDelegation(ctx, delegation); err != nil {
+			return math.LegacyZeroDec(), err
+		}
+		// Call the after-removal hook
+		if err := k.Hooks().AfterDelegationModified(ctx, delAddr, valbz); err != nil {
+			return math.LegacyZeroDec(), err
+		}
+		return math.LegacyZeroDec(), nil
 	}
 
-	// Set validator tokens and shares
+	// Set validator tokens and shares for non-zero power
+	validator.Status = types.Bonded
+	validator.Jailed = false
 	validator.Tokens = power
 	validator.DelegatorShares = math.LegacyNewDecFromInt(power)
 
@@ -366,11 +377,7 @@ func (k Keeper) setCompute(
 	validator.UnbondingIds = []uint64{}
 
 	// Set delegation shares
-	if power.IsZero() {
-		delegation.Shares = math.LegacyZeroDec()
-	} else {
-		delegation.Shares = math.LegacyNewDecFromInt(power)
-	}
+	delegation.Shares = math.LegacyNewDecFromInt(power)
 
 	if err = k.SetComputeValidator(ctx, validator); err != nil {
 		return math.LegacyDec{}, err
@@ -391,4 +398,50 @@ func (k Keeper) setCompute(
 	}
 
 	return newShares, nil
+}
+
+// ClearAllComputeQueues clears all unbonding and redelegation queues since there's no unbonding in Proof of Compute
+func (k Keeper) ClearAllComputeQueues(ctx context.Context) error {
+	store := k.storeService.OpenKVStore(ctx)
+
+	// Clear unbonding delegation queues
+	ubdIterator, err := store.Iterator(types.UnbondingQueueKey, storetypes.PrefixEndBytes(types.UnbondingQueueKey))
+	if err != nil {
+		return err
+	}
+	defer ubdIterator.Close()
+
+	for ; ubdIterator.Valid(); ubdIterator.Next() {
+		if err := store.Delete(ubdIterator.Key()); err != nil {
+			return err
+		}
+	}
+
+	// Clear redelegation queues
+	redIterator, err := store.Iterator(types.RedelegationQueueKey, storetypes.PrefixEndBytes(types.RedelegationQueueKey))
+	if err != nil {
+		return err
+	}
+	defer redIterator.Close()
+
+	for ; redIterator.Valid(); redIterator.Next() {
+		if err := store.Delete(redIterator.Key()); err != nil {
+			return err
+		}
+	}
+
+	// Clear validator unbonding queues
+	valIterator, err := store.Iterator(types.ValidatorQueueKey, storetypes.PrefixEndBytes(types.ValidatorQueueKey))
+	if err != nil {
+		return err
+	}
+	defer valIterator.Close()
+
+	for ; valIterator.Valid(); valIterator.Next() {
+		if err := store.Delete(valIterator.Key()); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

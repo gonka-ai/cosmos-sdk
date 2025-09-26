@@ -164,9 +164,9 @@ func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddres
 }
 
 func (h Hooks) BeforeValidatorModified(_ context.Context, _ sdk.ValAddress) error {
-	if _, err := h.k.withdrawDelegationRewards(ctx, val, del); err != nil {
-		return err
-	}
+	// if _, err := h.k.withdrawDelegationRewards(ctx, val, del); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 

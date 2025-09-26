@@ -20,10 +20,20 @@ type ComputeResult struct {
 	OperatorAddress string
 }
 
+// SetComputeValidators - Simple and clean implementation
 func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []ComputeResult) ([]types.Validator, error) {
 	logger := k.Logger(ctx)
+
+	// 1. Filter invalid entries and deduplicate
+	validResults := k.filterValidComputeResults(ctx, computeResults)
+	if len(validResults) == 0 {
+		logger.Warn("No valid compute results after filtering")
+		return k.GetAllValidators(ctx)
+	}
+
+	// Build map for easy lookup
 	resultsMap := make(map[string]ComputeResult)
-	for _, result := range computeResults {
+	for _, result := range validResults {
 		resultsMap[result.ValidatorPubKey.String()] = result
 	}
 
@@ -36,70 +46,61 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 	validatorsAlreadyExisting := make(map[string]bool)
 	for _, validator := range currentValidators {
 		conPubKey, err := validator.ConsPubKey()
-		if err != nil {
-			logger.Error("Error getting cons pubkey", "error", err.Error())
-			return nil, err
+		if err != nil || conPubKey == nil {
+			logger.Warn("Invalid validator consensus pubkey, will remove", "operator", validator.GetOperator())
+			continue
 		}
 		validatorsAlreadyExisting[conPubKey.String()] = true
 	}
 
-	// Handle validators not in (new validators) - FIRST: Create all missing validators
-	for _, computeResult := range computeResults {
+	// 2. Create new validators (ones not created yet)
+	for _, computeResult := range validResults {
 		if computeResult.Power == 0 {
-			logger.Warn("Power is 0 for new validator, skipping validator", "address", computeResult.OperatorAddress, "key", computeResult.ValidatorPubKey.String())
-			continue
+			continue // Skip zero power for new validators
 		}
-		if _, ok := validatorsAlreadyExisting[computeResult.ValidatorPubKey.String()]; !ok {
-			logger.Info("Creating validator", "power", computeResult, "operator", computeResult.OperatorAddress)
+		pubKeyStr := computeResult.ValidatorPubKey.String()
+		if !validatorsAlreadyExisting[pubKeyStr] {
+			logger.Info("Creating validator", "power", computeResult.Power, "operator", computeResult.OperatorAddress)
 			_, err := k.createValidatorFromComputeResult(ctx, computeResult)
 			if err != nil {
-				logger.Error("Error creating validator", "error", err.Error())
+				logger.Error("Error creating validator, skipping", "operator", computeResult.OperatorAddress, "error", err.Error())
 				continue
 			}
 		}
 	}
 
-	// Refresh current validators after potential creations to ensure newly created
-	// validators are also processed in the uniform update/removal phase.
+	// 3. Update all validators (including removal of zero weight ones)
 	currentValidators, err = k.GetAllValidators(ctx)
 	if err != nil {
-		logger.Error("error refreshing validators after creation phase", "error", err.Error())
+		logger.Error("error refreshing validators", "error", err.Error())
 		return nil, err
 	}
 
-	// Handle validators already in (existing validators) - SECOND: Update all validators uniformly
 	for _, validator := range currentValidators {
 		conPubKey, err := validator.ConsPubKey()
-		if err != nil {
-			logger.Error("Error getting cons pubkey", "error", err.Error())
-			return nil, err
+		if err != nil || conPubKey == nil {
+			logger.Warn("Invalid validator consensus pubkey, removing validator", "operator", validator.GetOperator())
+			k.removeValidatorSafely(ctx, validator)
+			continue
 		}
-		computeResult, inNewResults := resultsMap[conPubKey.String()]
-		if inNewResults {
-			logger.Info("Updating validator", "operator", validator.GetOperator(), "power", computeResult.Power)
-			_, err := k.updateValidatorFromComputeResults(ctx, validator, computeResult)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			logger.Info("Removing validator", "operator", validator.GetOperator(), "power", 0)
-			// Create a computeResult for removal with the validator's existing operator address
-			consPubKey, err := validator.ConsPubKey()
-			if err != nil {
-				logger.Error("Error getting validator consensus pubkey for removal", "error", err.Error())
-				return nil, err
-			}
-			removeResult := ComputeResult{
-				Power:           0,
-				ValidatorPubKey: consPubKey,
-				OperatorAddress: validator.GetOperator(),
-			}
-			_, err = k.updateValidatorFromComputeResults(ctx, validator, removeResult)
-			if err != nil {
-				return nil, err
-			}
+
+		pubKeyStr := conPubKey.String()
+		computeResult, found := resultsMap[pubKeyStr]
+
+		// Set power (either from results or 0 for removal)
+		power := int64(0)
+		if found {
+			power = computeResult.Power
+		}
+
+		logger.Info("Updating validator", "operator", validator.GetOperator(), "power", power)
+		err = k.updateValidatorPower(ctx, validator, power)
+		if err != nil {
+			logger.Error("Error updating validator, skipping", "operator", validator.GetOperator(), "error", err.Error())
+			continue
 		}
 	}
+
 	return k.GetAllValidators(ctx)
 }
 
@@ -168,9 +169,22 @@ func (k Keeper) createValidatorFromComputeResult(ctx context.Context, computeRes
 	}
 
 	delegation.Shares = math.LegacyNewDec(computeResult.Power)
+
+	// Call the before-creation hook for the delegation
+	if err := k.Hooks().BeforeDelegationCreated(ctx, delegatorAccountAddress, valAddr); err != nil {
+		k.Logger(ctx).Error("Error in before delegation created hook", "error", err.Error())
+		return nil, err
+	}
+
 	err = k.SetComputeDelegation(ctx, delegation)
 	if err != nil {
 		k.Logger(ctx).Error("Error setting delegation", "error", err.Error())
+		return nil, err
+	}
+
+	// Call the after-modification hook for the delegation
+	if err := k.Hooks().AfterDelegationModified(ctx, delegatorAccountAddress, valAddr); err != nil {
+		k.Logger(ctx).Error("Error in after delegation modified hook", "error", err.Error())
 		return nil, err
 	}
 
@@ -187,6 +201,11 @@ func (k Keeper) updateValidatorFromComputeResults(ctx context.Context, validator
 	}
 	addr := sdk.AccAddress(valAddr)
 
+	// Delete the old power index entry BEFORE changing the validator's power
+	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
+		logger.Debug("Could not delete existing power index entry before update", "validator", validator.GetOperator(), "error", err.Error())
+	}
+
 	_, err = k.SetCompute(ctx, addr, math.NewInt(power), validator)
 	if err != nil {
 		logger.Error("Error setting compute", "error", err.Error())
@@ -197,10 +216,19 @@ func (k Keeper) updateValidatorFromComputeResults(ctx context.Context, validator
 		logger.Error("Error getting validator", "error", err.Error())
 		return validator, err
 	}
-	err = k.SetComputeValidatorByPowerIndex(ctx, validator)
-	if err != nil {
-		logger.Error("Error setting validator by power index", "error", err.Error())
-		return validator, err
+
+	// Set the new power index entry (no need to delete again since we did it above)
+	if !validator.Jailed {
+		store := k.storeService.OpenKVStore(ctx)
+		str, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
+		if err != nil {
+			logger.Error("Error converting validator address", "error", err.Error())
+			return validator, err
+		}
+		if err := store.Set(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec), str); err != nil {
+			logger.Error("Error setting validator by power index", "error", err.Error())
+			return validator, err
+		}
 	}
 
 	return validator, nil
@@ -466,6 +494,114 @@ func (k Keeper) ClearAllComputeQueues(ctx context.Context) error {
 		if err := store.Delete(valIterator.Key()); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// filterValidComputeResults filters and deduplicates compute results
+func (k Keeper) filterValidComputeResults(ctx context.Context, computeResults []ComputeResult) []ComputeResult {
+	logger := k.Logger(ctx)
+
+	if computeResults == nil || len(computeResults) == 0 {
+		return nil
+	}
+
+	// Prevent DoS attacks
+	maxValidators := 1000
+	if len(computeResults) > maxValidators {
+		logger.Warn("Too many validators in compute results, truncating", "count", len(computeResults), "max", maxValidators)
+		computeResults = computeResults[:maxValidators]
+	}
+
+	var validResults []ComputeResult
+	seen := make(map[string]bool)
+
+	for i, result := range computeResults {
+		// Basic validation
+		if result.ValidatorPubKey == nil {
+			logger.Warn("Nil ValidatorPubKey, skipping", "index", i)
+			continue
+		}
+		if result.OperatorAddress == "" {
+			logger.Warn("Empty OperatorAddress, skipping", "index", i)
+			continue
+		}
+		if result.Power < 0 {
+			logger.Warn("Negative power, skipping", "index", i, "power", result.Power)
+			continue
+		}
+
+		// Validate pubkey and address format
+		if err := safeValidatePublicKey(result.ValidatorPubKey); err != nil {
+			logger.Warn("Invalid ValidatorPubKey, skipping", "index", i, "error", err.Error())
+			continue
+		}
+
+		if _, err := sdk.ValAddressFromBech32(result.OperatorAddress); err != nil {
+			logger.Warn("Invalid OperatorAddress format, skipping", "index", i, "address", result.OperatorAddress)
+			continue
+		}
+
+		// Deduplicate by pubkey
+		pubKeyStr := result.ValidatorPubKey.String()
+		if seen[pubKeyStr] {
+			logger.Warn("Duplicate pubkey, skipping", "index", i, "pubkey", pubKeyStr)
+			continue
+		}
+		seen[pubKeyStr] = true
+
+		validResults = append(validResults, result)
+	}
+
+	logger.Info("Filtered compute results", "original", len(computeResults), "valid", len(validResults))
+	return validResults
+}
+
+// removeValidatorSafely removes a validator without causing panics
+func (k Keeper) removeValidatorSafely(ctx context.Context, validator types.Validator) {
+	logger := k.Logger(ctx)
+
+	// Use zero power to trigger removal
+	err := k.updateValidatorPower(ctx, validator, 0)
+	if err != nil {
+		logger.Error("Failed to remove validator safely", "operator", validator.GetOperator(), "error", err.Error())
+	}
+}
+
+// updateValidatorPower updates validator power using the existing SetCompute logic
+func (k Keeper) updateValidatorPower(ctx context.Context, validator types.Validator, power int64) error {
+	valAddr, err := sdk.ValAddressFromBech32(validator.GetOperator())
+	if err != nil {
+		return err
+	}
+
+	addr := sdk.AccAddress(valAddr)
+
+	// Delete old power index entry before updating
+	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
+		k.Logger(ctx).Debug("Could not delete existing power index entry", "validator", validator.GetOperator())
+	}
+
+	_, err = k.SetCompute(ctx, addr, math.NewInt(power), validator)
+	if err != nil {
+		return err
+	}
+
+	// Get updated validator
+	updatedValidator, err := k.GetValidator(ctx, valAddr)
+	if err != nil {
+		return err
+	}
+
+	// Set new power index entry if not jailed and has power
+	if !updatedValidator.Jailed && power > 0 {
+		store := k.storeService.OpenKVStore(ctx)
+		str, err := k.validatorAddressCodec.StringToBytes(updatedValidator.GetOperator())
+		if err != nil {
+			return err
+		}
+		return store.Set(types.GetValidatorsByPowerIndexKey(updatedValidator, k.PowerReduction(ctx), k.validatorAddressCodec), str)
 	}
 
 	return nil

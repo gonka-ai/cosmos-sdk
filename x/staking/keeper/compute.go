@@ -76,27 +76,48 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 		return nil, err
 	}
 
+	// Separate validators into those to update and those to remove
+	var validatorsToUpdate []types.Validator
+	var validatorsToRemove []types.Validator
+
 	for _, validator := range currentValidators {
 		conPubKey, err := validator.ConsPubKey()
 		if err != nil || conPubKey == nil {
-			logger.Warn("Invalid validator consensus pubkey, removing validator", "operator", validator.GetOperator())
-			k.removeValidatorSafely(ctx, validator)
+			logger.Warn("Invalid validator consensus pubkey, will remove", "operator", validator.GetOperator())
+			validatorsToRemove = append(validatorsToRemove, validator)
 			continue
 		}
 
 		pubKeyStr := conPubKey.String()
 		computeResult, found := resultsMap[pubKeyStr]
 
-		// Set power (either from results or 0 for removal)
-		power := int64(0)
 		if found {
-			power = computeResult.Power
+			// Validator is in compute results, update its power
+			logger.Info("Updating validator", "operator", validator.GetOperator(), "power", computeResult.Power)
+			validatorsToUpdate = append(validatorsToUpdate, validator)
+		} else {
+			// Validator is not in compute results, remove it
+			logger.Info("Removing validator", "operator", validator.GetOperator())
+			validatorsToRemove = append(validatorsToRemove, validator)
 		}
+	}
 
-		logger.Info("Updating validator", "operator", validator.GetOperator(), "power", power)
-		err = k.updateValidatorPower(ctx, validator, power)
+	for _, validator := range validatorsToUpdate {
+		conPubKey, _ := validator.ConsPubKey()
+		pubKeyStr := conPubKey.String()
+		computeResult := resultsMap[pubKeyStr]
+
+		err = k.updateValidatorPower(ctx, validator, computeResult.Power)
 		if err != nil {
 			logger.Error("Error updating validator, skipping", "operator", validator.GetOperator(), "error", err.Error())
+			continue
+		}
+	}
+
+	for _, validator := range validatorsToRemove {
+		err = k.updateValidatorPower(ctx, validator, 0)
+		if err != nil {
+			logger.Error("Error removing validator, skipping", "operator", validator.GetOperator(), "error", err.Error())
 			continue
 		}
 	}
@@ -424,6 +445,7 @@ func (k Keeper) SetCompute(
 		return math.LegacyDec{}, err
 	}
 	if err := k.Hooks().AfterValidatorBonded(ctx, consAddr, valbz); err != nil {
+		k.Logger(ctx).Error("Error in after validator bonded hook", "error", err.Error())
 		return math.LegacyDec{}, err
 	}
 

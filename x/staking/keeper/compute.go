@@ -392,6 +392,15 @@ func (k Keeper) SetCompute(
 		return newShares, err
 	}
 
+	// Call the after-bonded hook to ensure signing info exists
+	consAddr, err := validator.GetConsAddr()
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
+	if err := k.Hooks().AfterValidatorBonded(ctx, consAddr, valbz); err != nil {
+		return math.LegacyDec{}, err
+	}
+
 	// Call the after-modification hook
 	if err := k.Hooks().AfterDelegationModified(ctx, delAddr, valbz); err != nil {
 		return newShares, err

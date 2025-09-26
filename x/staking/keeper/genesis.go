@@ -64,6 +64,17 @@ func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) (res 
 			if err := k.Hooks().AfterValidatorCreated(ctx, valbz); err != nil {
 				panic(err)
 			}
+
+			// Call the bonded hook for bonded validators to create signing info
+			if validator.IsBonded() {
+				consAddr, err := validator.GetConsAddr()
+				if err != nil {
+					panic(err)
+				}
+				if err := k.Hooks().AfterValidatorBonded(ctx, consAddr, valbz); err != nil {
+					panic(err)
+				}
+			}
 		}
 
 		// Skip unbonding validator queue since there's no unbonding in Proof of Compute

@@ -123,37 +123,39 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, _ sdk.ConsAddress, val
 
 // increment period
 func (h Hooks) BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
-	val, err := h.k.stakingKeeper.Validator(ctx, valAddr)
-	if err != nil {
-		return err
-	}
+	// val, err := h.k.stakingKeeper.Validator(ctx, valAddr)
+	// if err != nil {
+	// 	return err
+	// }
 
-	_, err = h.k.IncrementValidatorPeriod(ctx, val)
-	return err
+	// _, err = h.k.IncrementValidatorPeriod(ctx, val)
+	// return err
+	return nil
 }
 
 // withdraw delegation rewards (which also increments period)
 func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
-	val, err := h.k.stakingKeeper.Validator(ctx, valAddr)
-	if err != nil {
-		return err
-	}
+	// val, err := h.k.stakingKeeper.Validator(ctx, valAddr)
+	// if err != nil {
+	// 	return err
+	// }
 
-	del, err := h.k.stakingKeeper.Delegation(ctx, delAddr, valAddr)
-	if err != nil {
-		return err
-	}
+	// del, err := h.k.stakingKeeper.Delegation(ctx, delAddr, valAddr)
+	// if err != nil {
+	// 	return err
+	// }
 
-	if _, err := h.k.withdrawDelegationRewards(ctx, val, del); err != nil {
-		return err
-	}
+	// if _, err := h.k.withdrawDelegationRewards(ctx, val, del); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
 
 // create new delegation period record
 func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
-	return h.k.initializeDelegation(ctx, valAddr, delAddr)
+	return nil
+	// return h.k.initializeDelegation(ctx, valAddr, delAddr)
 }
 
 // record the slash event
@@ -162,6 +164,9 @@ func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddres
 }
 
 func (h Hooks) BeforeValidatorModified(_ context.Context, _ sdk.ValAddress) error {
+	if _, err := h.k.withdrawDelegationRewards(ctx, val, del); err != nil {
+		return err
+	}
 	return nil
 }
 

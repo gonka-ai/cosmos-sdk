@@ -43,7 +43,7 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 		validatorsAlreadyExisting[conPubKey.String()] = true
 	}
 
-	// Handle validators not in
+	// Handle validators not in (new validators) - FIRST: Create all missing validators
 	for _, computeResult := range computeResults {
 		if computeResult.Power == 0 {
 			logger.Warn("Power is 0 for new validator, skipping validator", "address", computeResult.OperatorAddress, "key", computeResult.ValidatorPubKey.String())
@@ -51,16 +51,15 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 		}
 		if _, ok := validatorsAlreadyExisting[computeResult.ValidatorPubKey.String()]; !ok {
 			logger.Info("Creating validator", "power", computeResult, "operator", computeResult.OperatorAddress)
-			newVal, err := k.createValidatorFromComputeResult(ctx, computeResult)
+			_, err := k.createValidatorFromComputeResult(ctx, computeResult)
 			if err != nil {
 				logger.Error("Error creating validator", "error", err.Error())
-				return nil, err
+				continue
 			}
-			return append(currentValidators, *newVal), nil
 		}
 	}
 
-	// Handle validators already in
+	// Handle validators already in (existing validators) - SECOND: Update all validators uniformly
 	for _, validator := range currentValidators {
 		conPubKey, err := validator.ConsPubKey()
 		if err != nil {
@@ -75,9 +74,19 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 				return nil, err
 			}
 		} else {
-			logger.Info("Removing validator", "operator", validator.GetOperator(), "power", computeResult.Power)
-			computeResult.Power = 0
-			_, err := k.updateValidatorFromComputeResults(ctx, validator, computeResult)
+			logger.Info("Removing validator", "operator", validator.GetOperator(), "power", 0)
+			// Create a computeResult for removal with the validator's existing operator address
+			consPubKey, err := validator.ConsPubKey()
+			if err != nil {
+				logger.Error("Error getting validator consensus pubkey for removal", "error", err.Error())
+				return nil, err
+			}
+			removeResult := ComputeResult{
+				Power:           0,
+				ValidatorPubKey: consPubKey,
+				OperatorAddress: validator.GetOperator(),
+			}
+			_, err = k.updateValidatorFromComputeResults(ctx, validator, removeResult)
 			if err != nil {
 				return nil, err
 			}

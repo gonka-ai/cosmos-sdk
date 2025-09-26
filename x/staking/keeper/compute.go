@@ -59,6 +59,14 @@ func (k Keeper) SetComputeValidators(ctx context.Context, computeResults []Compu
 		}
 	}
 
+	// Refresh current validators after potential creations to ensure newly created
+	// validators are also processed in the uniform update/removal phase.
+	currentValidators, err = k.GetAllValidators(ctx)
+	if err != nil {
+		logger.Error("error refreshing validators after creation phase", "error", err.Error())
+		return nil, err
+	}
+
 	// Handle validators already in (existing validators) - SECOND: Update all validators uniformly
 	for _, validator := range currentValidators {
 		conPubKey, err := validator.ConsPubKey()
@@ -179,16 +187,15 @@ func (k Keeper) updateValidatorFromComputeResults(ctx context.Context, validator
 	}
 	addr := sdk.AccAddress(valAddr)
 
-	err = k.DeleteComputeValidatorByPowerIndex(ctx, validator)
+	_, err = k.SetCompute(ctx, addr, math.NewInt(power), validator)
 	if err != nil {
-		logger.Error("Error deleting validator by power index", "error", err.Error())
+		logger.Error("Error setting compute", "error", err.Error())
 		return validator, err
 	}
-
-	k.SetCompute(ctx, addr, math.NewInt(power), validator)
 	validator, err = k.GetValidator(ctx, valAddr)
 	if err != nil {
 		logger.Error("Error getting validator", "error", err.Error())
+		return validator, err
 	}
 	err = k.SetComputeValidatorByPowerIndex(ctx, validator)
 	if err != nil {

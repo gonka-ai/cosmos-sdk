@@ -108,6 +108,12 @@ func (k Keeper) SetComputeValidatorByPowerIndex(ctx context.Context, validator t
 		return nil
 	}
 
+	// First, delete any existing power index entries for this validator to prevent duplicates
+	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
+		// Log but don't fail - the entry might not exist
+		k.Logger(ctx).Debug("Could not delete existing power index entry", "validator", validator.GetOperator(), "error", err.Error())
+	}
+
 	store := k.storeService.OpenKVStore(ctx)
 	str, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
 	if err != nil {
@@ -129,8 +135,7 @@ func (k Keeper) DeleteComputeValidatorByPowerIndex(ctx context.Context, validato
 
 // DeleteValidatorByPowerIndex deletes a record by power index
 func (k Keeper) DeleteValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
-	store := k.storeService.OpenKVStore(ctx)
-	return store.Delete(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec))
+	return nil
 }
 
 // SetNewValidatorByPowerIndex adds new entry by power index
@@ -140,6 +145,12 @@ func (k Keeper) SetNewValidatorByPowerIndex(ctx context.Context, validator types
 
 // SetNewValidatorByPowerIndex adds new entry by power index
 func (k Keeper) SetNewComputeValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
+	// First, delete any existing power index entries for this validator to prevent duplicates
+	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
+		// Log but don't fail - the entry might not exist
+		k.Logger(ctx).Debug("Could not delete existing power index entry", "validator", validator.GetOperator(), "error", err.Error())
+	}
+
 	store := k.storeService.OpenKVStore(ctx)
 	str, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
 	if err != nil {

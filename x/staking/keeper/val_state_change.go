@@ -353,22 +353,22 @@ func (k Keeper) bondValidator(ctx context.Context, validator types.Validator) (t
 // perform all the store operations for when a validator status becomes bonded
 func (k Keeper) bondComputeValidator(ctx context.Context, validator types.Validator) (types.Validator, error) {
 	// delete the validator by power index, as the key will change
-	if err := k.DeleteValidatorByPowerIndex(ctx, validator); err != nil {
+	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
 		return types.Validator{}, err
 	}
 
 	validator = validator.UpdateStatus(types.Bonded)
 
 	// save the now bonded validator record to the two referenced stores
-	if err := k.SetValidator(ctx, validator); err != nil {
+	if err := k.SetComputeValidator(ctx, validator); err != nil {
 		return types.Validator{}, err
 	}
 
-	if err := k.SetValidatorByPowerIndex(ctx, validator); err != nil {
+	if err := k.SetComputeValidatorByPowerIndex(ctx, validator); err != nil {
 		return types.Validator{}, err
 	}
 
-	// delete from queue if present
+	// delete from queue if present (stubbed for Proof of Compute)
 	if err := k.DeleteValidatorQueue(ctx, validator); err != nil {
 		return types.Validator{}, err
 	}

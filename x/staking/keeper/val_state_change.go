@@ -364,9 +364,7 @@ func (k Keeper) bondComputeValidator(ctx context.Context, validator types.Valida
 		return types.Validator{}, err
 	}
 
-	if err := k.SetComputeValidatorByPowerIndex(ctx, validator); err != nil {
-		return types.Validator{}, err
-	}
+	// Power index is managed by SetCompute, so no need to set it here
 
 	// delete from queue if present (stubbed for Proof of Compute)
 	if err := k.DeleteValidatorQueue(ctx, validator); err != nil {

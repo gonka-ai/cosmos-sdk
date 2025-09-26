@@ -444,6 +444,13 @@ func (k Keeper) SetCompute(
 		return math.LegacyDec{}, err
 	}
 
+	// Set power index for non-zero power validators
+	if validator.Tokens.IsPositive() {
+		if err = k.SetComputeValidatorByPowerIndex(ctx, validator); err != nil {
+			return math.LegacyDec{}, err
+		}
+	}
+
 	if err = k.SetComputeDelegation(ctx, delegation); err != nil {
 		return newShares, err
 	}
@@ -589,7 +596,7 @@ func (k Keeper) removeValidatorSafely(ctx context.Context, validator types.Valid
 	}
 }
 
-// updateValidatorPower updates validator power using the existing SetCompute logic
+// updateValidatorPower updates validator power using SetCompute
 func (k Keeper) updateValidatorPower(ctx context.Context, validator types.Validator, power int64) error {
 	valAddr, err := sdk.ValAddressFromBech32(validator.GetOperator())
 	if err != nil {
@@ -604,25 +611,5 @@ func (k Keeper) updateValidatorPower(ctx context.Context, validator types.Valida
 	}
 
 	_, err = k.SetCompute(ctx, addr, math.NewInt(power), validator)
-	if err != nil {
-		return err
-	}
-
-	// Get updated validator
-	updatedValidator, err := k.GetValidator(ctx, valAddr)
-	if err != nil {
-		return err
-	}
-
-	// Set new power index entry if has power
-	if power > 0 {
-		store := k.storeService.OpenKVStore(ctx)
-		str, err := k.validatorAddressCodec.StringToBytes(updatedValidator.GetOperator())
-		if err != nil {
-			return err
-		}
-		return store.Set(types.GetValidatorsByPowerIndexKey(updatedValidator, k.PowerReduction(ctx), k.validatorAddressCodec), str)
-	}
-
-	return nil
+	return err
 }

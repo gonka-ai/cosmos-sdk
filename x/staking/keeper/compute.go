@@ -317,6 +317,18 @@ func (k Keeper) createComputeValidator(ctx context.Context, msg *types.MsgCreate
 
 	validator.MinSelfDelegation = msg.MinSelfDelegation
 
+	// Validate token amount is positive
+	if msg.Value.Amount.IsZero() {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "validator initial stake cannot be zero")
+	}
+	if msg.Value.Amount.IsNegative() {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "validator initial stake cannot be negative")
+	}
+
+	// Set initial tokens and delegator shares for compute validators
+	validator.Tokens = msg.Value.Amount
+	validator.DelegatorShares = math.LegacyNewDecFromInt(msg.Value.Amount)
+
 	// Clear unbonding IDs since there's no unbonding in Proof of Compute
 	validator.UnbondingIds = []uint64{}
 
@@ -436,6 +448,12 @@ func (k Keeper) SetCompute(
 		return newShares, err
 	}
 
+	// Call the after-modification hook for the delegation
+	if err := k.Hooks().AfterDelegationModified(ctx, delAddr, valbz); err != nil {
+		k.Logger(ctx).Error("Error in after delegation modified hook", "error", err.Error())
+		return math.LegacyZeroDec(), err
+	}
+
 	// Call the after-bonded hook to ensure signing info exists
 	consAddr, err := validator.GetConsAddr()
 	if err != nil {
@@ -445,12 +463,7 @@ func (k Keeper) SetCompute(
 		return math.LegacyDec{}, err
 	}
 
-	// Call the after-modification hook
-	if err := k.Hooks().AfterDelegationModified(ctx, delAddr, valbz); err != nil {
-		return newShares, err
-	}
-
-	return newShares, nil
+	return delegation.Shares, nil
 }
 
 // ClearAllComputeQueues clears all unbonding and redelegation queues since there's no unbonding in Proof of Compute
@@ -503,7 +516,7 @@ func (k Keeper) ClearAllComputeQueues(ctx context.Context) error {
 func (k Keeper) filterValidComputeResults(ctx context.Context, computeResults []ComputeResult) []ComputeResult {
 	logger := k.Logger(ctx)
 
-	if computeResults == nil || len(computeResults) == 0 {
+	if len(computeResults) == 0 {
 		return nil
 	}
 
@@ -529,6 +542,13 @@ func (k Keeper) filterValidComputeResults(ctx context.Context, computeResults []
 		}
 		if result.Power < 0 {
 			logger.Warn("Negative power, skipping", "index", i, "power", result.Power)
+			continue
+		}
+
+		// Prevent overflow - max power should be reasonable
+		const maxPower = 1e15 // 1 quadrillion - reasonable upper bound
+		if result.Power > maxPower {
+			logger.Warn("Power too large, skipping", "index", i, "power", result.Power, "max", maxPower)
 			continue
 		}
 
@@ -594,8 +614,8 @@ func (k Keeper) updateValidatorPower(ctx context.Context, validator types.Valida
 		return err
 	}
 
-	// Set new power index entry if not jailed and has power
-	if !updatedValidator.Jailed && power > 0 {
+	// Set new power index entry if has power
+	if power > 0 {
 		store := k.storeService.OpenKVStore(ctx)
 		str, err := k.validatorAddressCodec.StringToBytes(updatedValidator.GetOperator())
 		if err != nil {

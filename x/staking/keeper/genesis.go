@@ -171,7 +171,7 @@ func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) (res 
 				panic(err)
 			}
 
-			err = k.SetLastValidatorPower(ctx, valAddr, lv.Power)
+			err = k.SetComputeLastValidatorPower(ctx, valAddr, lv.Power)
 			if err != nil {
 				panic(err)
 			}

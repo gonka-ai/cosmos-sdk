@@ -352,9 +352,25 @@ func (k Keeper) SetLastValidatorPower(ctx context.Context, operator sdk.ValAddre
 	return nil
 }
 
+// SetComputeLastValidatorPower sets the last validator power for Proof of Compute.
+func (k Keeper) SetComputeLastValidatorPower(ctx context.Context, operator sdk.ValAddress, power int64) error {
+	store := k.storeService.OpenKVStore(ctx)
+	bz, err := k.cdc.Marshal(&gogotypes.Int64Value{Value: power})
+	if err != nil {
+		return err
+	}
+	return store.Set(types.GetLastValidatorPowerKey(operator), bz)
+}
+
 // DeleteLastValidatorPower deletes the last validator power.
 func (k Keeper) DeleteLastValidatorPower(ctx context.Context, operator sdk.ValAddress) error {
 	return nil
+}
+
+// DeleteComputeLastValidatorPower deletes the last validator power for Proof of Compute.
+func (k Keeper) DeleteComputeLastValidatorPower(ctx context.Context, operator sdk.ValAddress) error {
+	store := k.storeService.OpenKVStore(ctx)
+	return store.Delete(types.GetLastValidatorPowerKey(operator))
 }
 
 // lastValidatorsIterator returns an iterator for the consensus validators in the last block

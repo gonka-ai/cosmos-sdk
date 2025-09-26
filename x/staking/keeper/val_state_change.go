@@ -206,7 +206,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		if !found || oldPower != newPower {
 			updates = append(updates, validator.ABCIValidatorUpdate(powerReduction))
 
-			if err = k.SetLastValidatorPower(ctx, valAddr, newPower); err != nil {
+			if err = k.SetComputeLastValidatorPower(ctx, valAddr, newPower); err != nil {
 				return nil, err
 			}
 		}
@@ -236,7 +236,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 			return nil, fmt.Errorf("failed to get validator operator address: %w", err)
 		}
 		amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(validator.GetTokens())
-		if err = k.DeleteLastValidatorPower(ctx, str); err != nil {
+		if err = k.DeleteComputeLastValidatorPower(ctx, str); err != nil {
 			return nil, err
 		}
 		k.Logger(ctx).Info("removing validator", "validator", validator.String(), "power", validator.Tokens, "status", validator.Status)

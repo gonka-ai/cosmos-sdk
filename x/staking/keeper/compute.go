@@ -191,49 +191,6 @@ func (k Keeper) createValidatorFromComputeResult(ctx context.Context, computeRes
 	return &bondedVal, nil
 }
 
-func (k Keeper) updateValidatorFromComputeResults(ctx context.Context, validator types.Validator, computeResult ComputeResult) (types.Validator, error) {
-	logger := k.Logger(ctx)
-	power := computeResult.Power
-	valAddr, err := sdk.ValAddressFromBech32(computeResult.OperatorAddress)
-	if err != nil {
-		logger.Error("Error parsing operator address as valaddress", "address", computeResult.OperatorAddress, "error", err)
-		return validator, err
-	}
-	addr := sdk.AccAddress(valAddr)
-
-	// Delete the old power index entry BEFORE changing the validator's power
-	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
-		logger.Debug("Could not delete existing power index entry before update", "validator", validator.GetOperator(), "error", err.Error())
-	}
-
-	_, err = k.SetCompute(ctx, addr, math.NewInt(power), validator)
-	if err != nil {
-		logger.Error("Error setting compute", "error", err.Error())
-		return validator, err
-	}
-	validator, err = k.GetValidator(ctx, valAddr)
-	if err != nil {
-		logger.Error("Error getting validator", "error", err.Error())
-		return validator, err
-	}
-
-	// Set the new power index entry (no need to delete again since we did it above)
-	if !validator.Jailed {
-		store := k.storeService.OpenKVStore(ctx)
-		str, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
-		if err != nil {
-			logger.Error("Error converting validator address", "error", err.Error())
-			return validator, err
-		}
-		if err := store.Set(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec), str); err != nil {
-			logger.Error("Error setting validator by power index", "error", err.Error())
-			return validator, err
-		}
-	}
-
-	return validator, nil
-}
-
 func (k Keeper) createComputeValidator(ctx context.Context, msg *types.MsgCreateValidator) (*types.MsgCreateValidatorResponse, error) {
 	valAddr, err := k.validatorAddressCodec.StringToBytes(msg.ValidatorAddress)
 	if err != nil {
@@ -342,11 +299,6 @@ func (k Keeper) createComputeValidator(ctx context.Context, msg *types.MsgCreate
 		return nil, err
 	}
 
-	err = k.SetNewComputeValidatorByPowerIndex(ctx, validator)
-	if err != nil {
-		return nil, err
-	}
-
 	// call the after-creation hook
 	if err := k.Hooks().AfterValidatorCreated(ctx, valAddr); err != nil {
 		return nil, err
@@ -372,6 +324,11 @@ func (k Keeper) SetCompute(
 	// make all future delegations invalid.
 	if validator.InvalidExRate() {
 		return math.LegacyZeroDec(), types.ErrDelegatorShareExRateInvalid
+	}
+
+	// Always remove any existing power-index entries for this validator first
+	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
+		return math.LegacyZeroDec(), err
 	}
 
 	valbz, err := k.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
@@ -605,11 +562,7 @@ func (k Keeper) updateValidatorPower(ctx context.Context, validator types.Valida
 
 	addr := sdk.AccAddress(valAddr)
 
-	// Delete old power index entry before updating
-	if err := k.DeleteComputeValidatorByPowerIndex(ctx, validator); err != nil {
-		k.Logger(ctx).Debug("Could not delete existing power index entry", "validator", validator.GetOperator())
-	}
-
+	// SetCompute handles power index management internally
 	_, err = k.SetCompute(ctx, addr, math.NewInt(power), validator)
 	return err
 }

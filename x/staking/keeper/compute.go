@@ -110,27 +110,6 @@ func (k Keeper) SetComputeValidators(
 	}
 	logger := k.Logger(sdkCtx)
 
-	// Basic filter first: any downstream logic assumes non-nil pubkeys and positive power.
-	beforeBasicFilter := computeResults
-	computeResults = filterInvalidComputeResults(ctx, computeResults)
-
-	// Stage-by-stage logging so we can understand how computeResults evolves through filters.
-	// This is intentionally lightweight (O(n) per stage) and logs only aggregated counts.
-	if removed := len(beforeBasicFilter) - len(computeResults); removed > 0 {
-		logger.Info("compute results filtered invalid entries", "removed", removed, "before_total", len(beforeBasicFilter), "after_total", len(computeResults))
-	}
-
-	initialStats := computeResultsStatsFrom(computeResults)
-	logger.Info(
-		"compute results stats",
-		"stage", "initial",
-		"total", initialStats.Total,
-		"unique_operator_addrs", initialStats.UniqueOperatorAddrs,
-		"unique_consensus_keys", initialStats.UniqueConsensusKeys,
-		"dup_operator_entries", initialStats.DuplicateOperatorEntries,
-		"dup_consensus_entries", initialStats.DuplicateConsensusEntries,
-	)
-
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
 		logger.Error("failed to get all validators", "error", err)
@@ -150,29 +129,7 @@ func (k Keeper) SetComputeValidators(
 		currentValsByConsensusAddress[consensusAddress] = val
 	}
 
-	sortComputeResultsInplace(computeResults)
-	afterSortStats := computeResultsStatsFrom(computeResults)
-	logger.Info(
-		"compute results stats",
-		"stage", "after_sort",
-		"total", afterSortStats.Total,
-		"unique_operator_addrs", afterSortStats.UniqueOperatorAddrs,
-		"unique_consensus_keys", afterSortStats.UniqueConsensusKeys,
-		"dup_operator_entries", afterSortStats.DuplicateOperatorEntries,
-		"dup_consensus_entries", afterSortStats.DuplicateConsensusEntries,
-	)
-
-	beforeFilter := computeResults
-	computeResults = filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
-	logComputeResultsFilterStats(logger, "filter_based_on_existing", beforeFilter, computeResults)
-
-	beforeFilter = computeResults
-	computeResults = filterDuplicateOperatorAddresses(ctx, computeResults)
-	logComputeResultsFilterStats(logger, "filter_duplicate_operator_addresses", beforeFilter, computeResults)
-
-	beforeFilter = computeResults
-	computeResults = filterDuplicateConsensusKeys(ctx, computeResults)
-	logComputeResultsFilterStats(logger, "filter_duplicate_consensus_keys", beforeFilter, computeResults)
+	computeResults = sortAndFilterComputeResult(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
 
 	resultsByOperatorAddress := make(map[string]ComputeResult)
 	for _, res := range computeResults {
@@ -229,6 +186,63 @@ func (k Keeper) SetComputeValidators(
 	}
 
 	return k.GetAllValidators(ctx)
+}
+
+func sortAndFilterComputeResult(
+	ctx context.Context,
+	computeResults []ComputeResult,
+	currentValsByConsensusAddress map[string]types.Validator,
+	currentValsByOperatorAddress map[string]types.Validator,
+) []ComputeResult {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := sdkCtx.Logger()
+
+	// Basic filter first: any downstream logic assumes non-nil pubkeys and positive power.
+	beforeBasicFilter := computeResults
+	computeResults = filterInvalidComputeResults(ctx, computeResults)
+
+	// Stage-by-stage logging so we can understand how computeResults evolves through filters.
+	// This is intentionally lightweight (O(n) per stage) and logs only aggregated counts.
+	if removed := len(beforeBasicFilter) - len(computeResults); removed > 0 {
+		logger.Info("compute results filtered invalid entries", "removed", removed, "before_total", len(beforeBasicFilter), "after_total", len(computeResults))
+	}
+
+	initialStats := computeResultsStatsFrom(computeResults)
+	logger.Info(
+		"compute results stats",
+		"stage", "initial",
+		"total", initialStats.Total,
+		"unique_operator_addrs", initialStats.UniqueOperatorAddrs,
+		"unique_consensus_keys", initialStats.UniqueConsensusKeys,
+		"dup_operator_entries", initialStats.DuplicateOperatorEntries,
+		"dup_consensus_entries", initialStats.DuplicateConsensusEntries,
+	)
+
+	sortComputeResultsInplace(computeResults)
+	afterSortStats := computeResultsStatsFrom(computeResults)
+	logger.Info(
+		"compute results stats",
+		"stage", "after_sort",
+		"total", afterSortStats.Total,
+		"unique_operator_addrs", afterSortStats.UniqueOperatorAddrs,
+		"unique_consensus_keys", afterSortStats.UniqueConsensusKeys,
+		"dup_operator_entries", afterSortStats.DuplicateOperatorEntries,
+		"dup_consensus_entries", afterSortStats.DuplicateConsensusEntries,
+	)
+
+	beforeFilter := computeResults
+	computeResults = filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+	logComputeResultsFilterStats(logger, "filter_based_on_existing", beforeFilter, computeResults)
+
+	beforeFilter = computeResults
+	computeResults = filterDuplicateOperatorAddresses(ctx, computeResults)
+	logComputeResultsFilterStats(logger, "filter_duplicate_operator_addresses", beforeFilter, computeResults)
+
+	beforeFilter = computeResults
+	computeResults = filterDuplicateConsensusKeys(ctx, computeResults)
+	logComputeResultsFilterStats(logger, "filter_duplicate_consensus_keys", beforeFilter, computeResults)
+
+	return computeResults
 }
 
 func sortComputeResultsInplace(computeResults []ComputeResult) {

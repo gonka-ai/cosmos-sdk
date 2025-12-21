@@ -2,10 +2,9 @@ package keeper
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"fmt"
 	"sort"
-
-	"cosmossdk.io/math"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -121,52 +120,11 @@ func (k Keeper) SetComputeValidators(
 		if computeResults[j].ValidatorPubKey != nil {
 			jPubKey = computeResults[j].ValidatorPubKey.Address().String()
 		}
+		if iPubKey == jPubKey {
+			return computeResults[i].Power > computeResults[j].Power
+		}
 		return iPubKey < jPubKey
 	})
-
-	resultsByOperatorAddress := make(map[string]ComputeResult)
-	consensusPubkeyToOperator := make(map[string]string) // consensusAddr -> operatorAddr
-
-	for _, res := range computeResults {
-		if res.ValidatorPubKey == nil || res.Power <= 0 {
-			continue
-		}
-
-		consensusAddr := res.ValidatorPubKey.Address().String()
-
-		// If this operator address was already processed with a different consensus key,
-		// remove the old consensus key mapping to avoid "ghost" claims.
-		if oldRes, exists := resultsByOperatorAddress[res.OperatorAddress]; exists {
-			oldConsAddr := oldRes.ValidatorPubKey.Address().String()
-			if oldConsAddr != consensusAddr {
-				delete(consensusPubkeyToOperator, oldConsAddr)
-			}
-		}
-
-		if existingOp, seen := consensusPubkeyToOperator[consensusAddr]; seen {
-			// Keep the lexicographically latest operator address
-			if res.OperatorAddress > existingOp {
-				logger.Info("duplicate consensus key found, replacing validator",
-					"consensus_addr", consensusAddr,
-					"old_operator", existingOp,
-					"new_operator", res.OperatorAddress)
-				delete(resultsByOperatorAddress, existingOp)
-				consensusPubkeyToOperator[consensusAddr] = res.OperatorAddress
-				resultsByOperatorAddress[res.OperatorAddress] = res
-			} else {
-				logger.Info("duplicate consensus key found, keeping existing validator",
-					"consensus_addr", consensusAddr,
-					"existing_operator", existingOp,
-					"ignored_operator", res.OperatorAddress)
-			}
-			continue
-		}
-
-		consensusPubkeyToOperator[consensusAddr] = res.OperatorAddress
-		resultsByOperatorAddress[res.OperatorAddress] = res
-	}
-
-	logger.Info("Keys deduplication is finished")
 
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
@@ -187,25 +145,13 @@ func (k Keeper) SetComputeValidators(
 		currentValsByConsensusAddress[consensusAddress] = val
 	}
 
+	computeResults = filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+	computeResults = filterDuplicateOperatorAddresses(ctx, computeResults)
+	computeResults = filterDuplicateConsensusKeys(ctx, computeResults)
+
+	resultsByOperatorAddress := make(map[string]ComputeResult)
 	for _, res := range computeResults {
-		if res.ValidatorPubKey == nil {
-			continue
-		}
-		consensusAddress := res.ValidatorPubKey.Address().String()
-		if val, exists := currentValsByConsensusAddress[consensusAddress]; exists {
-			if val.OperatorAddress != res.OperatorAddress {
-				logger.Warn("different validator with the same consensus pubkey", "operator", val.OperatorAddress, "expected", val.OperatorAddress, "got", res.OperatorAddress)
-				delete(resultsByOperatorAddress, res.OperatorAddress)
-			}
-		}
-
-		val, exists := currentValsByOperatorAddress[res.OperatorAddress]
-		if exists && val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String() != res.ValidatorPubKey.Address().String() {
-			logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "expected", val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String(), "got", res.ValidatorPubKey.Address().String())
-			delete(resultsByOperatorAddress, res.OperatorAddress)
-			continue
-		}
-
+		resultsByOperatorAddress[res.OperatorAddress] = res
 	}
 
 	// Sort keys for deterministic iteration
@@ -258,6 +204,73 @@ func (k Keeper) SetComputeValidators(
 	}
 
 	return k.GetAllValidators(ctx)
+}
+
+func filterBasedOnExisting(
+	ctx context.Context,
+	computeResults []ComputeResult,
+	currentValsByConsensusAddress map[string]types.Validator,
+	currentValsByOperatorAddress map[string]types.Validator,
+) []ComputeResult {
+	logger := sdk.UnwrapSDKContext(ctx).Logger()
+
+	filtered := make([]ComputeResult, 0, len(computeResults))
+	for _, res := range computeResults {
+		if res.ValidatorPubKey == nil || res.Power <= 0 {
+			continue
+		}
+
+		consensusAddress := res.ValidatorPubKey.Address().String()
+		if val, exists := currentValsByConsensusAddress[consensusAddress]; exists {
+			if val.OperatorAddress != res.OperatorAddress {
+				logger.Warn("validator with the same consensus pubkey already exists, rejecting a new one", "consensusAddress", consensusAddress, "existingValidator", val.OperatorAddress, "newValidator", res.OperatorAddress)
+				continue
+			}
+		}
+
+		val, exists := currentValsByOperatorAddress[res.OperatorAddress]
+		if exists && val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String() != res.ValidatorPubKey.Address().String() {
+			logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "existingConsensusKey", val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String(), "newConsensusKey", res.ValidatorPubKey.Address().String())
+			continue
+		}
+
+		filtered = append(filtered, res)
+	}
+
+	return filtered
+}
+
+func filterDuplicateOperatorAddresses(ctx context.Context, computeResults []ComputeResult) []ComputeResult {
+	logger := sdk.UnwrapSDKContext(ctx).Logger()
+	filtered := make([]ComputeResult, 0, len(computeResults))
+	seen := make(map[string]bool)
+	for _, res := range computeResults {
+		if _, exists := seen[res.OperatorAddress]; exists {
+			logger.Warn("duplicate operator address found in compute results, skipping", "operatorAddress", res.OperatorAddress)
+			continue
+		}
+
+		seen[res.OperatorAddress] = true
+		filtered = append(filtered, res)
+	}
+	return filtered
+}
+
+func filterDuplicateConsensusKeys(ctx context.Context, computeResults []ComputeResult) []ComputeResult {
+	logger := sdk.UnwrapSDKContext(ctx).Logger()
+	filtered := make([]ComputeResult, 0, len(computeResults))
+	seen := make(map[string]bool)
+	for _, res := range computeResults {
+		consensusAddress := res.ValidatorPubKey.Address().String()
+		if _, exists := seen[consensusAddress]; exists {
+			logger.Warn("duplicate consensus key found in compute results, skipping", "consensusAddress", consensusAddress, "operatorAddress", res.OperatorAddress)
+			continue
+		}
+
+		seen[consensusAddress] = true
+		filtered = append(filtered, res)
+	}
+	return filtered
 }
 
 // createValidatorImmediate creates and bonds a new validator.

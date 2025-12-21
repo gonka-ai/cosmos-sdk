@@ -108,8 +108,6 @@ func (k Keeper) SetComputeValidators(
 	}
 	logger := k.Logger(sdkCtx)
 
-	sortComputeResultsInplace(computeResults)
-
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
 		logger.Error("failed to get all validators", "error", err)
@@ -129,6 +127,7 @@ func (k Keeper) SetComputeValidators(
 		currentValsByConsensusAddress[consensusAddress] = val
 	}
 
+	sortComputeResultsInplace(computeResults)
 	computeResults = filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
 	computeResults = filterDuplicateOperatorAddresses(ctx, computeResults)
 	computeResults = filterDuplicateConsensusKeys(ctx, computeResults)

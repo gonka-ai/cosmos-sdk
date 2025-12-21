@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"os"
@@ -13,7 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -26,6 +26,18 @@ type computeResultJSON struct {
 	Power           int64  `json:"Power"`
 }
 
+type computeValidatorsJSON struct {
+	Validators []computeValidatorJSON `json:"validators"`
+}
+
+type computeValidatorJSON struct {
+	OperatorAddress string `json:"operator_address"`
+	ConsensusPubkey struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"consensus_pubkey"`
+}
+
 func mustEd25519PubKey(t *testing.T, seed byte) cryptotypes.PubKey {
 	t.Helper()
 	key := make([]byte, 32)
@@ -35,8 +47,25 @@ func mustEd25519PubKey(t *testing.T, seed byte) cryptotypes.PubKey {
 	return &ed25519.PubKey{Key: key}
 }
 
-func TestSortAndFilterComputeResult_FromJSON(t *testing.T) {
-	t.Parallel()
+func decodeBase64StdOrRaw(t *testing.T, s string, what string) []byte {
+	t.Helper()
+	if s == "" {
+		return nil
+	}
+	bz, err := base64.StdEncoding.DecodeString(s)
+	if err == nil {
+		return bz
+	}
+	bz, err2 := base64.RawStdEncoding.DecodeString(s)
+	if err2 == nil {
+		return bz
+	}
+	t.Fatalf("invalid base64 for %s: std=%v raw=%v", what, err, err2)
+	return nil
+}
+
+func loadComputeResultsFromJSON(t *testing.T) []ComputeResult {
+	t.Helper()
 
 	_, thisFile, _, ok := runtime.Caller(0)
 	if !ok {
@@ -58,10 +87,7 @@ func TestSortAndFilterComputeResult_FromJSON(t *testing.T) {
 	for i := range raw {
 		var pk *ed25519.PubKey
 		if raw[i].ValidatorPubKey.Key != "" {
-			keyBz, err := base64.StdEncoding.DecodeString(raw[i].ValidatorPubKey.Key)
-			if err != nil {
-				t.Fatalf("invalid base64 pubkey at index %d: %v", i, err)
-			}
+			keyBz := decodeBase64StdOrRaw(t, raw[i].ValidatorPubKey.Key, "compute_result.ValidatorPubKey.key")
 			pk = &ed25519.PubKey{Key: keyBz}
 		}
 
@@ -77,9 +103,69 @@ func TestSortAndFilterComputeResult_FromJSON(t *testing.T) {
 		})
 	}
 
+	return computeResults
+}
+
+func loadCurrentValidatorMapsFromJSON(t *testing.T) (map[string]types.Validator, map[string]types.Validator) {
+	t.Helper()
+
+	_, thisFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("failed to locate test file via runtime.Caller")
+	}
+	jsonPath := filepath.Join(filepath.Dir(thisFile), "compute_test_validators.json")
+
+	bz, err := os.ReadFile(jsonPath)
+	if err != nil {
+		t.Fatalf("failed reading %s: %v", jsonPath, err)
+	}
+
+	var raw computeValidatorsJSON
+	if err := json.Unmarshal(bz, &raw); err != nil {
+		t.Fatalf("failed unmarshalling %s: %v", jsonPath, err)
+	}
+
+	byCons := make(map[string]types.Validator, len(raw.Validators))
+	byOp := make(map[string]types.Validator, len(raw.Validators))
+	for i := range raw.Validators {
+		vj := raw.Validators[i]
+		if vj.OperatorAddress == "" || vj.ConsensusPubkey.Value == "" {
+			// Keep parsing tolerant; the production code filters invalid compute results, not validators list.
+			continue
+		}
+
+		keyBz := decodeBase64StdOrRaw(t, vj.ConsensusPubkey.Value, "validator.consensus_pubkey.value")
+		pk := &ed25519.PubKey{Key: keyBz}
+
+		val, err := types.NewValidator(vj.OperatorAddress, pk, types.Description{Moniker: vj.OperatorAddress})
+		if err != nil {
+			t.Fatalf("failed to build validator at index %d (operator=%s): %v", i, vj.OperatorAddress, err)
+		}
+
+		byOp[val.OperatorAddress] = val
+		byCons[pk.Address().String()] = val
+	}
+
+	return byCons, byOp
+}
+
+func newTestContext(t *testing.T, name string) context.Context {
+	t.Helper()
+	key := storetypes.NewKVStoreKey(name)
+	tkey := storetypes.NewTransientStoreKey("transient_" + name)
+	return testutil.DefaultContext(key, tkey)
+}
+
+func TestSortAndFilterComputeResult_FromJSON_EmptyCurrentValidators(t *testing.T) {
+	t.Parallel()
+
+	computeResults := loadComputeResultsFromJSON(t)
+	ctx := newTestContext(t, "compute_test_empty")
+
 	key := storetypes.NewKVStoreKey("compute_test")
 	tkey := storetypes.NewTransientStoreKey("transient_compute_test")
-	ctx := testutil.DefaultContext(key, tkey)
+	_ = key
+	_ = tkey
 
 	emptyByCons := map[string]types.Validator{}
 	emptyByOp := map[string]types.Validator{}
@@ -163,13 +249,99 @@ func TestSortAndFilterComputeResult_FromJSON(t *testing.T) {
 	}
 }
 
+func TestSortAndFilterComputeResult_FromJSON_WithCurrentValidators(t *testing.T) {
+	t.Parallel()
+
+	computeResults := loadComputeResultsFromJSON(t)
+	currentByCons, currentByOp := loadCurrentValidatorMapsFromJSON(t)
+	ctx := newTestContext(t, "compute_test_non_empty")
+
+	// Run twice to ensure deterministic output (function sorts/filters internally).
+	in1 := append([]ComputeResult(nil), computeResults...)
+	out1 := sortAndFilterComputeResult(ctx, in1, currentByCons, currentByOp)
+
+	in2 := append([]ComputeResult(nil), computeResults...)
+	out2 := sortAndFilterComputeResult(ctx, in2, currentByCons, currentByOp)
+
+	if len(out1) != len(out2) {
+		t.Fatalf("non-deterministic output length: first=%d second=%d", len(out1), len(out2))
+	}
+	for i := range out1 {
+		if out1[i].OperatorAddress != out2[i].OperatorAddress || out1[i].Power != out2[i].Power {
+			t.Fatalf("non-deterministic output at index %d: %+v vs %+v", i, out1[i], out2[i])
+		}
+		a1, a2 := "", ""
+		if out1[i].ValidatorPubKey != nil {
+			a1 = out1[i].ValidatorPubKey.Address().String()
+		}
+		if out2[i].ValidatorPubKey != nil {
+			a2 = out2[i].ValidatorPubKey.Address().String()
+		}
+		if a1 != a2 {
+			t.Fatalf("non-deterministic pubkey at index %d: %s vs %s", i, a1, a2)
+		}
+	}
+
+	// Invariants expected after filtering.
+	seenOp := map[string]struct{}{}
+	seenCons := map[string]struct{}{}
+	for i := range out1 {
+		res := out1[i]
+		if res.OperatorAddress == "" {
+			t.Fatalf("empty operator address at index %d", i)
+		}
+		if res.ValidatorPubKey == nil {
+			t.Fatalf("nil pubkey at index %d (operator=%s)", i, res.OperatorAddress)
+		}
+		if res.Power <= 0 {
+			t.Fatalf("non-positive power at index %d (operator=%s power=%d)", i, res.OperatorAddress, res.Power)
+		}
+
+		if _, exists := seenOp[res.OperatorAddress]; exists {
+			t.Fatalf("duplicate operator address in output: %s", res.OperatorAddress)
+		}
+		seenOp[res.OperatorAddress] = struct{}{}
+
+		consAddr := res.ValidatorPubKey.Address().String()
+		if _, exists := seenCons[consAddr]; exists {
+			t.Fatalf("duplicate consensus key in output: %s", consAddr)
+		}
+		seenCons[consAddr] = struct{}{}
+	}
+
+	// Sorting expectation: by operator address asc, then pubkey address asc, then power desc.
+	for i := 1; i < len(out1); i++ {
+		prev, cur := out1[i-1], out1[i]
+
+		if prev.OperatorAddress > cur.OperatorAddress {
+			t.Fatalf("not sorted by operator address at %d: %s > %s", i, prev.OperatorAddress, cur.OperatorAddress)
+		}
+		if prev.OperatorAddress != cur.OperatorAddress {
+			continue
+		}
+
+		prevKey := prev.ValidatorPubKey.Address().String()
+		curKey := cur.ValidatorPubKey.Address().String()
+		if prevKey > curKey {
+			t.Fatalf("not sorted by pubkey at %d: %s > %s (operator=%s)", i, prevKey, curKey, cur.OperatorAddress)
+		}
+		if prevKey != curKey {
+			continue
+		}
+
+		if prev.Power < cur.Power {
+			t.Fatalf("not sorted by power desc at %d: %d < %d (operator=%s pubkey=%s)", i, prev.Power, cur.Power, cur.OperatorAddress, curKey)
+		}
+	}
+}
+
 func TestSortAndFilterComputeResult_FiltersAgainstExisting(t *testing.T) {
 	t.Parallel()
 
 	key := storetypes.NewKVStoreKey("compute_test_small")
 	tkey := storetypes.NewTransientStoreKey("transient_compute_test_small")
 	sdkCtx := testutil.DefaultContext(key, tkey)
-	ctx := sdk.WrapSDKContext(sdkCtx)
+	ctx := sdkCtx
 
 	// Existing validator: op1 is already bound to pk1.
 	pk1 := mustEd25519PubKey(t, 0x01)

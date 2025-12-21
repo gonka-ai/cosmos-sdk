@@ -108,23 +108,7 @@ func (k Keeper) SetComputeValidators(
 	}
 	logger := k.Logger(sdkCtx)
 
-	sort.Slice(computeResults, func(i, j int) bool {
-		if computeResults[i].OperatorAddress != computeResults[j].OperatorAddress {
-			return computeResults[i].OperatorAddress < computeResults[j].OperatorAddress
-		}
-		iPubKey := ""
-		jPubKey := ""
-		if computeResults[i].ValidatorPubKey != nil {
-			iPubKey = computeResults[i].ValidatorPubKey.Address().String()
-		}
-		if computeResults[j].ValidatorPubKey != nil {
-			jPubKey = computeResults[j].ValidatorPubKey.Address().String()
-		}
-		if iPubKey == jPubKey {
-			return computeResults[i].Power > computeResults[j].Power
-		}
-		return iPubKey < jPubKey
-	})
+	sortComputeResultsInplace(computeResults)
 
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
@@ -204,6 +188,26 @@ func (k Keeper) SetComputeValidators(
 	}
 
 	return k.GetAllValidators(ctx)
+}
+
+func sortComputeResultsInplace(computeResults []ComputeResult) {
+	sort.Slice(computeResults, func(i, j int) bool {
+		if computeResults[i].OperatorAddress != computeResults[j].OperatorAddress {
+			return computeResults[i].OperatorAddress < computeResults[j].OperatorAddress
+		}
+		iPubKey := ""
+		jPubKey := ""
+		if computeResults[i].ValidatorPubKey != nil {
+			iPubKey = computeResults[i].ValidatorPubKey.Address().String()
+		}
+		if computeResults[j].ValidatorPubKey != nil {
+			jPubKey = computeResults[j].ValidatorPubKey.Address().String()
+		}
+		if iPubKey == jPubKey {
+			return computeResults[i].Power > computeResults[j].Power
+		}
+		return iPubKey < jPubKey
+	})
 }
 
 func filterBasedOnExisting(

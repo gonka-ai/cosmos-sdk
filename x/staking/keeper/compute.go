@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"cosmossdk.io/math"
 
@@ -108,16 +109,64 @@ func (k Keeper) SetComputeValidators(
 	}
 	logger := k.Logger(sdkCtx)
 
+	sort.Slice(computeResults, func(i, j int) bool {
+		if computeResults[i].OperatorAddress != computeResults[j].OperatorAddress {
+			return computeResults[i].OperatorAddress < computeResults[j].OperatorAddress
+		}
+		iPubKey := ""
+		jPubKey := ""
+		if computeResults[i].ValidatorPubKey != nil {
+			iPubKey = computeResults[i].ValidatorPubKey.Address().String()
+		}
+		if computeResults[j].ValidatorPubKey != nil {
+			jPubKey = computeResults[j].ValidatorPubKey.Address().String()
+		}
+		return iPubKey < jPubKey
+	})
+
 	resultsByOperatorAddress := make(map[string]ComputeResult)
+	consensusPubkeyToOperator := make(map[string]string) // consensusAddr -> operatorAddr
+
 	for _, res := range computeResults {
-		if res.ValidatorPubKey == nil {
+		if res.ValidatorPubKey == nil || res.Power <= 0 {
 			continue
 		}
-		if res.Power <= 0 {
+
+		consensusAddr := res.ValidatorPubKey.Address().String()
+
+		// If this operator address was already processed with a different consensus key,
+		// remove the old consensus key mapping to avoid "ghost" claims.
+		if oldRes, exists := resultsByOperatorAddress[res.OperatorAddress]; exists {
+			oldConsAddr := oldRes.ValidatorPubKey.Address().String()
+			if oldConsAddr != consensusAddr {
+				delete(consensusPubkeyToOperator, oldConsAddr)
+			}
+		}
+
+		if existingOp, seen := consensusPubkeyToOperator[consensusAddr]; seen {
+			// Keep the lexicographically latest operator address
+			if res.OperatorAddress > existingOp {
+				logger.Info("duplicate consensus key found, replacing validator",
+					"consensus_addr", consensusAddr,
+					"old_operator", existingOp,
+					"new_operator", res.OperatorAddress)
+				delete(resultsByOperatorAddress, existingOp)
+				consensusPubkeyToOperator[consensusAddr] = res.OperatorAddress
+				resultsByOperatorAddress[res.OperatorAddress] = res
+			} else {
+				logger.Info("duplicate consensus key found, keeping existing validator",
+					"consensus_addr", consensusAddr,
+					"existing_operator", existingOp,
+					"ignored_operator", res.OperatorAddress)
+			}
 			continue
 		}
+
+		consensusPubkeyToOperator[consensusAddr] = res.OperatorAddress
 		resultsByOperatorAddress[res.OperatorAddress] = res
 	}
+
+	logger.Info("Keys deduplication is finished")
 
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
@@ -159,8 +208,16 @@ func (k Keeper) SetComputeValidators(
 
 	}
 
+	// Sort keys for deterministic iteration
+	currentValKeys := make([]string, 0, len(currentValsByOperatorAddress))
+	for k := range currentValsByOperatorAddress {
+		currentValKeys = append(currentValKeys, k)
+	}
+	sort.Strings(currentValKeys)
+
 	// Mark validators for deletion that are no longer in the compute results
-	for operatorAddress, val := range currentValsByOperatorAddress {
+	for _, operatorAddress := range currentValKeys {
+		val := currentValsByOperatorAddress[operatorAddress]
 		if _, exists := resultsByOperatorAddress[operatorAddress]; !exists {
 			logger.Info("marking validator for removal (not in compute results)", "operator", val.OperatorAddress, "status", val.Status, "jailed", val.Jailed)
 			if err := k.markValidatorForDeletion(ctx, val); err != nil {
@@ -169,7 +226,15 @@ func (k Keeper) SetComputeValidators(
 		}
 	}
 
-	for operatorAddress, result := range resultsByOperatorAddress {
+	// Sort keys for deterministic iteration
+	resultKeys := make([]string, 0, len(resultsByOperatorAddress))
+	for k := range resultsByOperatorAddress {
+		resultKeys = append(resultKeys, k)
+	}
+	sort.Strings(resultKeys)
+
+	for _, operatorAddress := range resultKeys {
+		result := resultsByOperatorAddress[operatorAddress]
 		val, found := currentValsByOperatorAddress[operatorAddress]
 		power := math.NewInt(result.Power)
 

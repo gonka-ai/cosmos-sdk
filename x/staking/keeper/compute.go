@@ -119,13 +119,14 @@ func (k Keeper) SetComputeValidators(
 	currentValsByConsensusAddress := make(map[string]types.Validator)
 	currentValsByOperatorAddress := make(map[string]types.Validator)
 	for _, val := range currentValidators {
-		currentValsByOperatorAddress[val.OperatorAddress] = val
 		consensusPubKey, err := val.ConsPubKey()
 		if err != nil {
 			logger.Error("failed to get validator pubkey", "operator", val.OperatorAddress, "error", err)
 			continue
 		}
 		consensusAddress := consensusPubKey.Address().String()
+
+		currentValsByOperatorAddress[val.OperatorAddress] = val
 		currentValsByConsensusAddress[consensusAddress] = val
 	}
 

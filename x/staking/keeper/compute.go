@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"fmt"
 	"sort"
+
+	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -108,6 +110,27 @@ func (k Keeper) SetComputeValidators(
 	}
 	logger := k.Logger(sdkCtx)
 
+	// Basic filter first: any downstream logic assumes non-nil pubkeys and positive power.
+	beforeBasicFilter := computeResults
+	computeResults = filterInvalidComputeResults(computeResults)
+
+	// Stage-by-stage logging so we can understand how computeResults evolves through filters.
+	// This is intentionally lightweight (O(n) per stage) and logs only aggregated counts.
+	if removed := len(beforeBasicFilter) - len(computeResults); removed > 0 {
+		logger.Info("compute results filtered invalid entries", "removed", removed, "before_total", len(beforeBasicFilter), "after_total", len(computeResults))
+	}
+
+	initialStats := computeResultsStatsFrom(computeResults)
+	logger.Info(
+		"compute results stats",
+		"stage", "initial",
+		"total", initialStats.Total,
+		"unique_operator_addrs", initialStats.UniqueOperatorAddrs,
+		"unique_consensus_keys", initialStats.UniqueConsensusKeys,
+		"dup_operator_entries", initialStats.DuplicateOperatorEntries,
+		"dup_consensus_entries", initialStats.DuplicateConsensusEntries,
+	)
+
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
 		logger.Error("failed to get all validators", "error", err)
@@ -128,9 +151,28 @@ func (k Keeper) SetComputeValidators(
 	}
 
 	sortComputeResultsInplace(computeResults)
+	afterSortStats := computeResultsStatsFrom(computeResults)
+	logger.Info(
+		"compute results stats",
+		"stage", "after_sort",
+		"total", afterSortStats.Total,
+		"unique_operator_addrs", afterSortStats.UniqueOperatorAddrs,
+		"unique_consensus_keys", afterSortStats.UniqueConsensusKeys,
+		"dup_operator_entries", afterSortStats.DuplicateOperatorEntries,
+		"dup_consensus_entries", afterSortStats.DuplicateConsensusEntries,
+	)
+
+	beforeFilter := computeResults
 	computeResults = filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+	logComputeResultsFilterStats(logger, "filter_based_on_existing", beforeFilter, computeResults)
+
+	beforeFilter = computeResults
 	computeResults = filterDuplicateOperatorAddresses(ctx, computeResults)
+	logComputeResultsFilterStats(logger, "filter_duplicate_operator_addresses", beforeFilter, computeResults)
+
+	beforeFilter = computeResults
 	computeResults = filterDuplicateConsensusKeys(ctx, computeResults)
+	logComputeResultsFilterStats(logger, "filter_duplicate_consensus_keys", beforeFilter, computeResults)
 
 	resultsByOperatorAddress := make(map[string]ComputeResult)
 	for _, res := range computeResults {
@@ -209,6 +251,17 @@ func sortComputeResultsInplace(computeResults []ComputeResult) {
 	})
 }
 
+func filterInvalidComputeResults(computeResults []ComputeResult) []ComputeResult {
+	filtered := make([]ComputeResult, 0, len(computeResults))
+	for _, res := range computeResults {
+		if res.OperatorAddress == "" || res.ValidatorPubKey == nil || res.Power <= 0 {
+			continue
+		}
+		filtered = append(filtered, res)
+	}
+	return filtered
+}
+
 func filterBasedOnExisting(
 	ctx context.Context,
 	computeResults []ComputeResult,
@@ -274,6 +327,68 @@ func filterDuplicateConsensusKeys(ctx context.Context, computeResults []ComputeR
 		filtered = append(filtered, res)
 	}
 	return filtered
+}
+
+type computeResultsStats struct {
+	Total                     int
+	UniqueOperatorAddrs       int
+	UniqueConsensusKeys       int
+	DuplicateOperatorEntries  int
+	DuplicateConsensusEntries int
+}
+
+func computeResultsStatsFrom(computeResults []ComputeResult) computeResultsStats {
+	stats := computeResultsStats{Total: len(computeResults)}
+
+	seenOperator := make(map[string]int, len(computeResults))
+	seenConsensus := make(map[string]int, len(computeResults))
+
+	for _, res := range computeResults {
+		if res.ValidatorPubKey != nil {
+			consAddr := res.ValidatorPubKey.Address().String()
+			seenConsensus[consAddr]++
+		}
+
+		seenOperator[res.OperatorAddress]++
+	}
+
+	stats.UniqueOperatorAddrs = len(seenOperator)
+	stats.UniqueConsensusKeys = len(seenConsensus)
+
+	for _, c := range seenOperator {
+		if c > 1 {
+			stats.DuplicateOperatorEntries += (c - 1)
+		}
+	}
+	for _, c := range seenConsensus {
+		if c > 1 {
+			stats.DuplicateConsensusEntries += (c - 1)
+		}
+	}
+
+	return stats
+}
+
+func logComputeResultsFilterStats(logger log.Logger, stage string, before, after []ComputeResult) {
+	beforeStats := computeResultsStatsFrom(before)
+	afterStats := computeResultsStatsFrom(after)
+
+	removed := beforeStats.Total - afterStats.Total
+	logger.Info(
+		"compute results stats",
+		"stage", stage,
+		"removed", removed,
+		"before_total", beforeStats.Total,
+		"after_total", afterStats.Total,
+		"before_unique_operator_addrs", beforeStats.UniqueOperatorAddrs,
+		"after_unique_operator_addrs", afterStats.UniqueOperatorAddrs,
+		"before_unique_consensus_keys", beforeStats.UniqueConsensusKeys,
+		"after_unique_consensus_keys", afterStats.UniqueConsensusKeys,
+		"before_dup_operator_entries", beforeStats.DuplicateOperatorEntries,
+		"after_dup_operator_entries", afterStats.DuplicateOperatorEntries,
+		"before_dup_consensus_entries", beforeStats.DuplicateConsensusEntries,
+		"after_dup_consensus_entries", afterStats.DuplicateConsensusEntries,
+	)
 }
 
 // createValidatorImmediate creates and bonds a new validator.

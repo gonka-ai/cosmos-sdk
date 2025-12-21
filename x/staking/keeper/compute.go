@@ -112,7 +112,7 @@ func (k Keeper) SetComputeValidators(
 
 	// Basic filter first: any downstream logic assumes non-nil pubkeys and positive power.
 	beforeBasicFilter := computeResults
-	computeResults = filterInvalidComputeResults(computeResults)
+	computeResults = filterInvalidComputeResults(ctx, computeResults)
 
 	// Stage-by-stage logging so we can understand how computeResults evolves through filters.
 	// This is intentionally lightweight (O(n) per stage) and logs only aggregated counts.
@@ -251,10 +251,12 @@ func sortComputeResultsInplace(computeResults []ComputeResult) {
 	})
 }
 
-func filterInvalidComputeResults(computeResults []ComputeResult) []ComputeResult {
+func filterInvalidComputeResults(ctx context.Context, computeResults []ComputeResult) []ComputeResult {
+	logger := sdk.UnwrapSDKContext(ctx).Logger()
 	filtered := make([]ComputeResult, 0, len(computeResults))
 	for _, res := range computeResults {
 		if res.OperatorAddress == "" || res.ValidatorPubKey == nil || res.Power <= 0 {
+			logger.Warn("invalid compute result found, skipping", "operatorAddress", res.OperatorAddress, "power", res.Power, "hasPubKey", res.ValidatorPubKey != nil)
 			continue
 		}
 		filtered = append(filtered, res)

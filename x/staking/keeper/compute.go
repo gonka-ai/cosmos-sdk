@@ -124,6 +124,7 @@ func (k Keeper) SetComputeValidators(
 			logger.Error("failed to get validator pubkey", "operator", val.OperatorAddress, "error", err)
 			continue
 		}
+
 		consensusAddress := consensusPubKey.Address().String()
 
 		currentValsByOperatorAddress[val.OperatorAddress] = val
@@ -302,8 +303,13 @@ func filterBasedOnExisting(
 		}
 
 		val, exists := currentValsByOperatorAddress[res.OperatorAddress]
-		if exists && val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String() != res.ValidatorPubKey.Address().String() {
-			logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "existingConsensusKey", val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String(), "newConsensusKey", res.ValidatorPubKey.Address().String())
+		consensusKey, err := val.ConsPubKey()
+		if err != nil {
+			logger.Error("failed to get validator consensus pubkey", "operator", val.OperatorAddress, "error", err)
+			continue
+		}
+		if exists && consensusKey.Address().String() != res.ValidatorPubKey.Address().String() {
+			logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "existingConsensusKey", consensusKey.Address().String(), "newConsensusKey", res.ValidatorPubKey.Address().String())
 			continue
 		}
 

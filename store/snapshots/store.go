@@ -31,6 +31,11 @@ type Store struct {
 
 	mtx    sync.Mutex
 	saving map[uint64]bool // heights currently being saved
+
+	// readersMtx protects activeReaders; readersCond is broadcast when a count drops to zero.
+	readersMtx    sync.Mutex
+	readersCond   *sync.Cond
+	activeReaders map[uint64]int // per-height count of in-flight LoadChunk readers
 }
 
 // NewStore creates a new snapshot store.
@@ -43,14 +48,39 @@ func NewStore(db db.DB, dir string) (*Store, error) {
 		return nil, errors.Wrapf(err, "failed to create snapshot directory %q", dir)
 	}
 
-	return &Store{
-		db:     db,
-		dir:    dir,
-		saving: make(map[uint64]bool),
-	}, nil
+	store := &Store{
+		db:            db,
+		dir:           dir,
+		saving:        make(map[uint64]bool),
+		activeReaders: make(map[uint64]int),
+	}
+	store.readersCond = sync.NewCond(&store.readersMtx)
+	return store, nil
 }
 
-// Delete deletes a snapshot.
+// AcquireReader increments the active reader count for the given snapshot height.
+// It must be paired with a corresponding ReleaseReader call.
+func (s *Store) AcquireReader(height uint64) {
+	s.readersMtx.Lock()
+	s.activeReaders[height]++
+	s.readersMtx.Unlock()
+}
+
+// ReleaseReader decrements the active reader count for the given snapshot height
+// and wakes any goroutine waiting in Delete.
+func (s *Store) ReleaseReader(height uint64) {
+	s.readersMtx.Lock()
+	s.activeReaders[height]--
+	if s.activeReaders[height] <= 0 {
+		delete(s.activeReaders, height)
+		s.readersCond.Broadcast()
+	}
+	s.readersMtx.Unlock()
+}
+
+// Delete deletes a snapshot. It waits for any active chunk readers to finish
+// before removing files from disk, preventing the race condition where a peer
+// downloading chunks via state sync gets file-not-found errors mid-transfer.
 func (s *Store) Delete(height uint64, format uint32) error {
 	s.mtx.Lock()
 	saving := s.saving[height]
@@ -59,6 +89,14 @@ func (s *Store) Delete(height uint64, format uint32) error {
 		return errors.Wrapf(storetypes.ErrConflict,
 			"snapshot for height %v format %v is currently being saved", height, format)
 	}
+
+	// Wait for active chunk readers to finish before deleting files.
+	s.readersMtx.Lock()
+	for s.activeReaders[height] > 0 {
+		s.readersCond.Wait()
+	}
+	s.readersMtx.Unlock()
+
 	err := s.db.DeleteSync(encodeKey(height, format))
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete snapshot for height %v format %v",

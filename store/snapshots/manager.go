@@ -237,7 +237,14 @@ func (m *Manager) List() ([]*types.Snapshot, error) {
 
 // LoadChunk loads a chunk into a byte slice, mirroring ABCI LoadChunk. It can be called
 // concurrently with other operations. If the chunk does not exist, nil is returned.
+//
+// The active reader count for the snapshot height is held for the duration of the
+// read so that concurrent Prune/Delete operations wait until the chunk data has been
+// fully consumed before removing files from disk.
 func (m *Manager) LoadChunk(height uint64, format, chunk uint32) ([]byte, error) {
+	m.store.AcquireReader(height)
+	defer m.store.ReleaseReader(height)
+
 	reader, err := m.store.LoadChunk(height, format, chunk)
 	if err != nil {
 		return nil, err

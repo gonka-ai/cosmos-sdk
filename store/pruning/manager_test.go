@@ -300,3 +300,68 @@ func TestLoadSnapshotHeights_PruneNothing(t *testing.T) {
 
 	require.Nil(t, manager.LoadSnapshotHeights(db.NewMemDB()))
 }
+
+func TestHandleSnapshotHeight_StateSyncNode(t *testing.T) {
+	// Regression test: state-synced nodes start at a high height (e.g. 2,896,000).
+	// The initial 0 in pruneSnapshotHeights can never form a contiguous chain with
+	// real snapshot heights, causing GetPruningHeight to return 0 + snapshotInterval - 1
+	// which caps pruning at a height that doesn't exist. IAVL versions accumulate forever.
+
+	snapshotInterval := uint64(1000)
+	keepRecent := uint64(1000)
+	interval := uint64(100)
+	stateSyncHeight := int64(2_896_000)
+
+	manager := pruning.NewManager(db.NewMemDB(), log.NewNopLogger())
+	require.NotNil(t, manager)
+
+	manager.SetOptions(types.NewCustomPruningOptions(keepRecent, interval))
+	manager.SetSnapshotInterval(snapshotInterval)
+
+	// Simulate first snapshot after state-sync (at stateSyncHeight + snapshotInterval)
+	firstSnapshotHeight := stateSyncHeight + int64(snapshotInterval)
+	manager.HandleSnapshotHeight(firstSnapshotHeight)
+
+	// At height well past keep-recent, pruning should return a meaningful height
+	currentHeight := firstSnapshotHeight + int64(keepRecent) + int64(interval)
+	pruneHeight := manager.GetPruningHeight(currentHeight)
+
+	// Without the fix, pruneHeight would be 999 (0 + 1000 - 1), which is useless
+	// for a node that started at height 2,896,000.
+	// With the fix, pruneHeight should be close to currentHeight - keepRecent - 1.
+	// The key assertion: pruneHeight must be > snapshotInterval (the broken cap from stale 0).
+	require.Greater(t, pruneHeight, int64(snapshotInterval),
+		"state-synced node should prune beyond the stale 0 cap")
+
+	// Verify the actual value is sensible (around firstSnapshotHeight)
+	expectedPruneHeight := currentHeight - 1 - int64(keepRecent) // 2_897_099
+	require.Equal(t, expectedPruneHeight, pruneHeight,
+		"prune height should be currentHeight - 1 - keepRecent")
+}
+
+func TestHandleSnapshotHeight_GenesisNode(t *testing.T) {
+	// Verify that genesis nodes (starting from height 0) still work correctly.
+	// The initial 0 should NOT be removed when snapshots form a contiguous chain.
+
+	snapshotInterval := uint64(1000)
+	keepRecent := uint64(1000)
+	interval := uint64(100)
+
+	manager := pruning.NewManager(db.NewMemDB(), log.NewNopLogger())
+	require.NotNil(t, manager)
+
+	manager.SetOptions(types.NewCustomPruningOptions(keepRecent, interval))
+	manager.SetSnapshotInterval(snapshotInterval)
+
+	// Genesis node: snapshots at 1000, 2000, 3000, ...
+	for h := int64(snapshotInterval); h <= int64(snapshotInterval)*5; h += int64(snapshotInterval) {
+		manager.HandleSnapshotHeight(h)
+	}
+
+	// At height 6100 (past keep-recent=1000, multiple of interval=100)
+	currentHeight := int64(snapshotInterval)*5 + int64(keepRecent) + int64(interval)
+	pruneHeight := manager.GetPruningHeight(currentHeight)
+
+	// Should be able to prune up to some meaningful height
+	require.Greater(t, pruneHeight, int64(0), "genesis node pruning should work")
+}

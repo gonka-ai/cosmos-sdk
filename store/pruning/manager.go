@@ -80,6 +80,17 @@ func (m *Manager) HandleSnapshotHeight(height int64) {
 	m.logger.Debug("HandleSnapshotHeight", "height", height)
 	m.pruneSnapshotHeights = append(m.pruneSnapshotHeights, height)
 	sort.Slice(m.pruneSnapshotHeights, func(i, j int) bool { return m.pruneSnapshotHeights[i] < m.pruneSnapshotHeights[j] })
+
+	// Remove stale leading heights where the gap to the next element
+	// exceeds snapshotInterval — indicating missed intermediate snapshots
+	// (network failure, disk full, node restart, fresh state-sync, etc.).
+	// Without this, pruneSnapshotHeights[0] permanently caps
+	// GetPruningHeight at [0] + snapshotInterval - 1.
+	for len(m.pruneSnapshotHeights) > 1 &&
+		m.pruneSnapshotHeights[1]-m.pruneSnapshotHeights[0] > int64(m.snapshotInterval) {
+		m.pruneSnapshotHeights = m.pruneSnapshotHeights[1:]
+	}
+
 	k := 1
 	for ; k < len(m.pruneSnapshotHeights); k++ {
 		if m.pruneSnapshotHeights[k] != m.pruneSnapshotHeights[k-1]+int64(m.snapshotInterval) {

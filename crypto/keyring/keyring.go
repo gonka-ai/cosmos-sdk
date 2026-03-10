@@ -3,6 +3,7 @@ package keyring
 import (
 	"bufio"
 	"crypto/ecdsa"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -30,6 +31,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	dcredsecp256k1 "github.com/decred/dcrd/dcrec/secp256k1/v4"
+	dcredecdsa "github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 )
 
 // Backend options for Keyring
@@ -102,6 +104,7 @@ type Keyring interface {
 	SaveMultisig(uid string, pubkey types.PubKey) (*Record, error)
 
 	Signer
+	RecoverableSigner
 
 	Importer
 	Exporter
@@ -124,6 +127,21 @@ type Signer interface {
 
 	// SignByAddress sign byte messages with a user key providing the address.
 	SignByAddress(address sdk.Address, msg []byte, signMode signing.SignMode) ([]byte, types.PubKey, error)
+}
+
+// RecoverableSigner is implemented by key stores that support recoverable secp256k1 signing.
+// A recoverable signature is 65 bytes: [1-byte recovery code][32-byte R][32-byte S].
+// It allows the signer's public key (and therefore address) to be derived from the
+// signature and message alone, with no separate key lookup required.
+// The message is hashed with SHA256 before signing, matching the behaviour of Sign.
+// Only local secp256k1 keys are supported.
+type RecoverableSigner interface {
+	// SignRecoverable produces a 65-byte compact recoverable secp256k1 signature for uid.
+	SignRecoverable(uid string, msg []byte) ([]byte, error)
+
+	// SignRecoverableByAddress produces a 65-byte compact recoverable secp256k1 signature
+	// using the key identified by address.
+	SignRecoverableByAddress(address sdk.Address, msg []byte) ([]byte, error)
 }
 
 // Importer is implemented by key stores that support import of public and private keys.
@@ -1210,4 +1228,76 @@ func cosmosPubKeyToECDSA(pubKey types.PubKey) (*ecdsa.PublicKey, error) {
 	default:
 		return nil, errorsmod.Wrap(errors.New("unsupported public key type"), fmt.Sprintf("key type: %T", pubKey))
 	}
+}
+
+// SignRecoverable produces a 65-byte compact recoverable secp256k1 signature for the key
+// identified by uid. Format: [1-byte recovery code][32-byte R][32-byte S].
+// The msg is hashed with SHA256 before signing, matching the behaviour of Sign.
+// The recovery code allows the public key (and thus the signer address) to be derived
+// from the signature and message alone using RecoverPubKey or RecoverAddress.
+// Only local secp256k1 keys are supported.
+func (ks keystore) SignRecoverable(uid string, msg []byte) ([]byte, error) {
+	k, err := ks.Key(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	if k.GetLocal() == nil {
+		return nil, errorsmod.Wrap(ErrPrivKeyExtr, "recoverable signing works only for Local keys")
+	}
+
+	priv, err := extractPrivKeyFromLocal(k.GetLocal())
+	if err != nil {
+		return nil, err
+	}
+
+	privSecp, ok := priv.(*secp256k1.PrivKey)
+	if !ok {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidType, "recoverable signing requires a secp256k1 key")
+	}
+
+	dcredPriv := dcredsecp256k1.PrivKeyFromBytes(privSecp.Key)
+	hash := sha256.Sum256(msg)
+	// SignCompact returns [recovery_code(1)][R(32)][S(32)] — exactly what we want.
+	return dcredecdsa.SignCompact(dcredPriv, hash[:], true), nil
+}
+
+// SignRecoverableByAddress produces a 65-byte compact recoverable secp256k1 signature
+// using the key identified by address.
+func (ks keystore) SignRecoverableByAddress(address sdk.Address, msg []byte) ([]byte, error) {
+	k, err := ks.KeyByAddress(address)
+	if err != nil {
+		return nil, err
+	}
+
+	return ks.SignRecoverable(k.Name, msg)
+}
+
+// RecoverPubKey recovers the secp256k1 public key from a 65-byte compact recoverable
+// signature produced by SignRecoverable. It simultaneously verifies the signature;
+// an error is returned if the signature is not valid for msg.
+//
+// This is a standalone function — no keyring or key lookup is required.
+func RecoverPubKey(msg, sig []byte) (types.PubKey, error) {
+	hash := sha256.Sum256(msg)
+	dcredPub, _, err := dcredecdsa.RecoverCompact(sig, hash[:])
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to recover public key from recoverable signature")
+	}
+
+	return &secp256k1.PubKey{Key: dcredPub.SerializeCompressed()}, nil
+}
+
+// RecoverAddress recovers the Cosmos SDK AccAddress from a 65-byte compact recoverable
+// signature produced by SignRecoverable. It simultaneously verifies the signature;
+// an error is returned if the signature is not valid for msg.
+//
+// This is a standalone function — no keyring or key lookup is required.
+func RecoverAddress(msg, sig []byte) (sdk.AccAddress, error) {
+	pub, err := RecoverPubKey(msg, sig)
+	if err != nil {
+		return nil, err
+	}
+
+	return sdk.AccAddress(pub.Address()), nil
 }

@@ -28,6 +28,11 @@ type prevCounters struct {
 	LdbCompNonLevel0 uint64
 	LdbCompSeek      uint64
 	LdbWriteDelayN   int64
+
+	// Per-level compaction cumulative stats
+	LdbLevelCompTime  map[int]float64 // seconds
+	LdbLevelCompRead  map[int]float64 // MB
+	LdbLevelCompWrite map[int]float64 // MB
 }
 
 type prevModuleCounters struct {
@@ -195,17 +200,41 @@ func emitLevelDBStatsShared(stats *LevelDBStats, prev *prevCounters, dbName stri
 		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
 		setGaugeWithLabels("leveldb_level_size_bytes", float32(sizeMB*1048576), label, lvlLabel)
 	}
+	if prev.LdbLevelCompTime == nil {
+		prev.LdbLevelCompTime = make(map[int]float64)
+	}
+	if prev.LdbLevelCompRead == nil {
+		prev.LdbLevelCompRead = make(map[int]float64)
+	}
+	if prev.LdbLevelCompWrite == nil {
+		prev.LdbLevelCompWrite = make(map[int]float64)
+	}
 	for level, compTime := range stats.LevelCompTime {
 		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
-		setGaugeWithLabels("leveldb_level_comp_time_seconds", float32(compTime), label, lvlLabel)
+		lvlLabels := []metrics.Label{label, lvlLabel}
+		d := compTime - prev.LdbLevelCompTime[level]
+		if d > 0 {
+			metrics.IncrCounterWithLabels([]string{"leveldb_level_comp_time_seconds"}, float32(d), lvlLabels)
+		}
+		prev.LdbLevelCompTime[level] = compTime
 	}
 	for level, compReadMB := range stats.LevelCompRead {
 		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
-		setGaugeWithLabels("leveldb_level_comp_read_bytes", float32(compReadMB*1048576), label, lvlLabel)
+		lvlLabels := []metrics.Label{label, lvlLabel}
+		d := compReadMB - prev.LdbLevelCompRead[level]
+		if d > 0 {
+			metrics.IncrCounterWithLabels([]string{"leveldb_level_comp_read_bytes"}, float32(d*1048576), lvlLabels)
+		}
+		prev.LdbLevelCompRead[level] = compReadMB
 	}
 	for level, compWriteMB := range stats.LevelCompWrite {
 		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
-		setGaugeWithLabels("leveldb_level_comp_write_bytes", float32(compWriteMB*1048576), label, lvlLabel)
+		lvlLabels := []metrics.Label{label, lvlLabel}
+		d := compWriteMB - prev.LdbLevelCompWrite[level]
+		if d > 0 {
+			metrics.IncrCounterWithLabels([]string{"leveldb_level_comp_write_bytes"}, float32(d*1048576), lvlLabels)
+		}
+		prev.LdbLevelCompWrite[level] = compWriteMB
 	}
 }
 

@@ -10,6 +10,9 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
+
+	gometrics "github.com/hashicorp/go-metrics"
 
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
@@ -673,14 +676,17 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 func (rs *Store) handlePruning(version int64) error {
 	pruneHeight := rs.pruningManager.GetPruningHeight(version)
 	if pruneHeight <= 0 {
-		rs.metrics.MeasureSince("store", "pruning", "skipped")
 		rs.logger.Debug("prune start", "height", version)
 		defer rs.logger.Debug("prune end", "height", version)
 		return rs.PruneStores(pruneHeight)
 	}
 	rs.logger.Debug("prune start", "height", version, "target", pruneHeight)
-	defer rs.logger.Debug("prune end", "height", version)
-	defer rs.metrics.MeasureSince("store", "pruning", "duration")
+	start := time.Now()
+	defer func() {
+		elapsed := time.Since(start)
+		rs.logger.Debug("prune end", "height", version, "duration", elapsed)
+		gometrics.MeasureSinceWithLabels([]string{"store_pruning_duration"}, start.UTC(), nil)
+	}()
 	return rs.PruneStores(pruneHeight)
 }
 

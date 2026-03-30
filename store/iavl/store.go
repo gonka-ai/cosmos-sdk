@@ -239,6 +239,17 @@ func (st *Store) DeleteVersionsTo(version int64) error {
 	return st.tree.DeleteVersionsTo(version)
 }
 
+// GetPruneStats returns the last async prune duration (ms) and total prune run count.
+// Returns (0, 0) if the tree does not support statistics.
+func (st *Store) GetPruneStats() (lastDurationMs uint64, runCount uint64) {
+	if mt, ok := st.tree.(*iavl.MutableTree); ok {
+		if stats := mt.GetStatistics(); stats != nil {
+			return stats.GetLastPruneDurationMs(), stats.GetPruneRunCount()
+		}
+	}
+	return 0, 0
+}
+
 // LoadVersionForOverwriting attempts to load a tree at a previously committed
 // version. Any versions greater than targetVersion will be deleted.
 func (st *Store) LoadVersionForOverwriting(targetVersion int64) error {

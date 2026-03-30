@@ -700,17 +700,41 @@ func (rs *Store) PruneStores(pruningHeight int64) (err error) {
 	rs.logger.Debug("pruning store", "heights", pruningHeight)
 
 	for key, store := range rs.stores {
-		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
-
-		// If the store is wrapped with an inter-block cache, we must first unwrap
-		// it to get the underlying IAVL store.
 		if store.GetStoreType() != types.StoreTypeIAVL {
 			continue
 		}
 
 		store = rs.GetCommitKVStore(key)
+		iavlStore := store.(*iavl.Store)
 
-		err := store.(*iavl.Store).DeleteVersionsTo(pruningHeight)
+		storeStart := time.Now()
+		err := iavlStore.DeleteVersionsTo(pruningHeight)
+		elapsed := time.Since(storeStart)
+
+		labels := []gometrics.Label{
+			{Name: "store", Value: key.Name()},
+		}
+		gometrics.MeasureSinceWithLabels(
+			[]string{"store_pruning_store_duration"},
+			storeStart.UTC(),
+			labels,
+		)
+
+		lastAsyncMs, asyncRuns := iavlStore.GetPruneStats()
+		gometrics.SetGaugeWithLabels(
+			[]string{"store_pruning_async_last_duration_ms"},
+			float32(lastAsyncMs),
+			labels,
+		)
+		gometrics.SetGaugeWithLabels(
+			[]string{"store_pruning_async_runs_total"},
+			float32(asyncRuns),
+			labels,
+		)
+
+		rs.logger.Debug("pruned store", "key", key, "sync_duration", elapsed,
+			"async_last_ms", lastAsyncMs, "async_runs", asyncRuns)
+
 		if err == nil {
 			continue
 		}

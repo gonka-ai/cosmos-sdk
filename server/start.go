@@ -10,10 +10,12 @@ import (
 	"path/filepath"
 	"runtime/pprof"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cometbft/cometbft/abci/server"
 	cmtcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
+	cmtdb "github.com/cometbft/cometbft-db"
 	cmtcfg "github.com/cometbft/cometbft/config"
 	cmtjson "github.com/cometbft/cometbft/libs/json"
 	"github.com/cometbft/cometbft/node"
@@ -38,6 +40,7 @@ import (
 	pruningtypes "cosmossdk.io/store/pruning/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/server/dbmetrics"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server/api"
@@ -109,6 +112,41 @@ const (
 	KeyUserPubKey            = "user-pub-key"
 	KeyTriggerTestnetUpgrade = "trigger-testnet-upgrade"
 )
+
+var (
+	instrumentedDBs        []*dbmetrics.InstrumentedDB
+	instrumentedCmtDBs     []*dbmetrics.InstrumentedCmtDB
+	instrumentedDBsMutex   sync.Mutex
+)
+
+func registerInstrumentedDB(idb *dbmetrics.InstrumentedDB) {
+	instrumentedDBsMutex.Lock()
+	defer instrumentedDBsMutex.Unlock()
+	instrumentedDBs = append(instrumentedDBs, idb)
+}
+
+func registerInstrumentedCmtDB(idb *dbmetrics.InstrumentedCmtDB) {
+	instrumentedDBsMutex.Lock()
+	defer instrumentedDBsMutex.Unlock()
+	instrumentedCmtDBs = append(instrumentedCmtDBs, idb)
+}
+
+// SetAppInstrumentedDB registers the application InstrumentedDB for metrics polling.
+func SetAppInstrumentedDB(idb *dbmetrics.InstrumentedDB) {
+	registerInstrumentedDB(idb)
+}
+
+// instrumentedDBProvider wraps CometBFT's DefaultDBProvider to instrument
+// blockstore and state DBs with metrics collection.
+func instrumentedDBProvider(ctx *cmtcfg.DBContext) (cmtdb.DB, error) {
+	db, err := cmtcfg.DefaultDBProvider(ctx)
+	if err != nil {
+		return nil, err
+	}
+	idb, _ := dbmetrics.WrapCmtDB(db, ctx.ID)
+	registerInstrumentedCmtDB(idb)
+	return idb, nil
+}
 
 // StartCmdOptions defines options that can be customized in `StartCmdWithOptions`,
 type StartCmdOptions struct {
@@ -230,6 +268,17 @@ func start(svrCtx *Context, clientCtx client.Context, appCreator types.AppCreato
 	}
 
 	emitServerInfoMetrics()
+
+	if svrCfg.Telemetry.Enabled {
+		pollerCtx, pollerCancel := context.WithCancel(context.Background())
+		defer pollerCancel()
+		instrumentedDBsMutex.Lock()
+		poller := dbmetrics.NewPoller(10*time.Second, instrumentedDBs...)
+		cmtPoller := dbmetrics.NewCmtPoller(10*time.Second, instrumentedCmtDBs...)
+		instrumentedDBsMutex.Unlock()
+		go poller.Run(pollerCtx)
+		go cmtPoller.Run(pollerCtx)
+	}
 
 	if !withCmt {
 		return startStandAlone(svrCtx, svrCfg, clientCtx, app, metrics, opts)
@@ -378,7 +427,7 @@ func startCmtNode(
 		nodeKey,
 		proxy.NewLocalClientCreator(cmtApp),
 		getGenDocProvider(cfg),
-		cmtcfg.DefaultDBProvider,
+		instrumentedDBProvider,
 		node.DefaultMetricsProvider(cfg.Instrumentation),
 		servercmtlog.CometLoggerWrapper{Logger: svrCtx.Logger},
 	)
@@ -606,13 +655,16 @@ func startApp(svrCtx *Context, appCreator types.AppCreator, opts StartCmdOptions
 		return app, traceCleanupFn, err
 	}
 
+	appIDB, _ := dbmetrics.WrapDB(db, "application")
+	SetAppInstrumentedDB(appIDB)
+
 	if isTestnet, ok := svrCtx.Viper.Get(KeyIsTestnet).(bool); ok && isTestnet {
-		app, err = testnetify(svrCtx, appCreator, db, traceWriter)
+		app, err = testnetify(svrCtx, appCreator, appIDB, traceWriter)
 		if err != nil {
 			return app, traceCleanupFn, err
 		}
 	} else {
-		app = appCreator(svrCtx.Logger, db, traceWriter, svrCtx.Viper)
+		app = appCreator(svrCtx.Logger, appIDB, traceWriter, svrCtx.Viper)
 	}
 
 	cleanupFn = func() {

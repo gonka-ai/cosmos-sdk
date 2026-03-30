@@ -672,8 +672,15 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 
 func (rs *Store) handlePruning(version int64) error {
 	pruneHeight := rs.pruningManager.GetPruningHeight(version)
-	rs.logger.Debug("prune start", "height", version)
+	if pruneHeight <= 0 {
+		rs.metrics.MeasureSince("store", "pruning", "skipped")
+		rs.logger.Debug("prune start", "height", version)
+		defer rs.logger.Debug("prune end", "height", version)
+		return rs.PruneStores(pruneHeight)
+	}
+	rs.logger.Debug("prune start", "height", version, "target", pruneHeight)
 	defer rs.logger.Debug("prune end", "height", version)
+	defer rs.metrics.MeasureSince("store", "pruning", "duration")
 	return rs.PruneStores(pruneHeight)
 }
 

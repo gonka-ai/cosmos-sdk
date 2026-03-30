@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	cmtdb "github.com/cometbft/cometbft-db"
 	"github.com/syndtr/goleveldb/leveldb"
 
 	dbm "github.com/cosmos/cosmos-db"
@@ -153,12 +154,15 @@ type LevelDBStats struct {
 	WriteDelayDuration time.Duration
 	WritePaused        bool
 
-	AliveIterators int64
-	AliveSnapshots int64
+	AliveIterators  int64
+	AliveSnapshots  int64
 	CachedBlockSize int64
 
-	LevelTables []int
-	LevelSizes  []float64 // in MB
+	LevelTables    []int
+	LevelSizes     []float64 // in MB
+	LevelCompTime  []float64 // compaction time in seconds per level
+	LevelCompRead  []float64 // compaction read in MB per level
+	LevelCompWrite []float64 // compaction write in MB per level
 }
 
 // PollLevelDBStats reads LevelDB properties from the underlying DB.
@@ -206,21 +210,26 @@ func PollLevelDBStats(db dbm.DB) *LevelDBStats {
 	}
 
 	if val, err := ldb.GetProperty("leveldb.stats"); err == nil {
-		stats.LevelTables, stats.LevelSizes = parseStatsTable(val)
+		parseStatsTable(val, stats)
 	}
 
 	return stats
 }
 
-func parseStatsTable(stats string) (tables []int, sizes []float64) {
-	lines := strings.Split(stats, "\n")
+// parseStatsTable parses the leveldb.stats output:
+//
+//	Level |   Tables   |    Size(MB)   |    Time(sec)  |    Read(MB)   |   Write(MB)
+//	------+------------+---------------+---------------+---------------+---------------
+//	  0   |          2 |       1.00000 |       0.50000 |       0.00000 |       2.00000
+func parseStatsTable(statsStr string, stats *LevelDBStats) {
+	lines := strings.Split(statsStr, "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 || line[0] == '-' || !strings.Contains(line, "|") {
 			continue
 		}
 		parts := strings.Split(line, "|")
-		if len(parts) < 3 {
+		if len(parts) < 6 {
 			continue
 		}
 		levelStr := strings.TrimSpace(parts[0])
@@ -229,14 +238,30 @@ func parseStatsTable(stats string) (tables []int, sizes []float64) {
 		}
 		tablesStr := strings.TrimSpace(parts[1])
 		sizeStr := strings.TrimSpace(parts[2])
+		timeStr := strings.TrimSpace(parts[3])
+		readStr := strings.TrimSpace(parts[4])
+		writeStr := strings.TrimSpace(parts[5])
+
 		t, err1 := strconv.Atoi(tablesStr)
 		s, err2 := strconv.ParseFloat(sizeStr, 64)
-		if err1 == nil && err2 == nil {
-			tables = append(tables, t)
-			sizes = append(sizes, s)
+		ct, err3 := strconv.ParseFloat(timeStr, 64)
+		cr, err4 := strconv.ParseFloat(readStr, 64)
+		cw, err5 := strconv.ParseFloat(writeStr, 64)
+		if err1 != nil || err2 != nil {
+			continue
+		}
+		stats.LevelTables = append(stats.LevelTables, t)
+		stats.LevelSizes = append(stats.LevelSizes, s)
+		if err3 == nil {
+			stats.LevelCompTime = append(stats.LevelCompTime, ct)
+		}
+		if err4 == nil {
+			stats.LevelCompRead = append(stats.LevelCompRead, cr)
+		}
+		if err5 == nil {
+			stats.LevelCompWrite = append(stats.LevelCompWrite, cw)
 		}
 	}
-	return
 }
 
 // unwrapGoLevelDB attempts to find a *dbm.GoLevelDB in the DB chain
@@ -259,4 +284,64 @@ func GetUnderlyingLevelDB(db dbm.DB) *leveldb.DB {
 		return nil
 	}
 	return gdb.DB()
+}
+
+// PollCmtLevelDBStats reads LevelDB properties from a CometBFT DB.
+func PollCmtLevelDBStats(db cmtdb.DB) *LevelDBStats {
+	ldb := unwrapCmtGoLevelDB(db)
+	if ldb == nil {
+		return nil
+	}
+	stats := &LevelDBStats{}
+
+	if val, err := ldb.GetProperty("leveldb.compcount"); err == nil {
+		fmt.Sscanf(val, "MemComp:%d Level0Comp:%d NonLevel0Comp:%d SeekComp:%d",
+			&stats.CompMemCount, &stats.CompLevel0Count,
+			&stats.CompNonLevel0Count, &stats.CompSeekCount)
+	}
+
+	if val, err := ldb.GetProperty("leveldb.iostats"); err == nil {
+		fmt.Sscanf(val, "Read(MB):%f Write(MB):%f",
+			&stats.IOReadBytes, &stats.IOWriteBytes)
+		stats.IOReadBytes *= 1048576
+		stats.IOWriteBytes *= 1048576
+	}
+
+	if val, err := ldb.GetProperty("leveldb.writedelay"); err == nil {
+		var delayStr string
+		var paused string
+		fmt.Sscanf(val, "DelayN:%d Delay:%s Paused:%s",
+			&stats.WriteDelayCount, &delayStr, &paused)
+		stats.WriteDelayDuration, _ = time.ParseDuration(delayStr)
+		stats.WritePaused = paused == "true"
+	}
+
+	if val, err := ldb.GetProperty("leveldb.aliveiters"); err == nil {
+		stats.AliveIterators, _ = strconv.ParseInt(val, 10, 64)
+	}
+
+	if val, err := ldb.GetProperty("leveldb.alivesnaps"); err == nil {
+		stats.AliveSnapshots, _ = strconv.ParseInt(val, 10, 64)
+	}
+
+	if val, err := ldb.GetProperty("leveldb.cachedblock"); err == nil && val != "<nil>" {
+		stats.CachedBlockSize, _ = strconv.ParseInt(val, 10, 64)
+	}
+
+	if val, err := ldb.GetProperty("leveldb.stats"); err == nil {
+		parseStatsTable(val, stats)
+	}
+
+	return stats
+}
+
+func unwrapCmtGoLevelDB(db cmtdb.DB) *leveldb.DB {
+	switch d := db.(type) {
+	case *cmtdb.GoLevelDB:
+		return d.DB()
+	case *InstrumentedCmtDB:
+		return unwrapCmtGoLevelDB(d.inner)
+	default:
+		return nil
+	}
 }

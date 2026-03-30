@@ -136,12 +136,15 @@ func (p *Poller) emitLevelDBStats(db *InstrumentedDB) {
 	if stats == nil {
 		return
 	}
-
 	prev := p.getPrev(db.Metrics().Name)
-	label := metrics.Label{Name: "db", Value: db.Metrics().Name}
+	emitLevelDBStatsShared(stats, prev, db.Metrics().Name)
+}
+
+// emitLevelDBStatsShared emits LevelDB stats for any DB type.
+func emitLevelDBStatsShared(stats *LevelDBStats, prev *prevCounters, dbName string) {
+	label := metrics.Label{Name: "db", Value: dbName}
 	labels := []metrics.Label{label}
 
-	// Cumulative LevelDB values -> emit as counters (deltas)
 	incrFloat := func(key string, cur, prev *float64) {
 		d := *cur - *prev
 		if d > 0 {
@@ -164,6 +167,7 @@ func (p *Poller) emitLevelDBStats(db *InstrumentedDB) {
 		*prev = cur
 	}
 
+	// Cumulative LevelDB values -> counters (deltas)
 	incrFloat("leveldb_io_read_bytes", &stats.IOReadBytes, &prev.LdbIORead)
 	incrFloat("leveldb_io_write_bytes", &stats.IOWriteBytes, &prev.LdbIOWrite)
 	incrUint("leveldb_comp_mem_count", stats.CompMemCount, &prev.LdbCompMem)
@@ -190,6 +194,18 @@ func (p *Poller) emitLevelDBStats(db *InstrumentedDB) {
 	for level, sizeMB := range stats.LevelSizes {
 		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
 		setGaugeWithLabels("leveldb_level_size_bytes", float32(sizeMB*1048576), label, lvlLabel)
+	}
+	for level, compTime := range stats.LevelCompTime {
+		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
+		setGaugeWithLabels("leveldb_level_comp_time_seconds", float32(compTime), label, lvlLabel)
+	}
+	for level, compReadMB := range stats.LevelCompRead {
+		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
+		setGaugeWithLabels("leveldb_level_comp_read_bytes", float32(compReadMB*1048576), label, lvlLabel)
+	}
+	for level, compWriteMB := range stats.LevelCompWrite {
+		lvlLabel := metrics.Label{Name: "level", Value: fmt.Sprintf("%d", level)}
+		setGaugeWithLabels("leveldb_level_comp_write_bytes", float32(compWriteMB*1048576), label, lvlLabel)
 	}
 }
 
@@ -235,6 +251,7 @@ func (p *CmtPoller) Run(ctx context.Context) {
 		case <-ticker.C:
 			for _, db := range p.getDBs() {
 				p.emitCmtDBCounters(db)
+				p.emitCmtLevelDBStats(db)
 			}
 		}
 	}
@@ -247,6 +264,15 @@ func (p *CmtPoller) getPrev(name string) *prevCounters {
 		p.prev[name] = pc
 	}
 	return pc
+}
+
+func (p *CmtPoller) emitCmtLevelDBStats(db *InstrumentedCmtDB) {
+	stats := PollCmtLevelDBStats(db.Inner())
+	if stats == nil {
+		return
+	}
+	prev := p.getPrev(db.Metrics().Name)
+	emitLevelDBStatsShared(stats, prev, db.Metrics().Name)
 }
 
 func (p *CmtPoller) emitCmtDBCounters(db *InstrumentedCmtDB) {

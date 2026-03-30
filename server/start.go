@@ -272,10 +272,16 @@ func start(svrCtx *Context, clientCtx client.Context, appCreator types.AppCreato
 	if svrCfg.Telemetry.Enabled {
 		pollerCtx, pollerCancel := context.WithCancel(context.Background())
 		defer pollerCancel()
-		instrumentedDBsMutex.Lock()
-		poller := dbmetrics.NewPoller(10*time.Second, instrumentedDBs...)
-		cmtPoller := dbmetrics.NewCmtPoller(10*time.Second, instrumentedCmtDBs...)
-		instrumentedDBsMutex.Unlock()
+		poller := dbmetrics.NewPoller(10*time.Second, func() []*dbmetrics.InstrumentedDB {
+			instrumentedDBsMutex.Lock()
+			defer instrumentedDBsMutex.Unlock()
+			return append([]*dbmetrics.InstrumentedDB(nil), instrumentedDBs...)
+		})
+		cmtPoller := dbmetrics.NewCmtPoller(10*time.Second, func() []*dbmetrics.InstrumentedCmtDB {
+			instrumentedDBsMutex.Lock()
+			defer instrumentedDBsMutex.Unlock()
+			return append([]*dbmetrics.InstrumentedCmtDB(nil), instrumentedCmtDBs...)
+		})
 		go poller.Run(pollerCtx)
 		go cmtPoller.Run(pollerCtx)
 	}

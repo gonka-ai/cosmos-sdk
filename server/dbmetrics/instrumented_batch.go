@@ -85,18 +85,27 @@ func (b *InstrumentedBatch) Delete(key []byte) error {
 }
 
 func (b *InstrumentedBatch) Write() error {
+	batchSize := b.captureBatchSize()
 	err := b.inner.Write()
-	b.flush()
+	b.flush(batchSize)
 	return err
 }
 
 func (b *InstrumentedBatch) WriteSync() error {
+	batchSize := b.captureBatchSize()
 	err := b.inner.WriteSync()
-	b.flush()
+	b.flush(batchSize)
 	return err
 }
 
-func (b *InstrumentedBatch) flush() {
+func (b *InstrumentedBatch) captureBatchSize() uint64 {
+	if size, err := b.inner.GetByteSize(); err == nil && size > 0 {
+		return uint64(size)
+	}
+	return b.setBytes.Load() + b.deleteBytes.Load()
+}
+
+func (b *InstrumentedBatch) flush(batchSize uint64) {
 	b.metrics.Set.Ops.Add(b.setOps.Load())
 	b.metrics.Set.Bytes.Add(b.setBytes.Load())
 	b.metrics.Delete.Ops.Add(b.deleteOps.Load())
@@ -106,10 +115,7 @@ func (b *InstrumentedBatch) flush() {
 	b.metrics.StateDel.Ops.Add(b.stateDelOps.Load())
 	b.metrics.StateDel.Bytes.Add(b.stateDelBytes.Load())
 	b.metrics.BatchWrite.Ops.Add(1)
-
-	if size, err := b.inner.GetByteSize(); err == nil {
-		b.metrics.BatchWrite.Bytes.Add(uint64(size))
-	}
+	b.metrics.BatchWrite.Bytes.Add(batchSize)
 
 	for mod, snap := range b.moduleSet {
 		ops := b.metrics.Modules.GetOrCreate(mod)

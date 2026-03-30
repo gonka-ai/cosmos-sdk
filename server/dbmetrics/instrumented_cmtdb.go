@@ -107,14 +107,16 @@ func (b *InstrumentedCmtBatch) Delete(key []byte) error {
 }
 
 func (b *InstrumentedCmtBatch) Write() error {
+	batchSize := b.setBytes + b.deleteBytes
 	err := b.inner.Write()
-	b.flush()
+	b.flush(batchSize)
 	return err
 }
 
 func (b *InstrumentedCmtBatch) WriteSync() error {
+	batchSize := b.setBytes + b.deleteBytes
 	err := b.inner.WriteSync()
-	b.flush()
+	b.flush(batchSize)
 	return err
 }
 
@@ -122,7 +124,7 @@ func (b *InstrumentedCmtBatch) Close() error {
 	return b.inner.Close()
 }
 
-func (b *InstrumentedCmtBatch) flush() {
+func (b *InstrumentedCmtBatch) flush(batchSize uint64) {
 	b.metrics.Set.Ops.Add(b.setOps)
 	b.metrics.Set.Bytes.Add(b.setBytes)
 	b.metrics.Delete.Ops.Add(b.deleteOps)
@@ -130,6 +132,7 @@ func (b *InstrumentedCmtBatch) flush() {
 	b.metrics.PruneDel.Ops.Add(b.deleteOps)
 	b.metrics.PruneDel.Bytes.Add(b.deleteBytes)
 	b.metrics.BatchWrite.Ops.Add(1)
+	b.metrics.BatchWrite.Bytes.Add(batchSize)
 }
 
 // WrapCmtDB creates an InstrumentedCmtDB and returns it along with its metrics.

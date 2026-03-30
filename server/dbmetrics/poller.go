@@ -10,15 +10,49 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 )
 
+// prevCounters tracks previous snapshot for delta computation.
+type prevCounters struct {
+	Get        CounterSnapshot
+	Set        CounterSnapshot
+	Delete     CounterSnapshot
+	BatchWrite CounterSnapshot
+	PruneDel   CounterSnapshot
+	StateDel   CounterSnapshot
+	Modules    map[string]prevModuleCounters
+
+	// LevelDB cumulative stats from previous poll
+	LdbIORead        float64
+	LdbIOWrite       float64
+	LdbCompMem       uint64
+	LdbCompLevel0    uint64
+	LdbCompNonLevel0 uint64
+	LdbCompSeek      uint64
+	LdbWriteDelayN   int64
+}
+
+type prevModuleCounters struct {
+	Get      CounterSnapshot
+	Set      CounterSnapshot
+	Delete   CounterSnapshot
+	PruneDel CounterSnapshot
+}
+
 // Poller periodically reads LevelDB stats and DB wrapper counters,
 // then emits them via the hashicorp/go-metrics sink (Cosmos telemetry).
 type Poller struct {
-	dbs      []*InstrumentedDB
+	getDBs   func() []*InstrumentedDB
 	interval time.Duration
+	prev     map[string]*prevCounters // keyed by DB name
 }
 
-func NewPoller(interval time.Duration, dbs ...*InstrumentedDB) *Poller {
-	return &Poller{dbs: dbs, interval: interval}
+// NewPoller creates a poller that calls getDBs on each tick to discover DBs
+// dynamically. This handles DBs registered after the poller is created.
+func NewPoller(interval time.Duration, getDBs func() []*InstrumentedDB) *Poller {
+	return &Poller{
+		getDBs:   getDBs,
+		interval: interval,
+		prev:     make(map[string]*prevCounters),
+	}
 }
 
 // Run starts the polling loop. It blocks until ctx is cancelled.
@@ -30,7 +64,7 @@ func (p *Poller) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			for _, db := range p.dbs {
+			for _, db := range p.getDBs() {
 				p.emitDBCounters(db)
 				p.emitLevelDBStats(db)
 			}
@@ -38,33 +72,62 @@ func (p *Poller) Run(ctx context.Context) {
 	}
 }
 
+func (p *Poller) getPrev(name string) *prevCounters {
+	pc, ok := p.prev[name]
+	if !ok {
+		pc = &prevCounters{Modules: make(map[string]prevModuleCounters)}
+		p.prev[name] = pc
+	}
+	return pc
+}
+
+func deltaCounter(key string, cur, prev *CounterSnapshot, labels ...metrics.Label) CounterSnapshot {
+	dOps := cur.Ops - prev.Ops
+	dBytes := cur.Bytes - prev.Bytes
+	if dOps > 0 {
+		metrics.IncrCounterWithLabels([]string{key + "_ops"}, float32(dOps), labels)
+	}
+	if dBytes > 0 {
+		metrics.IncrCounterWithLabels([]string{key + "_bytes"}, float32(dBytes), labels)
+	}
+	return *cur
+}
+
 func (p *Poller) emitDBCounters(db *InstrumentedDB) {
 	m := db.Metrics()
+	prev := p.getPrev(m.Name)
 	label := metrics.Label{Name: "db", Value: m.Name}
+	labels := []metrics.Label{label}
 
-	setGaugeWithLabel("db_get_ops_total", float32(m.Get.Ops.Load()), label)
-	setGaugeWithLabel("db_get_bytes_total", float32(m.Get.Bytes.Load()), label)
-	setGaugeWithLabel("db_set_ops_total", float32(m.Set.Ops.Load()), label)
-	setGaugeWithLabel("db_set_bytes_total", float32(m.Set.Bytes.Load()), label)
-	setGaugeWithLabel("db_delete_ops_total", float32(m.Delete.Ops.Load()), label)
-	setGaugeWithLabel("db_delete_bytes_total", float32(m.Delete.Bytes.Load()), label)
-	setGaugeWithLabel("db_batch_write_ops_total", float32(m.BatchWrite.Ops.Load()), label)
-	setGaugeWithLabel("db_batch_write_bytes_total", float32(m.BatchWrite.Bytes.Load()), label)
-	setGaugeWithLabel("db_prune_delete_ops_total", float32(m.PruneDel.Ops.Load()), label)
-	setGaugeWithLabel("db_prune_delete_bytes_total", float32(m.PruneDel.Bytes.Load()), label)
-	setGaugeWithLabel("db_state_delete_ops_total", float32(m.StateDel.Ops.Load()), label)
-	setGaugeWithLabel("db_state_delete_bytes_total", float32(m.StateDel.Bytes.Load()), label)
+	curGet := m.Get.Snapshot()
+	curSet := m.Set.Snapshot()
+	curDel := m.Delete.Snapshot()
+	curBatch := m.BatchWrite.Snapshot()
+	curPrune := m.PruneDel.Snapshot()
+	curState := m.StateDel.Snapshot()
+
+	prev.Get = deltaCounter("db_get", &curGet, &prev.Get, labels...)
+	prev.Set = deltaCounter("db_set", &curSet, &prev.Set, labels...)
+	prev.Delete = deltaCounter("db_delete", &curDel, &prev.Delete, labels...)
+	prev.BatchWrite = deltaCounter("db_batch_write", &curBatch, &prev.BatchWrite, labels...)
+	prev.PruneDel = deltaCounter("db_prune_delete", &curPrune, &prev.PruneDel, labels...)
+	prev.StateDel = deltaCounter("db_state_delete", &curState, &prev.StateDel, labels...)
 
 	m.Modules.ForEach(func(module string, ops *ModuleOps) {
-		modLabel := metrics.Label{Name: "module", Value: module}
-		setGaugeWithLabels("db_module_get_ops_total", float32(ops.Get.Ops.Load()), label, modLabel)
-		setGaugeWithLabels("db_module_get_bytes_total", float32(ops.Get.Bytes.Load()), label, modLabel)
-		setGaugeWithLabels("db_module_set_ops_total", float32(ops.Set.Ops.Load()), label, modLabel)
-		setGaugeWithLabels("db_module_set_bytes_total", float32(ops.Set.Bytes.Load()), label, modLabel)
-		setGaugeWithLabels("db_module_delete_ops_total", float32(ops.Delete.Ops.Load()), label, modLabel)
-		setGaugeWithLabels("db_module_delete_bytes_total", float32(ops.Delete.Bytes.Load()), label, modLabel)
-		setGaugeWithLabels("db_module_prune_delete_ops_total", float32(ops.PruneDel.Ops.Load()), label, modLabel)
-		setGaugeWithLabels("db_module_prune_delete_bytes_total", float32(ops.PruneDel.Bytes.Load()), label, modLabel)
+		modLabels := []metrics.Label{label, {Name: "module", Value: module}}
+		prevMod := prev.Modules[module]
+
+		curMGet := ops.Get.Snapshot()
+		curMSet := ops.Set.Snapshot()
+		curMDel := ops.Delete.Snapshot()
+		curMPrune := ops.PruneDel.Snapshot()
+
+		prevMod.Get = deltaCounter("db_module_get", &curMGet, &prevMod.Get, modLabels...)
+		prevMod.Set = deltaCounter("db_module_set", &curMSet, &prevMod.Set, modLabels...)
+		prevMod.Delete = deltaCounter("db_module_delete", &curMDel, &prevMod.Delete, modLabels...)
+		prevMod.PruneDel = deltaCounter("db_module_prune_delete", &curMPrune, &prevMod.PruneDel, modLabels...)
+
+		prev.Modules[module] = prevMod
 	})
 }
 
@@ -74,15 +137,42 @@ func (p *Poller) emitLevelDBStats(db *InstrumentedDB) {
 		return
 	}
 
+	prev := p.getPrev(db.Metrics().Name)
 	label := metrics.Label{Name: "db", Value: db.Metrics().Name}
+	labels := []metrics.Label{label}
 
-	setGaugeWithLabel("leveldb_comp_mem_count", float32(stats.CompMemCount), label)
-	setGaugeWithLabel("leveldb_comp_level0_count", float32(stats.CompLevel0Count), label)
-	setGaugeWithLabel("leveldb_comp_nonlevel0_count", float32(stats.CompNonLevel0Count), label)
-	setGaugeWithLabel("leveldb_comp_seek_count", float32(stats.CompSeekCount), label)
-	setGaugeWithLabel("leveldb_io_read_bytes", float32(stats.IOReadBytes), label)
-	setGaugeWithLabel("leveldb_io_write_bytes", float32(stats.IOWriteBytes), label)
-	setGaugeWithLabel("leveldb_write_delay_count", float32(stats.WriteDelayCount), label)
+	// Cumulative LevelDB values -> emit as counters (deltas)
+	incrFloat := func(key string, cur, prev *float64) {
+		d := *cur - *prev
+		if d > 0 {
+			metrics.IncrCounterWithLabels([]string{key}, float32(d), labels)
+		}
+		*prev = *cur
+	}
+	incrUint := func(key string, cur uint64, prev *uint64) {
+		d := cur - *prev
+		if d > 0 {
+			metrics.IncrCounterWithLabels([]string{key}, float32(d), labels)
+		}
+		*prev = cur
+	}
+	incrInt := func(key string, cur int64, prev *int64) {
+		d := cur - *prev
+		if d > 0 {
+			metrics.IncrCounterWithLabels([]string{key}, float32(d), labels)
+		}
+		*prev = cur
+	}
+
+	incrFloat("leveldb_io_read_bytes", &stats.IOReadBytes, &prev.LdbIORead)
+	incrFloat("leveldb_io_write_bytes", &stats.IOWriteBytes, &prev.LdbIOWrite)
+	incrUint("leveldb_comp_mem_count", stats.CompMemCount, &prev.LdbCompMem)
+	incrUint("leveldb_comp_level0_count", stats.CompLevel0Count, &prev.LdbCompLevel0)
+	incrUint("leveldb_comp_nonlevel0_count", stats.CompNonLevel0Count, &prev.LdbCompNonLevel0)
+	incrUint("leveldb_comp_seek_count", stats.CompSeekCount, &prev.LdbCompSeek)
+	incrInt("leveldb_write_delay_count", stats.WriteDelayCount, &prev.LdbWriteDelayN)
+
+	// Point-in-time LevelDB values -> gauges
 	setGaugeWithLabel("leveldb_write_delay_seconds", float32(stats.WriteDelayDuration.Seconds()), label)
 	paused := float32(0)
 	if stats.WritePaused {
@@ -122,12 +212,17 @@ func WrapDB(db dbm.DB, name string) (*InstrumentedDB, *DBMetrics) {
 // CmtPoller periodically reads DB wrapper counters for CometBFT DBs
 // and emits them via the hashicorp/go-metrics sink.
 type CmtPoller struct {
-	dbs      []*InstrumentedCmtDB
+	getDBs   func() []*InstrumentedCmtDB
 	interval time.Duration
+	prev     map[string]*prevCounters
 }
 
-func NewCmtPoller(interval time.Duration, dbs ...*InstrumentedCmtDB) *CmtPoller {
-	return &CmtPoller{dbs: dbs, interval: interval}
+func NewCmtPoller(interval time.Duration, getDBs func() []*InstrumentedCmtDB) *CmtPoller {
+	return &CmtPoller{
+		getDBs:   getDBs,
+		interval: interval,
+		prev:     make(map[string]*prevCounters),
+	}
 }
 
 func (p *CmtPoller) Run(ctx context.Context) {
@@ -138,25 +233,37 @@ func (p *CmtPoller) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			for _, db := range p.dbs {
+			for _, db := range p.getDBs() {
 				p.emitCmtDBCounters(db)
 			}
 		}
 	}
 }
 
+func (p *CmtPoller) getPrev(name string) *prevCounters {
+	pc, ok := p.prev[name]
+	if !ok {
+		pc = &prevCounters{Modules: make(map[string]prevModuleCounters)}
+		p.prev[name] = pc
+	}
+	return pc
+}
+
 func (p *CmtPoller) emitCmtDBCounters(db *InstrumentedCmtDB) {
 	m := db.Metrics()
+	prev := p.getPrev(m.Name)
 	label := metrics.Label{Name: "db", Value: m.Name}
+	labels := []metrics.Label{label}
 
-	setGaugeWithLabel("db_get_ops_total", float32(m.Get.Ops.Load()), label)
-	setGaugeWithLabel("db_get_bytes_total", float32(m.Get.Bytes.Load()), label)
-	setGaugeWithLabel("db_set_ops_total", float32(m.Set.Ops.Load()), label)
-	setGaugeWithLabel("db_set_bytes_total", float32(m.Set.Bytes.Load()), label)
-	setGaugeWithLabel("db_delete_ops_total", float32(m.Delete.Ops.Load()), label)
-	setGaugeWithLabel("db_delete_bytes_total", float32(m.Delete.Bytes.Load()), label)
-	setGaugeWithLabel("db_batch_write_ops_total", float32(m.BatchWrite.Ops.Load()), label)
-	setGaugeWithLabel("db_batch_write_bytes_total", float32(m.BatchWrite.Bytes.Load()), label)
-	setGaugeWithLabel("db_prune_delete_ops_total", float32(m.PruneDel.Ops.Load()), label)
-	setGaugeWithLabel("db_prune_delete_bytes_total", float32(m.PruneDel.Bytes.Load()), label)
+	curGet := m.Get.Snapshot()
+	curSet := m.Set.Snapshot()
+	curDel := m.Delete.Snapshot()
+	curBatch := m.BatchWrite.Snapshot()
+	curPrune := m.PruneDel.Snapshot()
+
+	prev.Get = deltaCounter("db_get", &curGet, &prev.Get, labels...)
+	prev.Set = deltaCounter("db_set", &curSet, &prev.Set, labels...)
+	prev.Delete = deltaCounter("db_delete", &curDel, &prev.Delete, labels...)
+	prev.BatchWrite = deltaCounter("db_batch_write", &curBatch, &prev.BatchWrite, labels...)
+	prev.PruneDel = deltaCounter("db_prune_delete", &curPrune, &prev.PruneDel, labels...)
 }

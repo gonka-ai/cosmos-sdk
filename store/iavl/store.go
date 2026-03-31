@@ -61,6 +61,7 @@ func LoadStoreWithOpts(db dbm.DB, logger log.Logger, key types.StoreKey, id type
 		initialVersion = 1
 	}
 	opts = append(opts, iavl.InitialVersionOption(initialVersion))
+	opts = append(opts, iavl.StatOption(&iavl.Statistics{}))
 	tree := iavl.NewMutableTree(wrapper.NewDBWrapper(db), cacheSize, disableFastNode, logger, opts...)
 
 	isUpgradeable, err := tree.IsUpgradeable()

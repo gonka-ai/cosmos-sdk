@@ -33,13 +33,16 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 		return nil
 	}
 
-	// Skip missed-block accounting for validators in active maintenance.
+	// Skip missed-block accounting for validators in active maintenance,
+	// but only when the validator is actually absent for this block.
 	// During maintenance, liveness accounting is frozen: missed signatures
 	// do not advance counters or bitmaps, and downtime jailing/slashing
 	// is not triggered. Double-sign and evidence paths are unaffected.
-	if k.maintenanceChecker != nil && k.maintenanceChecker.IsValidatorInActiveMaintenance(ctx, consAddr) {
-		logger.Debug(
-			"skipping liveness accounting for maintenance-covered validator",
+	if signed == comet.BlockIDFlagAbsent &&
+		k.maintenanceChecker != nil &&
+		k.maintenanceChecker.IsValidatorInActiveMaintenance(ctx, consAddr) {
+		logger.Info(
+			"validator absent during active maintenance, skipping liveness accounting",
 			"height", height,
 			"validator", consAddr.String(),
 		)

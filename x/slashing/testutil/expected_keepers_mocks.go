@@ -365,6 +365,18 @@ func (mr *MockStakingKeeperMockRecorder) MaxValidators(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MaxValidators", reflect.TypeOf((*MockStakingKeeper)(nil).MaxValidators), arg0)
 }
 
+// RestoreValidatorIndex mocks base method.
+func (m *MockStakingKeeper) RestoreValidatorIndex(ctx context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RestoreValidatorIndex", ctx)
+}
+
+// RestoreValidatorIndex indicates an expected call of RestoreValidatorIndex.
+func (mr *MockStakingKeeperMockRecorder) RestoreValidatorIndex(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreValidatorIndex", reflect.TypeOf((*MockStakingKeeper)(nil).RestoreValidatorIndex), ctx)
+}
+
 // Slash mocks base method.
 func (m *MockStakingKeeper) Slash(arg0 context.Context, arg1 types.ConsAddress, arg2, arg3 int64, arg4 math.LegacyDec) (math.Int, error) {
 	m.ctrl.T.Helper()

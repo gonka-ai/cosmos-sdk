@@ -225,7 +225,7 @@ type gonkaQueryRecord struct {
 	requestSummary  string
 }
 
-// gonkaObserve records all six Prometheus metrics in one place.
+// gonkaObserve records all query Prometheus metrics in one place.
 func gonkaObserve(r gonkaQueryRecord) {
 	if r.totalDuration == 0 {
 		r.totalDuration = time.Since(r.start)

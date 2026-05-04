@@ -90,6 +90,11 @@ func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server
 		// Gonka: deferred metrics observation. Added before the recovery defer
 		// below so it pops second (LIFO) and observes post-recovery err.
 		defer func() {
+			totalDuration := time.Since(start)
+			requestSummary := fmt.Sprintf("%T", req)
+			if threshold := gonkaSlowQueryThresholdMs.Load(); threshold > 0 && totalDuration.Milliseconds() >= threshold {
+				requestSummary = fmt.Sprintf("%v", req)
+			}
 			rec := gonkaQueryRecord{
 				method:          method,
 				transport:       transport,
@@ -98,11 +103,11 @@ func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server
 				start:           start,
 				setupDuration:   setupDuration,
 				handlerDuration: handlerDuration,
-				totalDuration:   time.Since(start),
+				totalDuration:   totalDuration,
 				respBytes:       -1,
 				requestedHeight: requestedHeight,
 				currentHeight:   app.LastBlockHeight(),
-				requestSummary:  fmt.Sprintf("%v", req),
+				requestSummary:  requestSummary,
 			}
 			if s, sok := resp.(interface{ Size() int }); sok {
 				rec.respBytes = s.Size()

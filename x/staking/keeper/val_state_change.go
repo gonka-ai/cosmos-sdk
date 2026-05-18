@@ -88,9 +88,19 @@ func (k Keeper) deleteValidatorInternal(ctx context.Context, validator types.Val
 		return err
 	}
 
-	// Delete consensus address mapping
-	if err := store.Delete(types.GetValidatorByConsAddrKey(consAddr)); err != nil {
+	// Delete consensus address mapping, but only if it still points to this validator.
+	// In stale-validator-replacement (GON-191), a new validator may have taken over the
+	// same consensus key in the same block via SetValidatorByConsAddr. Unconditionally
+	// deleting here would orphan the new validator's cons-addr index entry.
+	consAddrKey := types.GetValidatorByConsAddrKey(consAddr)
+	existingOp, err := store.Get(consAddrKey)
+	if err != nil {
 		return err
+	}
+	if existingOp != nil && bytes.Equal(existingOp, valAddr) {
+		if err := store.Delete(consAddrKey); err != nil {
+			return err
+		}
 	}
 
 	// Delete power index

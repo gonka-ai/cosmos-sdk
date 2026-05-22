@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"time"
+
 	"cosmossdk.io/math"
 
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -92,4 +94,91 @@ func (s *KeeperTestSuite) TestDeleteValidatorInternal_DeletesUnreassignedConsAdd
 
 	_, err = keeper.GetValidatorByConsAddr(ctx, consAddr)
 	require.Error(err, "cons-addr index should be deleted when this validator still owned it")
+}
+
+// TestDeleteZeroPowerValidators_RemovesUnbondingStaleEntry exercises the
+// follow-up to GON-191's filter/cons-addr fix: stale (tokens=0, UNBONDING)
+// validators must actually get cleaned up at the next block, instead of
+// accumulating forever. The previous implementation always skipped because
+// its "still in LastValidatorPower" check used GetLastValidatorPower whose
+// (0, nil) "not found" return collided with the success path, causing every
+// validator to be skipped.
+//
+// This test puts a validator into the same state ApplyAndReturnValidatorSetUpdates
+// would leave it after the bondedToUnbonding transition (status=UNBONDING,
+// tokens=0, not in LastValidatorPower, sitting in the unbonding queue) and
+// verifies DeleteZeroPowerValidators removes it and dequeues its unbonding-
+// queue entries — without dequeuing, UnbondAllMatureValidators would error
+// later trying to fetch the deleted validator.
+func (s *KeeperTestSuite) TestDeleteZeroPowerValidators_RemovesUnbondingStaleEntry() {
+	ctx, keeper := s.ctx, s.stakingKeeper
+	require := s.Require()
+
+	pks := simtestutil.CreateTestPubKeys(2)
+	consPK := pks[0]
+	op := sdk.ValAddress(pks[1].Address())
+
+	val, err := stakingtypes.NewValidator(op.String(), consPK, stakingtypes.Description{Moniker: "stale"})
+	require.NoError(err)
+	val.Status = stakingtypes.Unbonding
+	val.Tokens = math.ZeroInt()
+	val.UnbondingTime = ctx.BlockHeader().Time.Add(24 * time.Hour)
+	val.UnbondingHeight = ctx.BlockHeader().Height
+	val.UnbondingIds = []uint64{1}
+	require.NoError(keeper.SetValidator(ctx, val))
+	require.NoError(keeper.SetValidatorByConsAddr(ctx, val))
+	require.NoError(keeper.InsertUnbondingValidatorQueue(ctx, val))
+
+	// Sanity precondition: validator + queue entry exist; LastValidatorPower is absent.
+	_, err = keeper.GetValidator(ctx, op)
+	require.NoError(err, "precondition: stale validator should exist before cleanup")
+	queued, err := keeper.GetUnbondingValidators(ctx, val.UnbondingTime, val.UnbondingHeight)
+	require.NoError(err)
+	require.Len(queued, 1, "precondition: validator should be in unbonding queue")
+
+	require.NoError(keeper.DeleteZeroPowerValidators(ctx))
+
+	// Validator entry is gone.
+	_, err = keeper.GetValidator(ctx, op)
+	require.Error(err, "stale UNBONDING tokens=0 validator should be deleted by DeleteZeroPowerValidators")
+
+	// Cons-addr index entry is gone (no reassignment, so we expect normal cleanup).
+	consAddr, err := val.GetConsAddr()
+	require.NoError(err)
+	_, err = keeper.GetValidatorByConsAddr(ctx, consAddr)
+	require.Error(err, "cons-addr index should be removed when validator is deleted")
+
+	// Unbonding-queue entry is gone so UnbondAllMatureValidators won't error later.
+	queuedAfter, err := keeper.GetUnbondingValidators(ctx, val.UnbondingTime, val.UnbondingHeight)
+	require.NoError(err)
+	require.Empty(queuedAfter, "validator's unbonding-queue entry must be removed alongside deletion")
+}
+
+// TestDeleteZeroPowerValidators_SkipsValidatorStillInLastValidatorPower confirms
+// that the multi-block contract is preserved: a validator with tokens=0 whose
+// LastValidatorPower entry has NOT yet been cleared by ApplyAndReturnValidatorSetUpdates
+// must not be deleted, because the deletion would skip the
+// ValidatorUpdate(power=0) notification to CometBFT.
+func (s *KeeperTestSuite) TestDeleteZeroPowerValidators_SkipsValidatorStillInLastValidatorPower() {
+	ctx, keeper := s.ctx, s.stakingKeeper
+	require := s.Require()
+
+	pks := simtestutil.CreateTestPubKeys(2)
+	consPK := pks[0]
+	op := sdk.ValAddress(pks[1].Address())
+
+	val, err := stakingtypes.NewValidator(op.String(), consPK, stakingtypes.Description{Moniker: "mid-cleanup"})
+	require.NoError(err)
+	val.Status = stakingtypes.Bonded
+	val.Tokens = math.ZeroInt()
+	require.NoError(keeper.SetValidator(ctx, val))
+	require.NoError(keeper.SetValidatorByConsAddr(ctx, val))
+
+	// Still in LastValidatorPower — ApplyAndReturnValidatorSetUpdates hasn't run yet for this block.
+	require.NoError(keeper.SetLastValidatorPower(ctx, op, 0))
+
+	require.NoError(keeper.DeleteZeroPowerValidators(ctx))
+
+	_, err = keeper.GetValidator(ctx, op)
+	require.NoError(err, "validator must NOT be deleted while still present in LastValidatorPower; ApplyAndReturnValidatorSetUpdates needs to fetch it next")
 }

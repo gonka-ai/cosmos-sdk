@@ -86,6 +86,30 @@ func TestShareTokens(t *testing.T) {
 	assert.True(math.LegacyDecEq(t, math.LegacyNewDec(5), validator.TokensFromShares(math.LegacyNewDec(10))))
 }
 
+// TestShareTokens_ZeroDelegatorShares verifies the defensive guard against
+// divide-by-zero when DelegatorShares is zero — symmetric with the existing
+// SharesFromTokens guard for Tokens=0. Without the guard, slashing.Unjail on
+// a stale validator zeroed for next-block cleanup would panic through
+// TokensFromShares (see #1205).
+func TestShareTokens_ZeroDelegatorShares(t *testing.T) {
+	validator := mkValidator(100, math.LegacyNewDec(100))
+	validator.Tokens = math.ZeroInt()
+	validator.DelegatorShares = math.LegacyZeroDec()
+
+	require.NotPanics(t, func() {
+		got := validator.TokensFromShares(math.LegacyNewDec(50))
+		assert.True(math.LegacyDecEq(t, math.LegacyZeroDec(), got))
+	})
+	require.NotPanics(t, func() {
+		got := validator.TokensFromSharesTruncated(math.LegacyNewDec(50))
+		assert.True(math.LegacyDecEq(t, math.LegacyZeroDec(), got))
+	})
+	require.NotPanics(t, func() {
+		got := validator.TokensFromSharesRoundUp(math.LegacyNewDec(50))
+		assert.True(math.LegacyDecEq(t, math.LegacyZeroDec(), got))
+	})
+}
+
 func TestRemoveTokens(t *testing.T) {
 	validator := mkValidator(100, math.LegacyNewDec(100))
 

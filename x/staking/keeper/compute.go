@@ -556,10 +556,29 @@ func (k Keeper) markValidatorForDeletion(ctx context.Context, validator types.Va
 		return err
 	}
 
-	// Jailed validators can't be added to power index, so delete them immediately
+	// Jailed validators can't be added to the power index. Zero out Tokens
+	// (the PoC power proxy) but KEEP DelegatorShares so TokensFromShares =
+	// shares × Tokens / DelegatorShares returns 0 cleanly — preventing a
+	// divide-by-zero panic if slashing.Unjail later runs on this stale
+	// validator before DeleteZeroPowerValidators removes it.
+	//
+	// jailValidator (val_state_change.go) already removed this validator from
+	// the power index, so ApplyAndReturnValidatorSetUpdates's main loop won't
+	// iterate it. The tail loop over LastValidatorPower emits the power-0
+	// ValidatorUpdate, and DeleteZeroPowerValidators physically removes the
+	// record on the next block — after LastValidatorPower has been cleared
+	// and CometBFT has been told to drop the validator from its active set.
+	//
+	// Deleting the record immediately (the previous behavior) wiped the
+	// ValidatorByConsAddr index while CometBFT still included the validator
+	// in LastCommit for ValidatorUpdateDelay blocks, causing
+	// slashing.BeginBlocker to halt the chain with ErrNoValidatorFound on
+	// the next block (#1205).
 	if validator.Jailed {
-		logger.Info("deleting jailed validator immediately", "operator", validator.OperatorAddress)
-		return k.deleteValidatorInternal(ctx, validator, valAddr)
+		logger.Info("zero-tokens jailed validator for next-block cleanup", "operator", validator.OperatorAddress)
+		validator.Tokens = math.ZeroInt()
+		validator.UnbondingIds = []uint64{}
+		return k.SetValidator(ctx, validator)
 	}
 
 	// For non-jailed validators, mark for deletion in next block

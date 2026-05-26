@@ -303,19 +303,34 @@ func (v Validator) InvalidExRate() bool {
 	return v.Tokens.IsZero() && v.DelegatorShares.IsPositive()
 }
 
-// calculate the token worth of provided shares
+// calculate the token worth of provided shares.
+// Returns zero when DelegatorShares is zero — symmetric with
+// SharesFromTokens's guard for Tokens.IsZero — to avoid a divide-by-zero
+// panic on stale validators whose tokens have been zeroed for next-block
+// cleanup (see #1205).
 func (v Validator) TokensFromShares(shares math.LegacyDec) math.LegacyDec {
+	if v.DelegatorShares.IsZero() {
+		return math.LegacyZeroDec()
+	}
 	return (shares.MulInt(v.Tokens)).Quo(v.DelegatorShares)
 }
 
-// calculate the token worth of provided shares, truncated
+// calculate the token worth of provided shares, truncated.
+// See TokensFromShares for the DelegatorShares=0 defensive guard rationale.
 func (v Validator) TokensFromSharesTruncated(shares math.LegacyDec) math.LegacyDec {
+	if v.DelegatorShares.IsZero() {
+		return math.LegacyZeroDec()
+	}
 	return (shares.MulInt(v.Tokens)).QuoTruncate(v.DelegatorShares)
 }
 
 // TokensFromSharesRoundUp returns the token worth of provided shares, rounded
 // up.
+// See TokensFromShares for the DelegatorShares=0 defensive guard rationale.
 func (v Validator) TokensFromSharesRoundUp(shares math.LegacyDec) math.LegacyDec {
+	if v.DelegatorShares.IsZero() {
+		return math.LegacyZeroDec()
+	}
 	return (shares.MulInt(v.Tokens)).QuoRoundUp(v.DelegatorShares)
 }
 

@@ -183,6 +183,7 @@ func (app *BaseApp) Query(_ context.Context, req *abci.RequestQuery) (resp *abci
 	gonkaQueryInFlight.WithLabelValues(gonkaRec.method, gonkaRec.transport).Inc()
 	defer gonkaQueryInFlight.WithLabelValues(gonkaRec.method, gonkaRec.transport).Dec()
 	defer func() {
+		gonkaRec.currentHeight = app.LastBlockHeight()
 		gonkaRec.totalDuration = time.Since(gonkaRec.start)
 		switch {
 		case resp != nil:

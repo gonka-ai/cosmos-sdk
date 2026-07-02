@@ -46,9 +46,8 @@ func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server
 		//  - go-metrics counters (`query_count`, `query_<method>`) preserved
 		//    for backward compatibility with the existing telemetry series.
 		//  - gonka_query_* Prometheus metrics with method/status/transport
-		//    labels, registered in query_metrics.go. Slow queries above the
-		//    GONKA_SLOW_QUERY_THRESHOLD_MS threshold also emit a structured
-		//    log line carrying request summary + peer.
+		//    labels, registered in query_metrics.go. Configured slow queries
+		//    also emit a structured log line carrying request summary + peer.
 		method := info.FullMethod
 		transport := GonkaTransportGRPC
 
@@ -91,9 +90,9 @@ func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server
 		// below so it pops second (LIFO) and observes post-recovery err.
 		defer func() {
 			totalDuration := time.Since(start)
-			requestSummary := fmt.Sprintf("%T", req)
-			if threshold := gonkaSlowQueryThresholdMs.Load(); threshold > 0 && totalDuration.Milliseconds() >= threshold {
-				requestSummary = fmt.Sprintf("%v", req)
+			requestSize := -1
+			if s, ok := req.(interface{ Size() int }); ok {
+				requestSize = s.Size()
 			}
 			rec := gonkaQueryRecord{
 				method:          method,
@@ -107,7 +106,12 @@ func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server
 				respBytes:       -1,
 				requestedHeight: requestedHeight,
 				currentHeight:   app.LastBlockHeight(),
-				requestSummary:  requestSummary,
+				requestSummary: func(includeContent bool) string {
+					if includeContent {
+						return fmt.Sprintf("%v", req)
+					}
+					return fmt.Sprintf("type=%T size=%dB", req, requestSize)
+				},
 			}
 			if s, sok := resp.(interface{ Size() int }); sok {
 				rec.respBytes = s.Size()

@@ -163,26 +163,29 @@ func (app *BaseApp) Query(_ context.Context, req *abci.RequestQuery) (resp *abci
 		req.Height = app.LastBlockHeight()
 	}
 
+	sanitizedPath := gonkaSanitizeQueryPath(app, req.Path)
 	telemetry.IncrCounter(1, "query", "count")
-	telemetry.IncrCounter(1, "query", req.Path)
-	defer telemetry.MeasureSince(telemetry.Now(), req.Path)
+	telemetry.IncrCounter(1, "query", sanitizedPath)
+	defer telemetry.MeasureSince(telemetry.Now(), sanitizedPath)
 
 	// Gonka: full Prometheus instrumentation for the ABCI query path. Pairs
 	// with the gRPC interceptor in grpcserver.go so REST/gRPC/ABCI all share
 	// the same gonka_query_* series, separated by the transport label.
 	gonkaRec := gonkaQueryRecord{
-		method:          req.Path,
+		method:          sanitizedPath,
 		transport:       GonkaTransportABCI,
 		peer:            GonkaPeerABCI,
 		start:           time.Now(),
 		respBytes:       -1,
 		requestedHeight: req.Height,
 		currentHeight:   app.LastBlockHeight(),
-		requestSummary:  fmt.Sprintf("path=%s height=%d data=%dB prove=%v", req.Path, req.Height, len(req.Data), req.Prove),
+		requestSummary: func(bool) string {
+			return fmt.Sprintf("path=%s height=%d data=%dB prove=%v", req.Path, req.Height, len(req.Data), req.Prove)
+		},
 	}
 	gonkaQueryInFlight.WithLabelValues(gonkaRec.method, gonkaRec.transport).Inc()
-	defer gonkaQueryInFlight.WithLabelValues(gonkaRec.method, gonkaRec.transport).Dec()
 	defer func() {
+		gonkaQueryInFlight.WithLabelValues(gonkaRec.method, gonkaRec.transport).Dec()
 		gonkaRec.currentHeight = app.LastBlockHeight()
 		gonkaRec.totalDuration = time.Since(gonkaRec.start)
 		switch {
@@ -1202,7 +1205,6 @@ func (app *BaseApp) handleQueryGRPC(handler GRPCQueryHandler, req *abci.RequestQ
 		if gm := ctx.GasMeter(); gm != nil {
 			rec.gasConsumed = gm.GasConsumed()
 		}
-		rec.requestSummary = fmt.Sprintf("path=%s height=%d data=%dB prove=%v", req.Path, req.Height, len(req.Data), req.Prove)
 	}
 
 	if err != nil {

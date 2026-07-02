@@ -17,19 +17,27 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	grpccodes "google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
+
+	"github.com/cosmos/cosmos-sdk/telemetry"
 )
 
 const (
 	gonkaQueryNamespace = "gonka"
 	gonkaQuerySubsystem = "query"
+
+	gonkaSlowQueryEnabledEnv         = "GONKA_SLOW_QUERY_ENABLED"
+	gonkaSlowQueryThresholdMSEnv     = "GONKA_SLOW_QUERY_THRESHOLD_MS"
+	gonkaSlowQueryRateLimitEnv       = "GONKA_SLOW_QUERY_RATE_LIMIT"
+	gonkaSlowQueryRequestContentEnv  = "GONKA_SLOW_QUERY_REQUEST_CONTENT"
+	gonkaSlowQueryRequestMaxBytesEnv = "GONKA_SLOW_QUERY_REQUEST_MAX_BYTES"
 
 	GonkaTransportGRPC = "grpc"
 	GonkaTransportREST = "rest"
@@ -116,28 +124,9 @@ var (
 		Namespace: gonkaQueryNamespace,
 		Subsystem: gonkaQuerySubsystem,
 		Name:      "slow_total",
-		Help:      "Number of queries that exceeded the slow-query threshold and were logged.",
+		Help:      "Number of queries that exceeded the slow-query threshold.",
 	}, []string{"method", "transport"})
 )
-
-// Gonka: slow-query threshold in milliseconds. Read once from env at init,
-// stored as atomic so operators can adjust at runtime if a control surface is
-// wired in later. 0 disables slow-query logging.
-var gonkaSlowQueryThresholdMs atomic.Int64
-
-func init() {
-	v := os.Getenv("GONKA_SLOW_QUERY_THRESHOLD_MS")
-	if v == "" {
-		gonkaSlowQueryThresholdMs.Store(500)
-		return
-	}
-	parsed, err := strconv.ParseInt(v, 10, 64)
-	if err != nil || parsed < 0 {
-		gonkaSlowQueryThresholdMs.Store(500)
-		return
-	}
-	gonkaSlowQueryThresholdMs.Store(parsed)
-}
 
 // gonkaPeerSet bounds the cardinality of the peer label. Once the cap is hit,
 // further new peers collapse into GonkaPeerOverflow. This is a one-shot bound;
@@ -222,7 +211,7 @@ type gonkaQueryRecord struct {
 	gasConsumed     uint64
 	requestedHeight int64
 	currentHeight   int64
-	requestSummary  string
+	requestSummary  func(includeContent bool) string
 }
 
 // gonkaObserve records all query Prometheus metrics in one place.
@@ -256,24 +245,59 @@ func gonkaObserve(r gonkaQueryRecord) {
 }
 
 // gonkaTruncate keeps log lines compact.
-func gonkaTruncate(s string, max int) string {
-	if len(s) <= max {
+func gonkaTruncate(s string, max int64) string {
+	if max <= 0 || int64(len(s)) <= max {
 		return s
 	}
-	return s[:max] + "...(truncated)"
+	return s[:int(max)] + "...(truncated)"
 }
 
-// gonkaMaybeSlowLog emits a structured slow-query log line if the threshold
-// is set and exceeded. Threshold == 0 disables.
+var (
+	gonkaSlowLogLastTime time.Time
+	gonkaSlowLogCount    int64
+	gonkaSlowLogMu       sync.Mutex
+)
+
+// gonkaAllowSlowLog rate limits slow query warnings to prevent log/disk exhaustion.
+func gonkaAllowSlowLog(limit int64) bool {
+	if limit == 0 {
+		return true
+	}
+
+	gonkaSlowLogMu.Lock()
+	defer gonkaSlowLogMu.Unlock()
+
+	now := time.Now()
+	if now.Sub(gonkaSlowLogLastTime) >= time.Second {
+		gonkaSlowLogLastTime = now
+		gonkaSlowLogCount = 1
+		return true
+	}
+
+	if gonkaSlowLogCount < limit {
+		gonkaSlowLogCount++
+		return true
+	}
+	return false
+}
+
+// gonkaMaybeSlowLog emits a structured slow-query log line when enabled and
+// the configured threshold is exceeded.
 func gonkaMaybeSlowLog(logger log.Logger, r gonkaQueryRecord) {
-	threshold := gonkaSlowQueryThresholdMs.Load()
-	if threshold <= 0 {
+	cfg := gonkaSlowQueryConfig()
+	if !cfg.Enabled {
 		return
 	}
-	if r.totalDuration.Milliseconds() < threshold {
+	if r.totalDuration.Milliseconds() < cfg.ThresholdMS {
 		return
 	}
 	gonkaQuerySlow.WithLabelValues(r.method, r.transport).Inc()
+	if !gonkaAllowSlowLog(cfg.RateLimit) {
+		return
+	}
+
+	requestSummary := gonkaSlowQueryRequestSummary(cfg, r)
+
 	logger.Warn("slow query",
 		"method", r.method,
 		"transport", r.transport,
@@ -286,6 +310,125 @@ func gonkaMaybeSlowLog(logger log.Logger, r gonkaQueryRecord) {
 		"requested_height", r.requestedHeight,
 		"current_height", r.currentHeight,
 		"peer", r.peer,
-		"request", strings.TrimSpace(gonkaTruncate(r.requestSummary, 512)),
+		"request", requestSummary,
 	)
+}
+
+func gonkaSlowQueryRequestSummary(cfg telemetry.SlowQueryConfig, r gonkaQueryRecord) string {
+	if r.requestSummary == nil {
+		return ""
+	}
+
+	includeContent := cfg.RequestContent
+	requestSummary := r.requestSummary(includeContent)
+	requestSummary = gonkaTruncate(requestSummary, cfg.RequestMaxBytes)
+	return strings.TrimSpace(requestSummary)
+}
+
+// gonkaSlowQueryConfig preserves the original environment variable as an
+// override while allowing app.toml to configure the same behavior.
+func gonkaSlowQueryConfig() telemetry.SlowQueryConfig {
+	cfg := telemetry.GetSlowQueryConfig()
+
+	enabledOverride, enabledOverrideSet := gonkaBoolEnv(gonkaSlowQueryEnabledEnv)
+
+	if v, ok := gonkaEnvValue(gonkaSlowQueryThresholdMSEnv); ok {
+		threshold, err := strconv.ParseInt(v, 10, 64)
+		switch {
+		case err != nil || threshold < 0:
+			cfg.ThresholdMS = telemetry.DefaultSlowQueryThresholdMS
+			if !enabledOverrideSet {
+				cfg.Enabled = true
+			}
+		case threshold == 0:
+			if !enabledOverrideSet {
+				cfg.Enabled = false
+			}
+		default:
+			cfg.ThresholdMS = threshold
+			if !enabledOverrideSet {
+				cfg.Enabled = true
+			}
+		}
+	}
+
+	if enabledOverrideSet {
+		cfg.Enabled = enabledOverride
+	}
+	if rateLimit, ok := gonkaNonNegativeIntEnv(gonkaSlowQueryRateLimitEnv); ok {
+		cfg.RateLimit = rateLimit
+	}
+	if requestContent, ok := gonkaBoolEnv(gonkaSlowQueryRequestContentEnv); ok {
+		cfg.RequestContent = requestContent
+	}
+	if requestMaxBytes, ok := gonkaNonNegativeIntEnv(gonkaSlowQueryRequestMaxBytesEnv); ok {
+		cfg.RequestMaxBytes = requestMaxBytes
+	}
+	return cfg
+}
+
+func gonkaEnvValue(name string) (string, bool) {
+	v, ok := os.LookupEnv(name)
+	return v, ok && v != ""
+}
+
+func gonkaBoolEnv(name string) (bool, bool) {
+	v, ok := gonkaEnvValue(name)
+	if !ok {
+		return false, false
+	}
+	parsed, err := strconv.ParseBool(v)
+	return parsed, err == nil
+}
+
+func gonkaNonNegativeIntEnv(name string) (int64, bool) {
+	v, ok := gonkaEnvValue(name)
+	if !ok {
+		return 0, false
+	}
+	parsed, err := strconv.ParseInt(v, 10, 64)
+	return parsed, err == nil && parsed >= 0
+}
+
+// gonkaSanitizeQueryPath returns a sanitized, low-cardinality path string for metric labels.
+func gonkaSanitizeQueryPath(app *BaseApp, requestPath string) string {
+	if app.grpcQueryRouter.Route(requestPath) != nil {
+		return requestPath
+	}
+
+	path := SplitABCIQueryPath(requestPath)
+	if len(path) == 0 {
+		return "unrecognized"
+	}
+
+	switch path[0] {
+	case QueryPathApp:
+		if len(path) >= 2 && (path[1] == "simulate" || path[1] == "version") {
+			return "/app/" + path[1]
+		}
+		return "unrecognized"
+
+	case QueryPathStore:
+		if len(path) >= 2 {
+			storeName := path[1]
+			var storeExists bool
+			if lister, ok := app.cms.(interface {
+				GetStoreByName(name string) storetypes.Store
+			}); ok {
+				storeExists = lister.GetStoreByName(storeName) != nil
+			}
+			if storeExists {
+				return "/store/" + storeName
+			}
+		}
+		return "unrecognized"
+
+	case QueryPathP2P:
+		if len(path) >= 4 && path[1] == "filter" && (path[2] == "addr" || path[2] == "id") {
+			return "/p2p/filter/" + path[2]
+		}
+		return "unrecognized"
+	}
+
+	return "unrecognized"
 }

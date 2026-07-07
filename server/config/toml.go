@@ -132,6 +132,26 @@ statsd-addr = "{{ .Telemetry.StatsdAddr }}"
 # Datadog. Only utilized if MetricsSink is set to "dogstatsd".
 datadog-hostname = "{{ .Telemetry.DatadogHostname }}"
 
+# SlowQueryEnabled enables structured slow-query warning logs.
+# Environment override: GONKA_SLOW_QUERY_ENABLED.
+slow-query-enabled = {{ .Telemetry.SlowQueryEnabled }}
+
+# SlowQueryThresholdMS is the query duration in milliseconds that triggers a
+# slow-query log. GONKA_SLOW_QUERY_THRESHOLD_MS, when set, takes precedence.
+slow-query-threshold-ms = {{ .Telemetry.SlowQueryThresholdMS }}
+
+# SlowQueryRateLimit limits slow-query logs per second. Zero is unlimited.
+# Environment override: GONKA_SLOW_QUERY_RATE_LIMIT.
+slow-query-rate-limit = {{ .Telemetry.SlowQueryRateLimit }}
+
+# SlowQueryRequestContent includes request contents in slow-query logs.
+# Environment override: GONKA_SLOW_QUERY_REQUEST_CONTENT.
+slow-query-request-content = {{ .Telemetry.SlowQueryRequestContent }}
+
+# SlowQueryRequestMaxBytes limits the logged request-content length.
+# Zero is unlimited. Environment override: GONKA_SLOW_QUERY_REQUEST_MAX_BYTES.
+slow-query-request-max-bytes = {{ .Telemetry.SlowQueryRequestMaxBytes }}
+
 ###############################################################################
 ###                           API Configuration                             ###
 ###############################################################################

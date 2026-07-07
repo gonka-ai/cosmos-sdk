@@ -163,9 +163,43 @@ func (app *BaseApp) Query(_ context.Context, req *abci.RequestQuery) (resp *abci
 		req.Height = app.LastBlockHeight()
 	}
 
+	sanitizedPath := gonkaSanitizeQueryPath(app, req.Path)
 	telemetry.IncrCounter(1, "query", "count")
-	telemetry.IncrCounter(1, "query", req.Path)
-	defer telemetry.MeasureSince(telemetry.Now(), req.Path)
+	telemetry.IncrCounter(1, "query", sanitizedPath)
+	defer telemetry.MeasureSince(telemetry.Now(), sanitizedPath)
+
+	// Gonka: full Prometheus instrumentation for the ABCI query path. Pairs
+	// with the gRPC interceptor in grpcserver.go so REST/gRPC/ABCI all share
+	// the same gonka_query_* series, separated by the transport label.
+	gonkaRec := gonkaQueryRecord{
+		method:          sanitizedPath,
+		transport:       GonkaTransportABCI,
+		peer:            GonkaPeerABCI,
+		start:           time.Now(),
+		respBytes:       -1,
+		requestedHeight: req.Height,
+		currentHeight:   app.LastBlockHeight(),
+		requestSummary: func(bool) string {
+			return fmt.Sprintf("path=%s height=%d data=%dB prove=%v", req.Path, req.Height, len(req.Data), req.Prove)
+		},
+	}
+	gonkaQueryInFlight.WithLabelValues(gonkaRec.method, gonkaRec.transport).Inc()
+	defer func() {
+		gonkaQueryInFlight.WithLabelValues(gonkaRec.method, gonkaRec.transport).Dec()
+		gonkaRec.currentHeight = app.LastBlockHeight()
+		gonkaRec.totalDuration = time.Since(gonkaRec.start)
+		switch {
+		case resp != nil:
+			gonkaRec.status = gonkaClassifyABCICode(resp.Code)
+			gonkaRec.respBytes = len(resp.Value)
+		case err != nil:
+			gonkaRec.status = "error"
+		default:
+			gonkaRec.status = "ok"
+		}
+		gonkaObserve(gonkaRec)
+		gonkaMaybeSlowLog(app.logger, gonkaRec)
+	}()
 
 	if req.Path == QueryPathBroadcastTx {
 		return sdkerrors.QueryResult(errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "can't route a broadcast tx message"), app.trace), nil
@@ -174,7 +208,9 @@ func (app *BaseApp) Query(_ context.Context, req *abci.RequestQuery) (resp *abci
 	// handle gRPC routes first rather than calling splitPath because '/' characters
 	// are used as part of gRPC paths
 	if grpcHandler := app.grpcQueryRouter.Route(req.Path); grpcHandler != nil {
-		return app.handleQueryGRPC(grpcHandler, req), nil
+		// Gonka: handleQueryGRPC populates setup/handler timings + gas onto
+		// gonkaRec, which the deferred observation above reads.
+		return app.handleQueryGRPC(grpcHandler, req, &gonkaRec), nil
 	}
 
 	path := SplitABCIQueryPath(req.Path)
@@ -1149,13 +1185,28 @@ func (app *BaseApp) getContextForProposal(ctx sdk.Context, height int64) sdk.Con
 	return ctx
 }
 
-func (app *BaseApp) handleQueryGRPC(handler GRPCQueryHandler, req *abci.RequestQuery) *abci.ResponseQuery {
+// Gonka: third arg `rec` is optional. When non-nil, the function records the
+// CreateQueryContext duration as setup, the handler invocation duration as
+// handler, and gas consumed. The top-level Query() reads these in its defer.
+func (app *BaseApp) handleQueryGRPC(handler GRPCQueryHandler, req *abci.RequestQuery, rec *gonkaQueryRecord) *abci.ResponseQuery {
+	setupStart := time.Now()
 	ctx, err := app.CreateQueryContext(req.Height, req.Prove)
+	if rec != nil {
+		rec.setupDuration = time.Since(setupStart)
+	}
 	if err != nil {
 		return sdkerrors.QueryResult(err, app.trace)
 	}
 
+	handlerStart := time.Now()
 	resp, err := handler(ctx, req)
+	if rec != nil {
+		rec.handlerDuration = time.Since(handlerStart)
+		if gm := ctx.GasMeter(); gm != nil {
+			rec.gasConsumed = gm.GasConsumed()
+		}
+	}
+
 	if err != nil {
 		resp = sdkerrors.QueryResult(gRPCErrorToSDKError(err), app.trace)
 		resp.Height = req.Height

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -215,6 +216,15 @@ func TestSetConfigTemplate(t *testing.T) {
 	require.NoError(t, serr, "after SetConfigTemplate, configTemplate.Execute")
 	actual := setBuffer.String()
 	require.Equal(t, expected, actual, "resulting config strings")
+}
+
+func TestDefaultSlowQueryConfigPreservesExistingBehavior(t *testing.T) {
+	cfg := DefaultConfig().Telemetry
+	require.True(t, cfg.SlowQueryEnabled)
+	require.Equal(t, telemetry.DefaultSlowQueryThresholdMS, cfg.SlowQueryThresholdMS)
+	require.Zero(t, cfg.SlowQueryRateLimit)
+	require.True(t, cfg.SlowQueryRequestContent)
+	require.Equal(t, telemetry.DefaultSlowQueryRequestMaxBytes, cfg.SlowQueryRequestMaxBytes)
 }
 
 func TestAppConfig(t *testing.T) {

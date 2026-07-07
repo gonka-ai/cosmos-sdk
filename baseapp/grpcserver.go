@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	gogogrpc "github.com/cosmos/gogoproto/grpc"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -11,11 +12,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
@@ -38,12 +41,89 @@ func (app *BaseApp) RegisterGRPCServer(server gogogrpc.Server) {
 func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server, skipCheckHeader bool) {
 	// Define an interceptor for all gRPC queries: this interceptor will create
 	// a new sdk.Context, and pass it into the query handler.
-	interceptor := func(grpcCtx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+	interceptor := func(grpcCtx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+		// Gonka: query telemetry. Two layers:
+		//  - go-metrics counters (`query_count`, `query_<method>`) preserved
+		//    for backward compatibility with the existing telemetry series.
+		//  - gonka_query_* Prometheus metrics with method/status/transport
+		//    labels, registered in query_metrics.go. Configured slow queries
+		//    also emit a structured log line carrying request summary + peer.
+		method := info.FullMethod
+		transport := GonkaTransportGRPC
+
 		// If there's some metadata in the context, retrieve it.
 		md, ok := metadata.FromIncomingContext(grpcCtx)
 		if !ok {
 			return nil, status.Error(codes.Internal, "unable to retrieve metadata")
 		}
+
+		// Gonka: REST traffic flows through grpc-gateway and arrives here as a
+		// gRPC call carrying `grpcgateway-*` forwarded headers.
+		if len(md.Get("grpcgateway-user-agent")) > 0 {
+			transport = GonkaTransportREST
+		}
+
+		// Gonka: peer attribution (bucketed by /24 or /48 to bound cardinality).
+		peerLabel := GonkaPeerUnknown
+		if p, pok := peer.FromContext(grpcCtx); pok && p.Addr != nil {
+			peerLabel = gonkaSanitizePeer(p.Addr.String())
+		}
+
+		telemetry.IncrCounter(1, "query", "count")
+		telemetry.IncrCounter(1, "query", method)
+		defer telemetry.MeasureSince(telemetry.Now(), method)
+
+		gonkaQueryInFlight.WithLabelValues(method, transport).Inc()
+		defer gonkaQueryInFlight.WithLabelValues(method, transport).Dec()
+
+		var (
+			sdkCtx          sdk.Context
+			sdkCtxValid     bool
+			requestedHeight int64
+			start           = time.Now()
+			setupDuration   time.Duration
+			handlerStart    time.Time
+			handlerDuration time.Duration
+		)
+
+		// Gonka: deferred metrics observation. Added before the recovery defer
+		// below so it pops second (LIFO) and observes post-recovery err.
+		defer func() {
+			totalDuration := time.Since(start)
+			requestSize := -1
+			if s, ok := req.(interface{ Size() int }); ok {
+				requestSize = s.Size()
+			}
+			rec := gonkaQueryRecord{
+				method:          method,
+				transport:       transport,
+				status:          gonkaClassifyGRPCErr(err),
+				peer:            peerLabel,
+				start:           start,
+				setupDuration:   setupDuration,
+				handlerDuration: handlerDuration,
+				totalDuration:   totalDuration,
+				respBytes:       -1,
+				requestedHeight: requestedHeight,
+				currentHeight:   app.LastBlockHeight(),
+				requestSummary: func(includeContent bool) string {
+					if includeContent {
+						return fmt.Sprintf("%v", req)
+					}
+					return fmt.Sprintf("type=%T size=%dB", req, requestSize)
+				},
+			}
+			if s, sok := resp.(interface{ Size() int }); sok {
+				rec.respBytes = s.Size()
+			}
+			if sdkCtxValid {
+				if gm := sdkCtx.GasMeter(); gm != nil {
+					rec.gasConsumed = gm.GasConsumed()
+				}
+			}
+			gonkaObserve(rec)
+			gonkaMaybeSlowLog(app.logger, rec)
+		}()
 
 		// Get height header from the request context, if present.
 		var height int64
@@ -58,13 +138,17 @@ func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server
 				return nil, err
 			}
 		}
+		requestedHeight = height
 
-		// Create the sdk.Context. Passing false as 2nd arg, as we can't
-		// actually support proofs with gRPC right now.
-		sdkCtx, err := app.CreateQueryContextWithCheckHeader(height, false, !skipCheckHeader)
+		// Gonka: time the sdk.Context construction. Commit-phase blocking
+		// shows up here, not in the handler.
+		setupStart := time.Now()
+		sdkCtx, err = app.CreateQueryContextWithCheckHeader(height, false, !skipCheckHeader)
+		setupDuration = time.Since(setupStart)
 		if err != nil {
 			return nil, err
 		}
+		sdkCtxValid = true
 
 		// Add relevant gRPC headers
 		if height == 0 {
@@ -93,7 +177,10 @@ func (app *BaseApp) RegisterGRPCServerWithSkipCheckHeader(server gogogrpc.Server
 			}
 		}()
 
-		return handler(grpcCtx, req)
+		handlerStart = time.Now()
+		resp, err = handler(grpcCtx, req)
+		handlerDuration = time.Since(handlerStart)
+		return resp, err
 	}
 
 	// Loop through all services and methods, add the interceptor, and register

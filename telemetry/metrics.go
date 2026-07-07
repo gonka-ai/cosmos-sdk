@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/hashicorp/go-metrics"
@@ -18,6 +19,37 @@ import (
 // globalTelemetryEnabled is a private variable that stores the telemetry enabled state.
 // It is set on initialization and does not change for the lifetime of the program.
 var globalTelemetryEnabled bool
+
+const (
+	DefaultSlowQueryThresholdMS     int64 = 500
+	DefaultSlowQueryRequestMaxBytes int64 = 512
+)
+
+// SlowQueryConfig contains the process-wide slow-query logging controls.
+// A zero rate limit or request-size limit means unlimited.
+type SlowQueryConfig struct {
+	Enabled         bool
+	ThresholdMS     int64
+	RateLimit       int64
+	RequestContent  bool
+	RequestMaxBytes int64
+}
+
+var globalSlowQueryConfig atomic.Value
+
+func init() {
+	globalSlowQueryConfig.Store(SlowQueryConfig{
+		Enabled:         true,
+		ThresholdMS:     DefaultSlowQueryThresholdMS,
+		RequestContent:  true,
+		RequestMaxBytes: DefaultSlowQueryRequestMaxBytes,
+	})
+}
+
+// GetSlowQueryConfig returns the normalized process-wide slow-query settings.
+func GetSlowQueryConfig() SlowQueryConfig {
+	return globalSlowQueryConfig.Load().(SlowQueryConfig)
+}
 
 // IsTelemetryEnabled provides controlled access to check if telemetry is enabled.
 func IsTelemetryEnabled() bool {
@@ -90,6 +122,23 @@ type Config struct {
 	// DatadogHostname defines the hostname to use when emitting metrics to
 	// Datadog. Only utilized if MetricsSink is set to "dogstatsd".
 	DatadogHostname string `mapstructure:"datadog-hostname"`
+
+	// SlowQueryEnabled controls structured slow-query warning logs.
+	SlowQueryEnabled bool `mapstructure:"slow-query-enabled"`
+
+	// SlowQueryThresholdMS is the query duration that triggers a slow-query log.
+	// Zero uses DefaultSlowQueryThresholdMS.
+	SlowQueryThresholdMS int64 `mapstructure:"slow-query-threshold-ms"`
+
+	// SlowQueryRateLimit limits slow-query logs per second. Zero is unlimited.
+	SlowQueryRateLimit int64 `mapstructure:"slow-query-rate-limit"`
+
+	// SlowQueryRequestContent includes request contents in slow-query logs.
+	SlowQueryRequestContent bool `mapstructure:"slow-query-request-content"`
+
+	// SlowQueryRequestMaxBytes limits the logged request-content length.
+	// Zero is unlimited.
+	SlowQueryRequestMaxBytes int64 `mapstructure:"slow-query-request-max-bytes"`
 }
 
 // Metrics defines a wrapper around application telemetry functionality. It allows
@@ -110,6 +159,12 @@ type GatherResponse struct {
 
 // New creates a new instance of Metrics
 func New(cfg Config) (_ *Metrics, rerr error) {
+	slowQueryCfg, slowQueryErr := normalizeSlowQueryConfig(cfg)
+	if slowQueryErr != nil {
+		return nil, slowQueryErr
+	}
+	globalSlowQueryConfig.Store(slowQueryCfg)
+
 	globalTelemetryEnabled = cfg.Enabled
 	if !cfg.Enabled {
 		return nil, nil
@@ -173,6 +228,31 @@ func New(cfg Config) (_ *Metrics, rerr error) {
 	}
 
 	return m, nil
+}
+
+func normalizeSlowQueryConfig(cfg Config) (SlowQueryConfig, error) {
+	if cfg.SlowQueryThresholdMS < 0 {
+		return SlowQueryConfig{}, errors.New("slow-query-threshold-ms cannot be negative")
+	}
+	if cfg.SlowQueryRateLimit < 0 {
+		return SlowQueryConfig{}, errors.New("slow-query-rate-limit cannot be negative")
+	}
+	if cfg.SlowQueryRequestMaxBytes < 0 {
+		return SlowQueryConfig{}, errors.New("slow-query-request-max-bytes cannot be negative")
+	}
+
+	threshold := cfg.SlowQueryThresholdMS
+	if threshold == 0 {
+		threshold = DefaultSlowQueryThresholdMS
+	}
+
+	return SlowQueryConfig{
+		Enabled:         cfg.SlowQueryEnabled,
+		ThresholdMS:     threshold,
+		RateLimit:       cfg.SlowQueryRateLimit,
+		RequestContent:  cfg.SlowQueryRequestContent,
+		RequestMaxBytes: cfg.SlowQueryRequestMaxBytes,
+	}, nil
 }
 
 // Gather collects all registered metrics and returns a GatherResponse where the

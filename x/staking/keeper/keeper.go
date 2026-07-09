@@ -79,6 +79,9 @@ type Keeper struct {
 	authority             string
 	validatorAddressCodec addresscodec.Codec
 	consensusAddressCodec addresscodec.Codec
+	// tombstoneChecker, when set, reports whether a validator is tombstoned in the
+	// slashing module. Injected via SetTombstoneChecker to avoid a circular import.
+	tombstoneChecker TombstoneChecker
 }
 
 // NewKeeper creates a new staking Keeper instance
@@ -148,6 +151,14 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) {
 	}
 
 	k.hooks = sh
+}
+
+// SetTombstoneChecker injects a function reporting whether a validator (by consensus
+// address) is tombstoned in the slashing module. The epoch validator-set recompute
+// (SetComputeValidators) uses it so a permanently-banned (e.g. equivocating) validator
+// is not resurrected. Wired in app setup once the slashing keeper exists; nil = unchanged.
+func (k *Keeper) SetTombstoneChecker(fn TombstoneChecker) {
+	k.tombstoneChecker = fn
 }
 
 // GetLastTotalPower loads the last total validator power.

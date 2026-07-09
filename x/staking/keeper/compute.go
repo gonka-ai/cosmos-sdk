@@ -96,6 +96,11 @@ func (k Keeper) SetComputeValidatorsBeforeValidatorIndexFixHeight(ctx context.Co
 	return k.GetAllValidators(ctx)
 }
 
+// TombstoneChecker reports whether the validator with the given consensus address is
+// tombstoned in the slashing module. Injected via Keeper.SetTombstoneChecker so the
+// epoch recompute can keep a permanently-banned validator out of the active set.
+type TombstoneChecker func(ctx context.Context, consAddr sdk.ConsAddress) bool
+
 // SetComputeValidators is the main entry point for updating the validator set.
 // It synchronizes the state with the provided list of compute results.
 func (k Keeper) SetComputeValidators(
@@ -166,6 +171,16 @@ func (k Keeper) SetComputeValidators(
 		result := resultsByOperatorAddress[operatorAddress]
 		val, found := currentValsByOperatorAddress[operatorAddress]
 		power := math.NewInt(result.Power)
+
+		// Skip a tombstoned validator: don't route it through updateValidator, which would
+		// unjail and re-bond it. Intentionally not markValidatorForDeletion either — its jailed
+		// branch deletes the ValidatorByConsAddr index and can halt slashing while the validator
+		// is still in CometBFT's LastCommit (see gonka-ai/gonka#1205).
+		if k.tombstoneChecker != nil && result.ValidatorPubKey != nil &&
+			k.tombstoneChecker(ctx, sdk.ConsAddress(result.ValidatorPubKey.Address())) {
+			logger.Info("skipping tombstoned validator in compute recompute (not resurrecting)", "operator", operatorAddress)
+			continue
+		}
 
 		if !found {
 			logger.Info("creating new validator", "pubkey", result.ValidatorPubKey.Address(), "power", power)

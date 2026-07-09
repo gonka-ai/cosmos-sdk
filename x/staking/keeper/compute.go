@@ -130,7 +130,18 @@ func (k Keeper) SetComputeValidators(
 		currentValsByConsensusAddress[consensusAddress] = val
 	}
 
-	computeResults = sortAndFilterComputeResult(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+	computeResults, staleToRemove := sortAndFilterComputeResult(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+
+	// Remove stale (tokens=0) validators that were blocking new participants from claiming
+	// their consensus key or changing it. The filter has already removed these from
+	// currentValsByConsensusAddress / currentValsByOperatorAddress so the downstream
+	// not-in-compute-results loop and create/update loop will treat the new entry as a
+	// fresh validator. See GON-191.
+	for _, stale := range staleToRemove {
+		if err := k.markValidatorForDeletion(ctx, stale); err != nil {
+			logger.Error("failed to mark stale validator for deletion", "operator", stale.OperatorAddress, "error", err)
+		}
+	}
 
 	resultsByOperatorAddress := make(map[string]ComputeResult)
 	for _, res := range computeResults {
@@ -194,7 +205,7 @@ func sortAndFilterComputeResult(
 	computeResults []ComputeResult,
 	currentValsByConsensusAddress map[string]types.Validator,
 	currentValsByOperatorAddress map[string]types.Validator,
-) []ComputeResult {
+) ([]ComputeResult, []types.Validator) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := sdkCtx.Logger()
 
@@ -232,7 +243,7 @@ func sortAndFilterComputeResult(
 	)
 
 	beforeFilter := computeResults
-	computeResults = filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+	computeResults, staleToRemove := filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
 	logComputeResultsFilterStats(logger, "filter_based_on_existing", beforeFilter, computeResults)
 
 	beforeFilter = computeResults
@@ -243,7 +254,7 @@ func sortAndFilterComputeResult(
 	computeResults = filterDuplicateConsensusKeys(ctx, computeResults)
 	logComputeResultsFilterStats(logger, "filter_duplicate_consensus_keys", beforeFilter, computeResults)
 
-	return computeResults
+	return computeResults, staleToRemove
 }
 
 func sortComputeResultsInplace(computeResults []ComputeResult) {
@@ -279,15 +290,30 @@ func filterInvalidComputeResults(ctx context.Context, computeResults []ComputeRe
 	return filtered
 }
 
+// filterBasedOnExisting filters compute results against the existing validator set,
+// resolving conflicts where possible. It returns the filtered results and a list of
+// stale (tokens=0) validators that the caller should mark for deletion.
+//
+// Stale-conflict resolution (GON-191): when a participant re-registers with a fresh
+// account but reuses the same ed25519 validator key, the old validator entry can
+// remain in the staking store with tokens=0 and permanently block the new account
+// from claiming that consensus key. Previously the filter silently rejected the new
+// compute result; it now removes the stale entry from the working maps and signals
+// to the caller (via the returned slice) that it should be deleted from the store.
+//
+// The same logic applies when an operator changes its consensus key: if the old
+// entry has zero tokens, allow the change instead of rejecting it.
 func filterBasedOnExisting(
 	ctx context.Context,
 	computeResults []ComputeResult,
 	currentValsByConsensusAddress map[string]types.Validator,
 	currentValsByOperatorAddress map[string]types.Validator,
-) []ComputeResult {
+) ([]ComputeResult, []types.Validator) {
 	logger := sdk.UnwrapSDKContext(ctx).Logger()
 
 	filtered := make([]ComputeResult, 0, len(computeResults))
+	var staleToRemove []types.Validator
+
 	for _, res := range computeResults {
 		if res.ValidatorPubKey == nil || res.Power <= 0 {
 			continue
@@ -296,21 +322,49 @@ func filterBasedOnExisting(
 		consensusAddress := res.ValidatorPubKey.Address().String()
 		if val, exists := currentValsByConsensusAddress[consensusAddress]; exists {
 			if val.OperatorAddress != res.OperatorAddress {
-				logger.Warn("validator with the same consensus pubkey already exists, rejecting a new one", "consensusAddress", consensusAddress, "existingValidator", val.OperatorAddress, "newValidator", res.OperatorAddress)
-				continue
+				if val.Tokens.IsZero() {
+					logger.Info("removing stale zero-power validator to resolve consensus key conflict",
+						"consensusAddress", consensusAddress,
+						"staleOperator", val.OperatorAddress,
+						"newOperator", res.OperatorAddress)
+					staleToRemove = append(staleToRemove, val)
+					delete(currentValsByConsensusAddress, consensusAddress)
+					delete(currentValsByOperatorAddress, val.OperatorAddress)
+				} else {
+					logger.Warn("validator with the same consensus pubkey already exists, rejecting a new one", "consensusAddress", consensusAddress, "existingValidator", val.OperatorAddress, "newValidator", res.OperatorAddress)
+					continue
+				}
 			}
 		}
 
 		val, exists := currentValsByOperatorAddress[res.OperatorAddress]
-		if exists && val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String() != res.ValidatorPubKey.Address().String() {
-			logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "existingConsensusKey", val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String(), "newConsensusKey", res.ValidatorPubKey.Address().String())
-			continue
+		if exists {
+			existingConsKey := val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String()
+			if existingConsKey != res.ValidatorPubKey.Address().String() {
+				if val.Tokens.IsZero() {
+					logger.Info("allowing consensus key change for zero-power validator",
+						"operator", val.OperatorAddress,
+						"oldConsensusKey", existingConsKey,
+						"newConsensusKey", res.ValidatorPubKey.Address().String())
+					staleToRemove = append(staleToRemove, val)
+					delete(currentValsByOperatorAddress, res.OperatorAddress)
+					// Also drop the stale entry from the consensus-key map. Without this,
+					// a later compute result in the same batch that happens to reuse the
+					// old consensus key would find this ghost entry, see tokens=0, and
+					// queue the same stale validator for deletion a second time — causing
+					// a duplicate markValidatorForDeletion call. (PR review, GLiberman.)
+					delete(currentValsByConsensusAddress, existingConsKey)
+				} else {
+					logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "existingConsensusKey", existingConsKey, "newConsensusKey", res.ValidatorPubKey.Address().String())
+					continue
+				}
+			}
 		}
 
 		filtered = append(filtered, res)
 	}
 
-	return filtered
+	return filtered, staleToRemove
 }
 
 func filterDuplicateOperatorAddresses(ctx context.Context, computeResults []ComputeResult) []ComputeResult {

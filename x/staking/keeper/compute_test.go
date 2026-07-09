@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"testing"
 
+	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -86,10 +87,10 @@ func TestSortAndFilterComputeResult_FromJSON(t *testing.T) {
 
 	// Run twice to ensure deterministic output (function sorts/filters internally).
 	in1 := append([]ComputeResult(nil), computeResults...)
-	out1 := sortAndFilterComputeResult(ctx, in1, emptyByCons, emptyByOp)
+	out1, _ := sortAndFilterComputeResult(ctx, in1, emptyByCons, emptyByOp)
 
 	in2 := append([]ComputeResult(nil), computeResults...)
-	out2 := sortAndFilterComputeResult(ctx, in2, emptyByCons, emptyByOp)
+	out2, _ := sortAndFilterComputeResult(ctx, in2, emptyByCons, emptyByOp)
 
 	if len(out1) != len(out2) {
 		t.Fatalf("non-deterministic output length: first=%d second=%d", len(out1), len(out2))
@@ -181,6 +182,9 @@ func TestSortAndFilterComputeResult_FiltersAgainstExisting(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create existing validator: %v", err)
 	}
+	// Give the existing validator non-zero tokens so the conflict-rejection assertions
+	// in this test still apply (GON-191 only relaxes rejection when tokens are zero).
+	existing.Tokens = math.NewInt(10)
 
 	currentByCons := map[string]types.Validator{
 		pk1.Address().String(): existing,
@@ -209,7 +213,7 @@ func TestSortAndFilterComputeResult_FiltersAgainstExisting(t *testing.T) {
 		{OperatorAddress: "op8", ValidatorPubKey: pk3, Power: -1}, // invalid (non-positive power)
 	}
 
-	out := sortAndFilterComputeResult(ctx, input, currentByCons, currentByOp)
+	out, _ := sortAndFilterComputeResult(ctx, input, currentByCons, currentByOp)
 
 	// Expect: op1 survives with pk1; op3 survives with the lexicographically smallest pubkey addr among (pk2, pk3);
 	// and only one of (op5, op6) survives for pk4 (the earlier operator in sort order).
@@ -250,5 +254,244 @@ func TestSortAndFilterComputeResult_FiltersAgainstExisting(t *testing.T) {
 				t.Fatalf("op1 did not keep existing consensus key: got=%s want=%s", res.ValidatorPubKey.Address().String(), pk1.Address().String())
 			}
 		}
+	}
+}
+
+// TestFilterBasedOnExisting_StaleConsensusKeyConflict covers GON-191 Change 1:
+// when a new operator claims a consensus key that is still held by a stale
+// (tokens=0) validator owned by a different operator, the filter should allow
+// the new entry and report the stale validator for deletion.
+func TestFilterBasedOnExisting_StaleConsensusKeyConflict(t *testing.T) {
+	t.Parallel()
+
+	key := storetypes.NewKVStoreKey("compute_test_stale_cons")
+	tkey := storetypes.NewTransientStoreKey("transient_compute_test_stale_cons")
+	sdkCtx := testutil.DefaultContext(key, tkey)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	sharedKey := mustEd25519PubKey(t, 0x10)
+
+	// Stale validator: registered to opStale, but with tokens=0 (e.g., decommissioned).
+	stale, err := types.NewValidator("opStale", sharedKey, types.Description{Moniker: "opStale"})
+	if err != nil {
+		t.Fatalf("failed to create stale validator: %v", err)
+	}
+	// Tokens already zero by default; assert that explicitly so the intent is clear.
+	if !stale.Tokens.IsZero() {
+		t.Fatalf("expected stale validator to have zero tokens by default, got %s", stale.Tokens)
+	}
+
+	currentByCons := map[string]types.Validator{
+		sharedKey.Address().String(): stale,
+	}
+	currentByOp := map[string]types.Validator{
+		"opStale": stale,
+	}
+
+	input := []ComputeResult{
+		{OperatorAddress: "opNew", ValidatorPubKey: sharedKey, Power: 10},
+	}
+
+	out, staleToRemove := filterBasedOnExisting(ctx, input, currentByCons, currentByOp)
+
+	if len(out) != 1 || out[0].OperatorAddress != "opNew" {
+		t.Fatalf("expected new operator to pass through filter, got %+v", out)
+	}
+	if len(staleToRemove) != 1 || staleToRemove[0].OperatorAddress != "opStale" {
+		t.Fatalf("expected stale validator opStale to be returned for deletion, got %+v", staleToRemove)
+	}
+	// The filter must have removed the stale entries from the working maps so the
+	// downstream create path treats opNew as a fresh validator.
+	if _, exists := currentByCons[sharedKey.Address().String()]; exists {
+		t.Fatalf("stale entry still present in currentByCons after filter")
+	}
+	if _, exists := currentByOp["opStale"]; exists {
+		t.Fatalf("stale entry still present in currentByOp after filter")
+	}
+}
+
+// TestFilterBasedOnExisting_NonStaleConsensusKeyConflict ensures the rejection path
+// is preserved for active validators: an active (tokens>0) validator's consensus key
+// cannot be hijacked by a different operator.
+func TestFilterBasedOnExisting_NonStaleConsensusKeyConflict(t *testing.T) {
+	t.Parallel()
+
+	key := storetypes.NewKVStoreKey("compute_test_active_cons")
+	tkey := storetypes.NewTransientStoreKey("transient_compute_test_active_cons")
+	sdkCtx := testutil.DefaultContext(key, tkey)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	sharedKey := mustEd25519PubKey(t, 0x11)
+
+	active, err := types.NewValidator("opActive", sharedKey, types.Description{Moniker: "opActive"})
+	if err != nil {
+		t.Fatalf("failed to create active validator: %v", err)
+	}
+	active.Tokens = math.NewInt(100)
+
+	currentByCons := map[string]types.Validator{
+		sharedKey.Address().String(): active,
+	}
+	currentByOp := map[string]types.Validator{
+		"opActive": active,
+	}
+
+	input := []ComputeResult{
+		{OperatorAddress: "opAttacker", ValidatorPubKey: sharedKey, Power: 10},
+	}
+
+	out, staleToRemove := filterBasedOnExisting(ctx, input, currentByCons, currentByOp)
+
+	if len(out) != 0 {
+		t.Fatalf("expected attacker entry to be rejected when active validator owns the key, got %+v", out)
+	}
+	if len(staleToRemove) != 0 {
+		t.Fatalf("expected no stale removals for active conflict, got %+v", staleToRemove)
+	}
+	if _, exists := currentByCons[sharedKey.Address().String()]; !exists {
+		t.Fatalf("active entry must remain in currentByCons after rejection")
+	}
+}
+
+// TestFilterBasedOnExisting_StaleOperatorKeyChange covers GON-191 Change 2:
+// when the same operator submits a compute result with a different consensus key
+// and the existing entry has tokens=0, the filter should allow the key change and
+// report the stale entry for deletion.
+func TestFilterBasedOnExisting_StaleOperatorKeyChange(t *testing.T) {
+	t.Parallel()
+
+	key := storetypes.NewKVStoreKey("compute_test_stale_op_change")
+	tkey := storetypes.NewTransientStoreKey("transient_compute_test_stale_op_change")
+	sdkCtx := testutil.DefaultContext(key, tkey)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	oldKey := mustEd25519PubKey(t, 0x20)
+	newKey := mustEd25519PubKey(t, 0x21)
+
+	stale, err := types.NewValidator("opSame", oldKey, types.Description{Moniker: "opSame"})
+	if err != nil {
+		t.Fatalf("failed to create stale validator: %v", err)
+	}
+	if !stale.Tokens.IsZero() {
+		t.Fatalf("expected stale validator to have zero tokens by default, got %s", stale.Tokens)
+	}
+
+	currentByCons := map[string]types.Validator{
+		oldKey.Address().String(): stale,
+	}
+	currentByOp := map[string]types.Validator{
+		"opSame": stale,
+	}
+
+	input := []ComputeResult{
+		{OperatorAddress: "opSame", ValidatorPubKey: newKey, Power: 10},
+	}
+
+	out, staleToRemove := filterBasedOnExisting(ctx, input, currentByCons, currentByOp)
+
+	if len(out) != 1 || out[0].OperatorAddress != "opSame" || out[0].ValidatorPubKey.Address().String() != newKey.Address().String() {
+		t.Fatalf("expected key change to pass through filter, got %+v", out)
+	}
+	if len(staleToRemove) != 1 || staleToRemove[0].OperatorAddress != "opSame" {
+		t.Fatalf("expected stale opSame to be returned for deletion, got %+v", staleToRemove)
+	}
+	if _, exists := currentByOp["opSame"]; exists {
+		t.Fatalf("stale entry still present in currentByOp after filter")
+	}
+}
+
+// TestFilterBasedOnExisting_NonStaleOperatorKeyChange ensures an active operator
+// cannot silently swap its consensus key — that path must still be rejected to
+// preserve the existing safety property that consensus-key changes for live
+// validators are not allowed.
+func TestFilterBasedOnExisting_NonStaleOperatorKeyChange(t *testing.T) {
+	t.Parallel()
+
+	key := storetypes.NewKVStoreKey("compute_test_active_op_change")
+	tkey := storetypes.NewTransientStoreKey("transient_compute_test_active_op_change")
+	sdkCtx := testutil.DefaultContext(key, tkey)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	oldKey := mustEd25519PubKey(t, 0x30)
+	newKey := mustEd25519PubKey(t, 0x31)
+
+	active, err := types.NewValidator("opSame", oldKey, types.Description{Moniker: "opSame"})
+	if err != nil {
+		t.Fatalf("failed to create active validator: %v", err)
+	}
+	active.Tokens = math.NewInt(100)
+
+	currentByCons := map[string]types.Validator{
+		oldKey.Address().String(): active,
+	}
+	currentByOp := map[string]types.Validator{
+		"opSame": active,
+	}
+
+	input := []ComputeResult{
+		{OperatorAddress: "opSame", ValidatorPubKey: newKey, Power: 10},
+	}
+
+	out, staleToRemove := filterBasedOnExisting(ctx, input, currentByCons, currentByOp)
+
+	if len(out) != 0 {
+		t.Fatalf("expected key change for active validator to be rejected, got %+v", out)
+	}
+	if len(staleToRemove) != 0 {
+		t.Fatalf("expected no stale removals for active key-change rejection, got %+v", staleToRemove)
+	}
+}
+
+// TestFilterBasedOnExisting_StaleKeyChangeNoGhostDoubleRemoval is the regression
+// test for GLiberman's review on PR #14: when Change 2 (operator changes consensus
+// key) allows a zero-power validator through, the stale entry must be dropped
+// from BOTH the operator map and the consensus-key map. If only the operator map
+// is pruned, a later compute result in the same batch that happens to reference
+// the old consensus key would find the ghost entry, see tokens=0, and queue the
+// same stale validator for deletion a second time.
+func TestFilterBasedOnExisting_StaleKeyChangeNoGhostDoubleRemoval(t *testing.T) {
+	t.Parallel()
+
+	key := storetypes.NewKVStoreKey("compute_test_ghost_double_removal")
+	tkey := storetypes.NewTransientStoreKey("transient_compute_test_ghost_double_removal")
+	sdkCtx := testutil.DefaultContext(key, tkey)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	oldKey := mustEd25519PubKey(t, 0x40)
+	newKey := mustEd25519PubKey(t, 0x41)
+
+	// Stale validator opSame currently registered with oldKey, tokens=0.
+	stale, err := types.NewValidator("opSame", oldKey, types.Description{Moniker: "opSame"})
+	if err != nil {
+		t.Fatalf("failed to create stale validator: %v", err)
+	}
+
+	currentByCons := map[string]types.Validator{
+		oldKey.Address().String(): stale,
+	}
+	currentByOp := map[string]types.Validator{
+		"opSame": stale,
+	}
+
+	// Two compute results in the same batch:
+	//   1. opSame switching from oldKey to newKey (Change 2 path, stale allowed)
+	//   2. opOther claiming oldKey for itself (Change 1 path, would find ghost)
+	// Without the consensus-key-map cleanup, the second entry would re-discover
+	// the stale validator and append it to staleToRemove a second time.
+	input := []ComputeResult{
+		{OperatorAddress: "opSame", ValidatorPubKey: newKey, Power: 10},
+		{OperatorAddress: "opOther", ValidatorPubKey: oldKey, Power: 10},
+	}
+
+	out, staleToRemove := filterBasedOnExisting(ctx, input, currentByCons, currentByOp)
+
+	if len(out) != 2 {
+		t.Fatalf("expected both compute results to pass through filter, got %+v", out)
+	}
+	if len(staleToRemove) != 1 {
+		t.Fatalf("expected stale validator to be queued for removal exactly once, got %d entries: %+v", len(staleToRemove), staleToRemove)
+	}
+	if staleToRemove[0].OperatorAddress != "opSame" {
+		t.Fatalf("expected stale opSame in removal list, got %+v", staleToRemove[0])
 	}
 }

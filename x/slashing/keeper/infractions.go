@@ -26,6 +26,9 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 	// don't update missed blocks when validator's jailed
 	isJailed, err := k.sk.IsValidatorJailed(ctx, consAddr)
 	if err != nil {
+		if errors.Is(err, stakingtypes.ErrNoValidatorFound) {
+			return nil
+		}
 		return err
 	}
 

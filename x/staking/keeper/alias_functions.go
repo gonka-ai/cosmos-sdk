@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	storetypes "cosmossdk.io/store/types"
 
@@ -103,7 +104,18 @@ func (k Keeper) Validator(ctx context.Context, address sdk.ValAddress) (types.Va
 
 // ValidatorByConsAddr gets the validator interface for a particular pubkey
 func (k Keeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (types.ValidatorI, error) {
-	return k.GetValidatorByConsAddr(ctx, addr)
+	// A missing validator is a normal outcome, not an error: CometBFT keeps a
+	// validator in LastCommit for ValidatorUpdateDelay blocks after the chain
+	// removed it. Evidence handles a nil validator; slashing skips a missing
+	// validator before updating its signing history.
+	validator, err := k.GetValidatorByConsAddr(ctx, addr)
+	if err != nil {
+		if errors.Is(err, types.ErrNoValidatorFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return validator, nil
 }
 
 // Delegation Set

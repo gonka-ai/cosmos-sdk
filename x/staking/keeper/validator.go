@@ -646,13 +646,26 @@ func (k Keeper) UnbondAllMatureValidators(ctx context.Context) error {
 }
 
 // IsValidatorJailed checks and returns boolean of a validator status jailed or not.
+// It reads only the jailed field: slashing calls it for every vote of every block.
 func (k Keeper) IsValidatorJailed(ctx context.Context, addr sdk.ConsAddress) (bool, error) {
-	v, err := k.GetValidatorByConsAddr(ctx, addr)
+	store := k.storeService.OpenKVStore(ctx)
+	opAddr, err := store.Get(types.GetValidatorByConsAddrKey(addr))
 	if err != nil {
 		return false, err
 	}
+	if opAddr == nil {
+		return false, types.ErrNoValidatorFound
+	}
 
-	return v.Jailed, nil
+	value, err := store.Get(types.GetValidatorKey(opAddr))
+	if err != nil {
+		return false, err
+	}
+	if value == nil {
+		return false, types.ErrNoValidatorFound
+	}
+
+	return types.ValidatorJailedFromBytes(value)
 }
 
 // RestoreValidatorIndex restores the validator index.

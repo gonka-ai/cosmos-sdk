@@ -9,6 +9,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmtprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
+	"google.golang.org/protobuf/encoding/protowire"
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/errors"
@@ -169,6 +170,36 @@ func MustUnmarshalValidator(cdc codec.BinaryCodec, value []byte) Validator {
 func UnmarshalValidator(cdc codec.BinaryCodec, value []byte) (v Validator, err error) {
 	err = cdc.Unmarshal(value, &v)
 	return v, err
+}
+
+// ValidatorJailedFromBytes returns the jailed field of an encoded Validator without decoding the rest.
+func ValidatorJailedFromBytes(bz []byte) (bool, error) {
+	jailed := false
+	for len(bz) > 0 {
+		num, typ, n := protowire.ConsumeTag(bz)
+		if n < 0 {
+			return false, protowire.ParseError(n)
+		}
+		bz = bz[n:]
+		if num == 3 {
+			if typ != protowire.VarintType {
+				return false, fmt.Errorf("validator jailed: wrong wire type %d", typ)
+			}
+			v, m := protowire.ConsumeVarint(bz)
+			if m < 0 {
+				return false, protowire.ParseError(m)
+			}
+			jailed = v != 0
+			bz = bz[m:]
+			continue
+		}
+		m := protowire.ConsumeFieldValue(num, typ, bz)
+		if m < 0 {
+			return false, protowire.ParseError(m)
+		}
+		bz = bz[m:]
+	}
+	return jailed, nil
 }
 
 // IsBonded checks if the validator status equals Bonded

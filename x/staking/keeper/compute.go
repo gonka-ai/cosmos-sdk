@@ -556,10 +556,33 @@ func (k Keeper) markValidatorForDeletion(ctx context.Context, validator types.Va
 		return err
 	}
 
-	// Jailed validators can't be added to power index, so delete them immediately
+	// For jailed validators: zero out Tokens (the power proxy in PoC) and
+	// persist. Do NOT re-add to the power index (val_state_change.go:176
+	// invariant forbids jailed-in-power-store) and do NOT zero
+	// DelegatorShares — TokensFromShares (validator.go:308) computes
+	// `shares × Tokens / DelegatorShares`, and a zero denominator triggers a
+	// runtime divide-by-zero panic if any caller (e.g. slashing.Unjail at
+	// unjail.go:33) hits this validator before DeleteZeroPowerValidators
+	// cleans it up. With Tokens=0 and DelegatorShares unchanged, the formula
+	// returns 0 cleanly.
+	//
+	// jailValidator (val_state_change.go:335) already removed the validator
+	// from the power index, so ApplyAndReturnValidatorSetUpdates' main loop
+	// won't iterate it. The tail loop over `last` (LastValidatorPower) will
+	// emit the power-0 ValidatorUpdate and start the bondedToUnbonding
+	// transition. DeleteZeroPowerValidators will physically remove the
+	// record on a later block after LastValidatorPower is cleared, by which
+	// time CometBFT has dropped the validator from its active set.
 	if validator.Jailed {
-		logger.Info("deleting jailed validator immediately", "operator", validator.OperatorAddress)
-		return k.deleteValidatorInternal(ctx, validator, valAddr)
+		validator.Tokens = math.ZeroInt()
+		validator.UnbondingIds = []uint64{}
+
+		if err := k.SetValidator(ctx, validator); err != nil {
+			logger.Error("failed to set jailed validator with zero power", "validator", validator.OperatorAddress, "error", err)
+			return err
+		}
+
+		return nil
 	}
 
 	// For non-jailed validators, mark for deletion in next block
@@ -568,9 +591,14 @@ func (k Keeper) markValidatorForDeletion(ctx context.Context, validator types.Va
 		return err
 	}
 
-	// Set power to zero (status kept as-is for ApplyAndReturnValidatorSetUpdates)
+	// Set power to zero (status kept as-is for ApplyAndReturnValidatorSetUpdates).
+	// Do NOT zero DelegatorShares: TokensFromShares (validator.go:308) computes
+	// `shares × Tokens / DelegatorShares`, so a zero denominator panics if a
+	// caller (e.g. slashing.Unjail) hits this validator in the same block,
+	// before DeleteZeroPowerValidators removes it on the next block. Tokens=0
+	// already yields zero power; keeping DelegatorShares makes TokensFromShares
+	// return 0 cleanly. Same fix shape as the jailed branch above.
 	validator.Tokens = math.ZeroInt()
-	validator.DelegatorShares = math.LegacyZeroDec()
 	validator.UnbondingIds = []uint64{}
 
 	if err := k.SetValidator(ctx, validator); err != nil {

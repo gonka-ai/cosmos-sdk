@@ -351,3 +351,27 @@ func newValidator(t *testing.T, operator sdk.ValAddress, pubKey cryptotypes.PubK
 	require.NoError(t, err)
 	return v
 }
+
+func TestValidatorJailedFromBytes(t *testing.T) {
+	for _, jailed := range []bool{false, true} {
+		val := newValidator(t, valAddr1, pk1)
+		val.Jailed = jailed
+		val.Status = types.Unbonding
+		val.Tokens = math.NewInt(12345)
+		val.Description = types.NewDescription("moniker", "identity", "website", "contact", "details")
+		bz, err := val.Marshal()
+		require.NoError(t, err)
+
+		got, err := types.ValidatorJailedFromBytes(bz)
+		require.NoError(t, err)
+		require.Equal(t, jailed, got)
+
+		// a cut-off encoding is an error, as with a full decode
+		_, err = types.ValidatorJailedFromBytes(bz[:len(bz)-1])
+		require.Error(t, err)
+
+		// jailed with a length-delimited wire type
+		_, err = types.ValidatorJailedFromBytes([]byte{0x1a, 0x00})
+		require.Error(t, err)
+	}
+}

@@ -1,10 +1,12 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // InitGenesis sets distribution information for genesis
@@ -154,7 +156,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		return false
 	})
 
-	pp, err := k.GetPreviousProposerConsAddr(ctx)
+	pp, err := k.exportPreviousProposer(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -231,4 +233,21 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	)
 
 	return types.NewGenesisState(params, feePool, dwi, pp, outstanding, acc, his, cur, dels, slashes)
+}
+
+type historicalInfoReader interface {
+	GetHistoricalInfo(ctx context.Context, height int64) (stakingtypes.HistoricalInfo, error)
+}
+
+// exportPreviousProposer returns the proposer of the block at ctx height.
+// Gonka: BeginBlocker no longer stores it, so take it from the staking
+// historical info of that block; fall back to the stored key.
+func (k Keeper) exportPreviousProposer(ctx sdk.Context) (sdk.ConsAddress, error) {
+	if hk, ok := k.stakingKeeper.(historicalInfoReader); ok {
+		hi, err := hk.GetHistoricalInfo(ctx, ctx.BlockHeight())
+		if err == nil && len(hi.Header.ProposerAddress) > 0 {
+			return hi.Header.ProposerAddress, nil
+		}
+	}
+	return k.GetPreviousProposerConsAddr(ctx)
 }

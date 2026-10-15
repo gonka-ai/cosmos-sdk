@@ -10,6 +10,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	"github.com/cosmos/cosmos-sdk/x/group/errors"
@@ -78,6 +79,18 @@ func (k Keeper) GroupMembers(goCtx context.Context, request *group.QueryGroupMem
 		Members:    members,
 		Pagination: pageRes,
 	}, nil
+}
+
+// GetGroupMember returns one member of a group by address, or ErrNotFound.
+// It reads the member's primary key instead of paging the whole group.
+func (k Keeper) GetGroupMember(goCtx context.Context, groupID uint64, addr sdk.AccAddress) (*group.GroupMember, error) {
+	if addr.Empty() {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, "empty member address")
+	}
+	return k.getGroupMember(sdk.UnwrapSDKContext(goCtx), &group.GroupMember{
+		GroupId: groupID,
+		Member:  &group.Member{Address: addr.String()},
+	})
 }
 
 // getGroupMembers returns an iterator for the given group id and page request.

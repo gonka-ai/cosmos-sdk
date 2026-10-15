@@ -97,23 +97,41 @@ func (k Keeper) SetComputeValidatorsBeforeValidatorIndexFixHeight(ctx context.Co
 }
 
 // SetComputeValidators is the main entry point for updating the validator set.
-// It synchronizes the state with the provided list of compute results.
+// It synchronizes the state with the provided list of compute results and
+// returns the resulting validator set.
 func (k Keeper) SetComputeValidators(
 	ctx context.Context,
 	computeResults []ComputeResult,
 	isTestnet bool,
 ) ([]types.Validator, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	currentHeight := sdkCtx.BlockHeight()
-	if currentHeight < ValidatorIndexFixHeight && !isTestnet {
+	if sdkCtx.BlockHeight() < ValidatorIndexFixHeight && !isTestnet {
 		return k.SetComputeValidatorsBeforeValidatorIndexFixHeight(ctx, computeResults)
+	}
+	if err := k.ApplyComputeValidators(ctx, computeResults, isTestnet); err != nil {
+		return nil, err
+	}
+	return k.GetAllValidators(ctx)
+}
+
+// ApplyComputeValidators is SetComputeValidators without re-reading the whole
+// validator set afterwards, for callers that discard it.
+func (k Keeper) ApplyComputeValidators(
+	ctx context.Context,
+	computeResults []ComputeResult,
+	isTestnet bool,
+) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockHeight() < ValidatorIndexFixHeight && !isTestnet {
+		_, err := k.SetComputeValidatorsBeforeValidatorIndexFixHeight(ctx, computeResults)
+		return err
 	}
 	logger := k.Logger(sdkCtx)
 
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
 		logger.Error("failed to get all validators", "error", err)
-		return nil, err
+		return err
 	}
 
 	currentValsByConsensusAddress := make(map[string]types.Validator)
@@ -148,6 +166,9 @@ func (k Keeper) SetComputeValidators(
 	for _, operatorAddress := range currentValKeys {
 		val := currentValsByOperatorAddress[operatorAddress]
 		if _, exists := resultsByOperatorAddress[operatorAddress]; !exists {
+			if marked, err := k.isMarkedForDeletion(ctx, val); err == nil && marked {
+				continue
+			}
 			logger.Info("marking validator for removal (not in compute results)", "operator", val.OperatorAddress, "status", val.Status, "jailed", val.Jailed)
 			if err := k.markValidatorForDeletion(ctx, val); err != nil {
 				logger.Error("failed to mark validator for deletion", "operator", val.OperatorAddress, "error", err)
@@ -186,7 +207,7 @@ func (k Keeper) SetComputeValidators(
 		}
 	}
 
-	return k.GetAllValidators(ctx)
+	return nil
 }
 
 func sortAndFilterComputeResult(
@@ -541,6 +562,26 @@ func (k Keeper) updateValidator(ctx context.Context, validator types.Validator, 
 	}
 
 	return nil
+}
+
+// isMarkedForDeletion reports whether markValidatorForDeletion would only rewrite the bytes
+// validator already has: a non-jailed validator with zero tokens, shares and unbonding ids,
+// a zero-power index entry and no self-delegation shares.
+func (k Keeper) isMarkedForDeletion(ctx context.Context, validator types.Validator) (bool, error) {
+	if validator.Jailed || !validator.Tokens.IsZero() || !validator.DelegatorShares.IsZero() || len(validator.UnbondingIds) > 0 {
+		return false, nil
+	}
+	valAddr, err := k.ValidatorAddressCodec().StringToBytes(validator.OperatorAddress)
+	if err != nil {
+		return false, err
+	}
+	store := k.storeService.OpenKVStore(ctx)
+	indexed, err := store.Has(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec))
+	if err != nil || !indexed {
+		return false, err
+	}
+	delegation, err := k.GetDelegation(ctx, sdk.AccAddress(valAddr), valAddr)
+	return err != nil || delegation.Shares.IsZero(), nil
 }
 
 // markValidatorForDeletion sets validator power to zero for immediate deletion.

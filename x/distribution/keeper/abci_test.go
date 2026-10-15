@@ -123,10 +123,9 @@ func TestBeginBlockNoOp(t *testing.T) {
 
 	require.True(t, feePoolBefore.CommunityPool.Equal(feePoolAfter.CommunityPool), fmt.Sprintf("before: %s, after: %s", feePoolBefore.CommunityPool.String(), feePoolAfter.CommunityPool.String()))
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }
 
 // Scenario:
@@ -258,10 +257,9 @@ func TestBeginBlockToMultipleValidators(t *testing.T) {
 		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDecWithPrec(490, 1)}}, val1CurrentRewards.Rewards)
 	})
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }
 
 // Scenario:
@@ -389,10 +387,9 @@ func TestBeginBlockCommunityPoolCollectsDust(t *testing.T) {
 		require.True(t, val2OutstandingRewards.Rewards.IsValid())
 	})
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }
 
 // Scenario:
@@ -416,10 +413,27 @@ func TestBeginBlockNoOpProtocolPool(t *testing.T) {
 
 	require.True(t, feePoolBefore.CommunityPool.Equal(feePoolAfter.CommunityPool), fmt.Sprintf("before: %s, after: %s", feePoolBefore.CommunityPool.String(), feePoolAfter.CommunityPool.String()))
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
+}
+
+// Scenario:
+// past the first block, BeginBlocker neither reads nor writes the store
+// (no protocol pool)
+func TestBeginBlockTouchesNoState(t *testing.T) {
+	ts := setupTest(t, false)
+	ctx := ts.testCtx.Ctx.
+		WithBlockHeader(cmtproto.Header{
+			ProposerAddress: testProposerAddress,
+			Time:            time.Now(),
+		}).
+		WithBlockHeight(2).
+		WithVoteInfos([]abci.VoteInfo{{Validator: abci.Validator{Address: testProposerAddress, Power: 10}}}).
+		WithGasMeter(storetypes.NewInfiniteGasMeter())
+
+	require.NoError(t, ts.distrKeeper.BeginBlocker(ctx))
+	require.Zero(t, ctx.GasMeter().GasConsumed())
 }
 
 // Scenario:
@@ -552,10 +566,9 @@ func TestBeginBlockToMultipleValidatorsProtocolPool(t *testing.T) {
 		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDecWithPrec(490, 1)}}, val1CurrentRewards.Rewards)
 	})
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }
 
 // Scenario:
@@ -686,8 +699,7 @@ func TestBeginBlockCommunityPoolCollectsDustProtocolPool(t *testing.T) {
 		require.True(t, val2OutstandingRewards.Rewards.IsValid())
 	})
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }

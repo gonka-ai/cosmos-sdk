@@ -75,6 +75,11 @@ func (k Keeper) SetValidator(ctx context.Context, validator types.Validator) err
 	if err != nil {
 		return err
 	}
+	if validator.Tokens.IsZero() {
+		if err := store.Delete(types.ZeroPowerSweptKey); err != nil {
+			return err
+		}
+	}
 	return store.Set(types.GetValidatorKey(str), bz)
 }
 
@@ -248,6 +253,9 @@ func (k Keeper) RemoveValidator(ctx context.Context, address sdk.ValAddress) err
 
 	// delete the old validator record
 	store := k.storeService.OpenKVStore(ctx)
+	if err = store.Delete(types.ValidatorIndexIntactKey); err != nil {
+		return err
+	}
 	if err = store.Delete(types.GetValidatorKey(address)); err != nil {
 		return err
 	}
@@ -389,6 +397,9 @@ func (k Keeper) SetLastValidatorPower(ctx context.Context, operator sdk.ValAddre
 // DeleteLastValidatorPower deletes the last validator power.
 func (k Keeper) DeleteLastValidatorPower(ctx context.Context, operator sdk.ValAddress) error {
 	store := k.storeService.OpenKVStore(ctx)
+	if err := store.Delete(types.ZeroPowerSweptKey); err != nil {
+		return err
+	}
 	return store.Delete(types.GetLastValidatorPowerKey(operator))
 }
 
@@ -635,26 +646,45 @@ func (k Keeper) UnbondAllMatureValidators(ctx context.Context) error {
 }
 
 // IsValidatorJailed checks and returns boolean of a validator status jailed or not.
+// It reads only the jailed field: slashing calls it for every vote of every block.
 func (k Keeper) IsValidatorJailed(ctx context.Context, addr sdk.ConsAddress) (bool, error) {
-	v, err := k.GetValidatorByConsAddr(ctx, addr)
+	store := k.storeService.OpenKVStore(ctx)
+	opAddr, err := store.Get(types.GetValidatorByConsAddrKey(addr))
 	if err != nil {
 		return false, err
 	}
+	if opAddr == nil {
+		return false, types.ErrNoValidatorFound
+	}
 
-	return v.Jailed, nil
+	value, err := store.Get(types.GetValidatorKey(opAddr))
+	if err != nil {
+		return false, err
+	}
+	if value == nil {
+		return false, types.ErrNoValidatorFound
+	}
+
+	return types.ValidatorJailedFromBytes(value)
 }
 
 // RestoreValidatorIndex restores the validator index.
+// Only a validator deletion can break the index, so the full pass runs once after each deletion.
 func (k Keeper) RestoreValidatorIndex(ctx context.Context) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	currentHeight := sdkCtx.BlockHeight()
 	if currentHeight < ValidatorIndexFixHeight {
 		return
 	}
+	store := k.storeService.OpenKVStore(ctx)
+	if intact, err := store.Has(types.ValidatorIndexIntactKey); err != nil || intact {
+		return
+	}
 	allValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
 		return
 	}
+	restored := true
 	for _, validator := range allValidators {
 		consAddr, err := validator.GetConsAddr()
 		if err != nil {
@@ -664,8 +694,14 @@ func (k Keeper) RestoreValidatorIndex(ctx context.Context) {
 		if err == nil {
 			continue
 		}
-		k.SetValidatorByConsAddr(ctx, validator)
-		k.SetValidatorByPowerIndex(ctx, validator)
+		errConsAddr := k.SetValidatorByConsAddr(ctx, validator)
+		errPower := k.SetValidatorByPowerIndex(ctx, validator)
+		if errConsAddr != nil || errPower != nil {
+			restored = false
+		}
+	}
+	if restored {
+		_ = store.Set(types.ValidatorIndexIntactKey, []byte{1})
 	}
 }
 

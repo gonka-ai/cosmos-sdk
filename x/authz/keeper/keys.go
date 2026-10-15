@@ -14,7 +14,8 @@ import (
 // Items are stored with the following key: values
 //
 // - 0x01<grant_Bytes>: Grant
-// - 0x02<grant_expiration_Bytes>: GrantQueueItem
+// - 0x02<grant_expiration_Bytes>: GrantQueueItem (legacy list per granter/grantee)
+// - 0x02<grant_expiration_Bytes><msgType_Bytes>: empty (one entry per grant)
 var (
 	GrantKey         = []byte{0x01} // prefix for each key
 	GrantQueuePrefix = []byte{0x02}
@@ -54,24 +55,32 @@ func parseGrantStoreKey(key []byte) (granterAddr, granteeAddr sdk.AccAddress, ms
 }
 
 // parseGrantQueueKey split expiration time, granter and grantee from the grant queue key
-func parseGrantQueueKey(key []byte) (time.Time, sdk.AccAddress, sdk.AccAddress, error) {
+func parseGrantQueueKey(key []byte) (time.Time, sdk.AccAddress, sdk.AccAddress, int, error) {
 	// key is of format:
-	// 0x02<grant_expiration_Bytes><granterAddress_Bytes><granteeAddressLen (1 Byte)><granteeAddress_Bytes>
+	// 0x02<grant_expiration_Bytes><granterAddress_Bytes><granteeAddressLen (1 Byte)><granteeAddress_Bytes>[<msgType_Bytes>]
+	// The returned index is where the msg type starts; it equals len(key) for a GrantQueueItem list key.
 
 	expBytes, expEndIndex := sdk.ParseLengthPrefixedBytes(key, 1, lenTime)
 
 	exp, err := sdk.ParseTimeBytes(expBytes)
 	if err != nil {
-		return exp, nil, nil, err
+		return exp, nil, nil, 0, err
 	}
 
 	granterAddrLen, granterAddrLenEndIndex := sdk.ParseLengthPrefixedBytes(key, expEndIndex+1, 1)
 	granter, granterEndIndex := sdk.ParseLengthPrefixedBytes(key, granterAddrLenEndIndex+1, int(granterAddrLen[0]))
 
 	granteeAddrLen, granteeAddrLenEndIndex := sdk.ParseLengthPrefixedBytes(key, granterEndIndex+1, 1)
-	grantee, _ := sdk.ParseLengthPrefixedBytes(key, granteeAddrLenEndIndex+1, int(granteeAddrLen[0]))
+	grantee, granteeEndIndex := sdk.ParseLengthPrefixedBytes(key, granteeAddrLenEndIndex+1, int(granteeAddrLen[0]))
 
-	return exp, granter, grantee, nil
+	return exp, granter, grantee, granteeEndIndex + 1, nil
+}
+
+// grantQueueTypeKey is the queue key of a single grant: GrantQueueKey followed by the msg type.
+// The value is empty, so adding a grant to the queue no longer rewrites the list of every
+// other grant with the same (expiration, granter, grantee).
+func grantQueueTypeKey(expiration time.Time, granter, grantee sdk.AccAddress, msgType string) []byte {
+	return append(GrantQueueKey(expiration, granter, grantee), msgType...)
 }
 
 // GrantQueueKey - return grant queue store key. If a given grant doesn't have a defined

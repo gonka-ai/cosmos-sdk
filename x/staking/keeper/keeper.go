@@ -199,6 +199,16 @@ func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 // SetValidatorUpdates sets the ABCI validator power updates for the current block.
 func (k Keeper) SetValidatorUpdates(ctx context.Context, valUpdates []abci.ValidatorUpdate) error {
 	store := k.storeService.OpenKVStore(ctx)
+	if len(valUpdates) == 0 {
+		// Most blocks have no updates and the stored list is already empty: skip the rewrite.
+		prev, err := store.Get(types.ValidatorUpdatesKey)
+		if err != nil {
+			return err
+		}
+		if len(prev) == 0 {
+			return nil
+		}
+	}
 	bz, err := k.cdc.Marshal(&types.ValidatorUpdates{Updates: valUpdates})
 	if err != nil {
 		return err

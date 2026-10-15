@@ -16,6 +16,16 @@ import (
 
 // HandleValidatorSignature handles a validator signature, must be called once per validator per block.
 func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.Address, power int64, signed comet.BlockIDFlag) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	return k.HandleValidatorSignatureWithParams(ctx, params, addr, power, signed)
+}
+
+// HandleValidatorSignatureWithParams is HandleValidatorSignature with the module params already read,
+// so BeginBlocker reads them once per block instead of twice per validator.
+func (k Keeper) HandleValidatorSignatureWithParams(ctx context.Context, params types.Params, addr cryptotypes.Address, power int64, signed comet.BlockIDFlag) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(ctx)
 	height := sdkCtx.BlockHeight()
@@ -55,10 +65,7 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 		return err
 	}
 
-	signedBlocksWindow, err := k.SignedBlocksWindow(ctx)
-	if err != nil {
-		return err
-	}
+	signedBlocksWindow := params.SignedBlocksWindow
 
 	// Compute the relative index, so we count the blocks the validator *should*
 	// have signed. We will use the 0-value default signing info if not present,
@@ -98,10 +105,8 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 		// bitmap value at this index has not changed, no need to update counter
 	}
 
-	minSignedPerWindow, err := k.MinSignedPerWindow(ctx)
-	if err != nil {
-		return err
-	}
+	// RoundInt64 never panics: MinSignedPerWindow is at most 1.
+	minSignedPerWindow := params.MinSignedPerWindow.MulInt64(signedBlocksWindow).RoundInt64()
 
 	if missed {
 		sdkCtx.EventManager().EmitEvent(
@@ -140,10 +145,7 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 			// That's fine since this is just used to filter unbonding delegations & redelegations.
 			distributionHeight := height - sdk.ValidatorUpdateDelay - 1
 
-			slashFractionDowntime, err := k.SlashFractionDowntime(ctx)
-			if err != nil {
-				return err
-			}
+			slashFractionDowntime := params.SlashFractionDowntime
 
 			// The `SlashWithInfractionReason` call is now safe because the staking keeper's `Slash` function
 			// has been modified to no longer burn tokens from the bonded pool.
@@ -164,11 +166,7 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 			)
 			k.sk.Jail(sdkCtx, consAddr)
 
-			downtimeJailDur, err := k.DowntimeJailDuration(ctx)
-			if err != nil {
-				return err
-			}
-			signInfo.JailedUntil = sdkCtx.BlockHeader().Time.Add(downtimeJailDur)
+			signInfo.JailedUntil = sdkCtx.BlockHeader().Time.Add(params.DowntimeJailDuration)
 
 			// We need to reset the counter & bitmap so that the validator won't be
 			// immediately slashed for downtime upon re-bonding.

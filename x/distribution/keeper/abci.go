@@ -35,7 +35,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 		}
 	}
 
-	// record the proposer for when we pay out on the next block
-	consAddr := sdk.ConsAddress(ctx.BlockHeader().ProposerAddress)
-	return k.SetPreviousProposerConsAddr(ctx, consAddr)
+	// Gonka: AllocateTokens pays nothing, so the previous proposer is not
+	// recorded; ExportGenesis reads it from staking historical info.
+	return nil
 }

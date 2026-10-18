@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
+	"time"
 
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
@@ -22,6 +23,11 @@ import (
 const (
 	// keyPrefixSnapshot is the prefix for snapshot database keys
 	keyPrefixSnapshot byte = 0x01
+
+	// DefaultServedLease is how long a snapshot is protected from Prune after one of its chunks
+	// was last served. A state-sync peer downloads a snapshot one chunk per request over minutes,
+	// so a snapshot served within the lease is left for the next prune.
+	DefaultServedLease = 10 * time.Minute
 )
 
 // Store is a snapshot store, containing snapshot metadata and binary chunks.
@@ -31,6 +37,10 @@ type Store struct {
 
 	mtx    sync.Mutex
 	saving map[uint64]bool // heights currently being saved
+
+	served      map[uint64]time.Time // height -> time a chunk was last served
+	servedLease time.Duration
+	now         func() time.Time
 }
 
 // NewStore creates a new snapshot store.
@@ -47,7 +57,19 @@ func NewStore(db db.DB, dir string) (*Store, error) {
 		db:     db,
 		dir:    dir,
 		saving: make(map[uint64]bool),
+
+		served:      make(map[uint64]time.Time),
+		servedLease: DefaultServedLease,
+		now:         time.Now,
 	}, nil
+}
+
+// SetServedLease sets how long a snapshot is protected from Prune after a chunk was served.
+// Zero disables the lease.
+func (s *Store) SetServedLease(d time.Duration) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	s.servedLease = d
 }
 
 // Delete deletes a snapshot.
@@ -172,6 +194,11 @@ func (s *Store) LoadChunk(height uint64, format, chunk uint32) (io.ReadCloser, e
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
+	if err == nil {
+		s.mtx.Lock()
+		s.served[height] = s.now()
+		s.mtx.Unlock()
+	}
 	return file, err
 }
 
@@ -183,6 +210,11 @@ func (s *Store) loadChunkFile(height uint64, format, chunk uint32) (io.ReadClose
 
 // Prune removes old snapshots. The given number of most recent heights (regardless of format) are retained.
 func (s *Store) Prune(retain uint32) (uint64, error) {
+	s.mtx.Lock()
+	lease := s.servedLease
+	now := s.now()
+	s.mtx.Unlock()
+
 	iter, err := s.db.ReverseIterator(encodeKey(0, 0), encodeKey(uint64(math.MaxUint64), math.MaxUint32))
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prune snapshots")
@@ -199,6 +231,11 @@ func (s *Store) Prune(retain uint32) (uint64, error) {
 		}
 		if skip[height] || uint32(len(skip)) < retain {
 			skip[height] = true
+			continue
+		}
+		// A snapshot being served to a peer is left for the next prune. It is not added to
+		// skip, so it must not consume a retain slot.
+		if lease > 0 && s.servedWithin(height, now, lease) {
 			continue
 		}
 		err = s.Delete(height, format)
@@ -218,7 +255,22 @@ func (s *Store) Prune(retain uint32) (uint64, error) {
 			}
 		}
 	}
+	s.mtx.Lock()
+	for height, t := range s.served {
+		if prunedHeights[height] || now.Sub(t) >= lease {
+			delete(s.served, height)
+		}
+	}
+	s.mtx.Unlock()
 	return pruned, iter.Error()
+}
+
+// servedWithin reports whether a chunk of the height was served less than lease before now.
+func (s *Store) servedWithin(height uint64, now time.Time, lease time.Duration) bool {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	t, ok := s.served[height]
+	return ok && now.Sub(t) < lease
 }
 
 // Save saves a snapshot to disk, returning it.

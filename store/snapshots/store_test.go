@@ -331,3 +331,52 @@ func TestStore_Save(t *testing.T) {
 	require.NoError(t, err)
 	close(ch)
 }
+
+func serveChunk(t *testing.T, store *snapshots.Store, height uint64, format, chunk uint32) {
+	t.Helper()
+	r, err := store.LoadChunk(height, format, chunk)
+	require.NoError(t, err)
+	require.NotNil(t, r)
+	_, err = io.ReadAll(r)
+	require.NoError(t, err)
+	require.NoError(t, r.Close())
+}
+
+func TestStore_PruneKeepsSnapshotServedMidTransfer(t *testing.T) {
+	store := setupStore(t)
+	serveChunk(t, store, 1, 1, 0)
+
+	pruned, err := store.Prune(1)
+	require.NoError(t, err)
+	assert.EqualValues(t, 2, pruned)
+
+	r, err := store.LoadChunk(1, 1, 1)
+	require.NoError(t, err)
+	require.NotNil(t, r, "chunk 1 of an in-progress transfer was pruned")
+	require.NoError(t, r.Close())
+
+	snapshot, err := store.Get(1, 1)
+	require.NoError(t, err)
+	assert.NotNil(t, snapshot)
+	for _, format := range []uint32{1, 2} {
+		snapshot, err = store.Get(2, format)
+		require.NoError(t, err)
+		assert.Nil(t, snapshot)
+	}
+	snapshot, err = store.Get(3, 2)
+	require.NoError(t, err)
+	assert.NotNil(t, snapshot)
+}
+
+func TestStore_PruneIgnoresLeaseWhenDisabled(t *testing.T) {
+	store := setupStore(t)
+	store.SetServedLease(0)
+	serveChunk(t, store, 1, 1, 0)
+
+	_, err := store.Prune(1)
+	require.NoError(t, err)
+
+	snapshot, err := store.Get(1, 1)
+	require.NoError(t, err)
+	assert.Nil(t, snapshot)
+}

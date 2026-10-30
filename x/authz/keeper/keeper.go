@@ -35,6 +35,8 @@ type Keeper struct {
 	router       baseapp.MessageRouter
 	authKeeper   authz.AccountKeeper
 	bankKeeper   authz.BankKeeper
+	// grantHooks is shared by every copy of this keeper. See hooks.go.
+	grantHooks *grantHooksSlot
 }
 
 // NewKeeper constructs a message authorization Keeper
@@ -44,6 +46,7 @@ func NewKeeper(storeService corestoretypes.KVStoreService, cdc codec.Codec, rout
 		cdc:          cdc,
 		router:       router,
 		authKeeper:   ak,
+		grantHooks:   &grantHooksSlot{},
 	}
 }
 
@@ -227,11 +230,14 @@ func (k Keeper) SaveGrant(ctx context.Context, grantee, granter sdk.AccAddress, 
 		return err
 	}
 
-	return sdkCtx.EventManager().EmitTypedEvent(&authz.EventGrant{
+	if err := sdkCtx.EventManager().EmitTypedEvent(&authz.EventGrant{
 		MsgTypeUrl: authorization.MsgTypeURL(),
 		Granter:    granter.String(),
 		Grantee:    grantee.String(),
-	})
+	}); err != nil {
+		return err
+	}
+	return k.afterGrantSaved(ctx, grantee, granter, authorization.MsgTypeURL(), expiration)
 }
 
 // DeleteGrant revokes any authorization for the provided message type granted to the grantee
@@ -257,11 +263,14 @@ func (k Keeper) DeleteGrant(ctx context.Context, grantee, granter sdk.AccAddress
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return sdkCtx.EventManager().EmitTypedEvent(&authz.EventRevoke{
+	if err := sdkCtx.EventManager().EmitTypedEvent(&authz.EventRevoke{
 		MsgTypeUrl: msgType,
 		Granter:    granter.String(),
 		Grantee:    grantee.String(),
-	})
+	}); err != nil {
+		return err
+	}
+	return k.afterGrantDeleted(ctx, grantee, granter, msgType)
 }
 
 // GetAuthorizations Returns list of `Authorizations` granted to the grantee by the granter.

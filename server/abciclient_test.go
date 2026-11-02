@@ -36,10 +36,12 @@ func TestQueryUnlockedClientCreator(t *testing.T) {
 	queried := make(chan struct{})
 	go func() {
 		_, _ = query.Query(context.Background(), &abci.RequestQuery{Path: "/cosmos.bank.v1beta1.Query/Balance"})
+		_, _ = query.Query(context.Background(), &abci.RequestQuery{Path: "/app/simulate"})
+		_, _ = query.Query(context.Background(), &abci.RequestQuery{Path: "app/version"})
 		close(queried)
 	}()
 	var locked []chan struct{}
-	for _, path := range []string{"/store/bank/subspace", "store/bank/subspace", "app/simulate", "p2p/filter/id/x", "", cmtABCIQuery} {
+	for _, path := range []string{"/store/bank/subspace", "store/bank/subspace", "p2p/filter/id/x", "", cmtABCIQuery} {
 		done := make(chan struct{})
 		locked = append(locked, done)
 		go func() { _, _ = query.Query(context.Background(), &abci.RequestQuery{Path: path}); close(done) }()
@@ -56,7 +58,7 @@ func TestQueryUnlockedClientCreator(t *testing.T) {
 	for _, done := range append(locked, checked) {
 		select {
 		case <-done:
-			t.Fatal("CheckTx or a store/app/p2p query ran during FinalizeBlock")
+			t.Fatal("CheckTx or a store/p2p query ran during FinalizeBlock")
 		default:
 		}
 	}

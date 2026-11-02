@@ -34,14 +34,16 @@ type queryUnlockedClient struct {
 // cmtABCIQuery forwards store/app/p2p paths to BaseApp.Query.
 const cmtABCIQuery = "/cosmos.base.tendermint.v1beta1.Service/ABCIQuery"
 
-// Query keeps the lock for store (live IAVL tree, no gas limit), app and p2p paths.
+// Query keeps the lock for store (live IAVL tree, no gas limit) and p2p paths.
+// app/simulate runs on checkState without a gas limit, as on :9090; under the
+// lock a flood of it stalls block commits.
 func (c *queryUnlockedClient) Query(ctx context.Context, req *abci.RequestQuery) (*abci.ResponseQuery, error) {
 	path := baseapp.SplitABCIQueryPath(req.Path)
 	if len(path) == 0 || req.Path == cmtABCIQuery {
 		return c.Client.Query(ctx, req)
 	}
 	switch path[0] {
-	case "store", "app", "p2p":
+	case "store", "p2p":
 		return c.Client.Query(ctx, req)
 	}
 	return c.app.Query(ctx, req)

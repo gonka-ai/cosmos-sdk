@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protowire"
 
 	coreheader "cosmossdk.io/core/header"
 	errorsmod "cosmossdk.io/errors"
@@ -1090,8 +1091,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) *abci.
 		return sdkerrors.QueryResult(errorsmod.Wrap(sdkerrors.ErrUnknownRequest, "multi-store does not support queries"), app.trace)
 	}
 
-	req.Path = "/" + strings.Join(path[1:], "/")
-
 	if req.Height <= 1 && req.Prove {
 		return sdkerrors.QueryResult(
 			errorsmod.Wrap(
@@ -1099,6 +1098,14 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) *abci.
 				"cannot query with proof when height <= 1; please provide a valid height",
 			), app.trace)
 	}
+
+	if len(path) == 3 && path[2] == "subspace" {
+		if resp, ok := handleQueryStoreSubspace(app, path[1], req); ok {
+			return resp
+		}
+	}
+
+	req.Path = "/" + strings.Join(path[1:], "/")
 
 	sdkReq := storetypes.RequestQuery(req)
 	resp, err := queryable.Query(&sdkReq)
@@ -1110,6 +1117,55 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) *abci.
 	abciResp := abci.ResponseQuery(*resp)
 
 	return &abciResp
+}
+
+// handleQueryStoreSubspace serves store/<name>/subspace from the committed
+// version at req.Height under the query gas limit, as gRPC queries are served.
+func handleQueryStoreSubspace(app *BaseApp, storeName string, req abci.RequestQuery) (resp *abci.ResponseQuery, ok bool) {
+	rms, isRoot := app.cms.(*rootmulti.Store)
+	if !isRoot || len(req.Data) == 0 {
+		return nil, false
+	}
+	key := rms.StoreKeysByName()[storeName]
+	if key == nil {
+		return nil, false
+	}
+	if _, queryable := rms.GetStoreByName(storeName).(storetypes.Queryable); !queryable {
+		return nil, false
+	}
+
+	ctx, err := app.CreateQueryContext(req.Height, false)
+	if err != nil {
+		return sdkerrors.QueryResult(err, app.trace), true
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			oog, isOOG := r.(storetypes.ErrorOutOfGas)
+			if !isOOG {
+				panic(r)
+			}
+			resp = sdkerrors.QueryResult(errorsmod.Wrapf(sdkerrors.ErrOutOfGas,
+				"query gas limit exceeded: %d, out of gas in location: %v", ctx.GasMeter().Limit(), oog.Descriptor), app.trace)
+			ok = true
+		}
+	}()
+
+	// Same bytes as the IAVL store's kv.Pairs encoding.
+	bz := []byte{}
+	it := storetypes.KVStorePrefixIterator(ctx.KVStore(key), req.Data)
+	defer it.Close()
+	for ; it.Valid(); it.Next() {
+		var pair []byte
+		if k := it.Key(); len(k) > 0 {
+			pair = protowire.AppendBytes(protowire.AppendTag(pair, 1, protowire.BytesType), k)
+		}
+		if v := it.Value(); len(v) > 0 {
+			pair = protowire.AppendBytes(protowire.AppendTag(pair, 2, protowire.BytesType), v)
+		}
+		bz = protowire.AppendBytes(protowire.AppendTag(bz, 1, protowire.BytesType), pair)
+	}
+
+	return &abci.ResponseQuery{Key: req.Data, Value: bz, Height: req.Height}, true
 }
 
 func handleQueryP2P(app *BaseApp, path []string) *abci.ResponseQuery {

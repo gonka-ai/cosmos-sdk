@@ -22,8 +22,12 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	k.RestoreValidatorIndex(ctx)
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
 	for _, voteInfo := range sdkCtx.VoteInfos() {
-		err := k.HandleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, comet.BlockIDFlag(voteInfo.BlockIdFlag))
+		err := k.HandleValidatorSignatureWithParams(ctx, params, voteInfo.Validator.Address, voteInfo.Validator.Power, comet.BlockIDFlag(voteInfo.BlockIdFlag))
 		if err != nil {
 			return err
 		}

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	cmttime "github.com/cometbft/cometbft/types/time"
 	"github.com/stretchr/testify/suite"
@@ -112,4 +113,33 @@ func (s *KeeperTestSuite) TestLastTotalPower() {
 
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
+}
+
+// An empty update list over an already empty stored list is not rewritten every block.
+func (s *KeeperTestSuite) TestSetValidatorUpdatesSkipsUnchangedEmpty() {
+	keeper := s.stakingKeeper
+	require := s.Require()
+	setGas := func(updates []abci.ValidatorUpdate) storetypes.Gas {
+		ctx := s.ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+		require.NoError(keeper.SetValidatorUpdates(ctx, updates))
+		return ctx.GasMeter().GasConsumed()
+	}
+	writeFlat := storetypes.KVGasConfig().WriteCostFlat
+
+	require.GreaterOrEqual(setGas([]abci.ValidatorUpdate{{Power: 1}}), writeFlat)
+	got, err := keeper.GetValidatorUpdates(s.ctx)
+	require.NoError(err)
+	require.Len(got, 1)
+
+	// the previous block's updates are cleared
+	require.GreaterOrEqual(setGas(nil), writeFlat)
+	got, err = keeper.GetValidatorUpdates(s.ctx)
+	require.NoError(err)
+	require.Empty(got)
+
+	// nothing to clear: read only
+	require.Less(setGas(nil), writeFlat)
+	got, err = keeper.GetValidatorUpdates(s.ctx)
+	require.NoError(err)
+	require.Empty(got)
 }

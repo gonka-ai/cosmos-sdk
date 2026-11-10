@@ -475,3 +475,16 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 
 	tstaking.CheckValidator(valAddr, stakingtypes.Unbonding, true)
 }
+
+func TestHandleValidatorSignature_MissingValidatorSkipsLiveness(t *testing.T) {
+	f := initFixture(t)
+	missing := simtestutil.CreateTestPubKeys(1)[0]
+	consAddr := sdk.ConsAddress(missing.Address())
+
+	signedBlocksWindow, err := f.slashingKeeper.SignedBlocksWindow(f.ctx)
+	require.NoError(t, err)
+	f.ctx = f.ctx.WithBlockHeight(signedBlocksWindow + 1)
+
+	require.NoError(t, f.slashingKeeper.HandleValidatorSignature(f.ctx, missing.Address(), 100, comet.BlockIDFlagAbsent))
+	require.False(t, f.slashingKeeper.HasValidatorSigningInfo(f.ctx, consAddr))
+}

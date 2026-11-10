@@ -45,7 +45,7 @@ type transientStoreService struct {
 }
 
 func (t transientStoreService) OpenTransientStore(ctx context.Context) store.KVStore {
-	return newKVStore(sdk.UnwrapSDKContext(ctx).KVStore(t.key))
+	return newKVStore(sdk.UnwrapSDKContext(ctx).TransientStore(t.key))
 }
 
 // CoreKVStore is a wrapper of Core/Store kvstore interface

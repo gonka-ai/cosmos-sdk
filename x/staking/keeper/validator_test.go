@@ -440,3 +440,30 @@ func (s *KeeperTestSuite) TestUnbondingValidator() {
 	require.NoError(err)
 	require.Equal(stakingtypes.Unbonded, validator.Status)
 }
+
+func (s *KeeperTestSuite) TestIsValidatorJailed() {
+	ctx, keeper := s.ctx, s.stakingKeeper
+	require := s.Require()
+
+	val := testutil.NewValidator(s.T(), sdk.ValAddress(PKs[0].Address().Bytes()), PKs[0])
+	consAddr, err := val.GetConsAddr()
+	require.NoError(err)
+
+	_, err = keeper.IsValidatorJailed(ctx, consAddr)
+	require.ErrorIs(err, stakingtypes.ErrNoValidatorFound)
+
+	require.NoError(keeper.SetValidatorByConsAddr(ctx, val))
+	_, err = keeper.IsValidatorJailed(ctx, consAddr)
+	require.ErrorIs(err, stakingtypes.ErrNoValidatorFound)
+
+	for _, jailed := range []bool{false, true, false} {
+		val.Jailed = jailed
+		require.NoError(keeper.SetValidator(ctx, val))
+		got, err := keeper.IsValidatorJailed(ctx, consAddr)
+		require.NoError(err)
+		full, err := keeper.GetValidatorByConsAddr(ctx, consAddr)
+		require.NoError(err)
+		require.Equal(full.Jailed, got)
+		require.Equal(jailed, got)
+	}
+}

@@ -37,8 +37,24 @@ func (k Keeper) BlockValidatorUpdates(ctx context.Context) ([]abci.ValidatorUpda
 // DeleteZeroPowerValidators deletes validators with zero power that are not in LastValidatorPower.
 // Only deletes validators already processed by ApplyAndReturnValidatorSetUpdates (not in LastValidatorPower),
 // preventing errors from deleting validators that ApplyAndReturnValidatorSetUpdates still needs to fetch.
+//
+// For UNBONDING validators with zero tokens, the unbonding queue entry and per-id unbonding indexes
+// are also removed so that a later UnbondAllMatureValidators run does not error when it tries to
+// fetch the now-deleted validator. This is safe for compute-power validators because there are no
+// staked tokens to wait for the unbonding period — the queue entry would otherwise just expire
+// 21 days later against a non-existent validator.
+//
+// A validator becomes deletable only when its tokens drop to zero (SetValidator) or it leaves
+// LastValidatorPower (DeleteLastValidatorPower); both clear ZeroPowerSweptKey, so a block
+// without either reads one key instead of every validator.
 func (k Keeper) DeleteZeroPowerValidators(ctx context.Context) error {
 	logger := k.Logger(ctx)
+
+	store := k.storeService.OpenKVStore(ctx)
+	if swept, err := store.Has(types.ZeroPowerSweptKey); err != nil || swept {
+		return err
+	}
+	swept := true
 
 	allValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
@@ -46,28 +62,66 @@ func (k Keeper) DeleteZeroPowerValidators(ctx context.Context) error {
 	}
 
 	for _, validator := range allValidators {
-		if validator.GetTokens().IsZero() {
-			valAddr, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
-			if err != nil {
-				logger.Error("failed to convert operator address", "operator", validator.GetOperator(), "error", err)
-				continue
-			}
+		if err := k.tryDeleteZeroPowerValidator(ctx, validator); err != nil {
+			logger.Error("failed to delete zero-power validator", "operator", validator.GetOperator(), "error", err)
+			swept = false
+		}
+	}
 
-			// Only delete if already removed from LastValidatorPower (ApplyAndReturnValidatorSetUpdates processed it)
-			_, err = k.GetLastValidatorPower(ctx, valAddr)
-			if err == nil {
-				logger.Debug("skipping zero-power validator still in LastValidatorPower",
-					"operator", validator.GetOperator())
-				continue
-			}
+	if swept {
+		return store.Set(types.ZeroPowerSweptKey, []byte{1})
+	}
+	return nil
+}
 
-			logger.Info("deleting zero-power validator", "operator", validator.GetOperator())
+// tryDeleteZeroPowerValidator deletes a single zero-power validator if it is eligible.
+// Returns nil for both "deleted" and "skipped (still in LastValidatorPower / non-zero tokens)";
+// only returns an error if a store operation failed.
+func (k Keeper) tryDeleteZeroPowerValidator(ctx context.Context, validator types.Validator) error {
+	if !validator.GetTokens().IsZero() {
+		return nil
+	}
 
-			if err := k.deleteValidatorInternal(ctx, validator, valAddr); err != nil {
-				logger.Error("failed to delete validator", "operator", validator.GetOperator(), "error", err)
-				continue
+	logger := k.Logger(ctx)
+	store := k.storeService.OpenKVStore(ctx)
+
+	valAddr, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
+	if err != nil {
+		return fmt.Errorf("failed to convert operator address: %w", err)
+	}
+
+	// Only delete if already removed from LastValidatorPower (ApplyAndReturnValidatorSetUpdates processed it).
+	// We check the store key directly because GetLastValidatorPower returns (0, nil) for both
+	// "key absent" and "value is the encoded int 0", so the err value alone can't disambiguate.
+	hasLastPower, err := store.Has(types.GetLastValidatorPowerKey(valAddr))
+	if err != nil {
+		return fmt.Errorf("failed to read LastValidatorPower: %w", err)
+	}
+	if hasLastPower {
+		logger.Debug("skipping zero-power validator still in LastValidatorPower",
+			"operator", validator.GetOperator())
+		return nil
+	}
+
+	// UNBONDING validators have an entry in the validator unbonding queue (time-slice + per-id index).
+	// UnbondAllMatureValidators will later iterate that queue and call GetValidator on this address;
+	// if we delete the validator without dequeuing, that call returns ErrNoValidatorFound and the
+	// staking EndBlocker returns an error (chain halt). Dequeue first, then delete.
+	if validator.IsUnbonding() {
+		for _, id := range validator.UnbondingIds {
+			if err := k.DeleteUnbondingIndex(ctx, id); err != nil {
+				return fmt.Errorf("failed to delete unbonding index id=%d: %w", id, err)
 			}
 		}
+		if err := k.DeleteValidatorQueue(ctx, validator); err != nil {
+			return fmt.Errorf("failed to dequeue validator from unbonding queue: %w", err)
+		}
+	}
+
+	logger.Info("deleting zero-power validator", "operator", validator.GetOperator())
+
+	if err := k.deleteValidatorInternal(ctx, validator, valAddr); err != nil {
+		return fmt.Errorf("failed to delete validator: %w", err)
 	}
 
 	return nil
@@ -82,15 +136,28 @@ func (k Keeper) deleteValidatorInternal(ctx context.Context, validator types.Val
 	}
 
 	store := k.storeService.OpenKVStore(ctx)
+	if err := store.Delete(types.ValidatorIndexIntactKey); err != nil {
+		return err
+	}
 
 	// Delete main validator record
 	if err := store.Delete(types.GetValidatorKey(valAddr)); err != nil {
 		return err
 	}
 
-	// Delete consensus address mapping
-	if err := store.Delete(types.GetValidatorByConsAddrKey(consAddr)); err != nil {
+	// Delete consensus address mapping, but only if it still points to this validator.
+	// In stale-validator-replacement (GON-191), a new validator may have taken over the
+	// same consensus key in the same block via SetValidatorByConsAddr. Unconditionally
+	// deleting here would orphan the new validator's cons-addr index entry.
+	consAddrKey := types.GetValidatorByConsAddrKey(consAddr)
+	existingOp, err := store.Get(consAddrKey)
+	if err != nil {
 		return err
+	}
+	if existingOp != nil && bytes.Equal(existingOp, valAddr) {
+		if err := store.Delete(consAddrKey); err != nil {
+			return err
+		}
 	}
 
 	// Delete power index
@@ -171,7 +238,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		if err != nil {
 			return nil, fmt.Errorf("validator record not found for address: %X", valAddr)
 		}
-		k.Logger(ctx).Info("iterating validator", "validator", validator.String(), "power", validator.Tokens, "status", validator.Status)
+		k.Logger(ctx).Debug("iterating validator", "operator", validator.OperatorAddress, "power", validator.Tokens, "status", validator.Status)
 
 		if validator.Jailed {
 			return nil, errors.New("should never retrieve a jailed validator from the power store")
@@ -180,7 +247,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		// if we get to a zero-power validator (which we don't bond),
 		// there are no more possible bonded validators
 		if validator.PotentialConsensusPower(k.PowerReduction(ctx)) == 0 {
-			k.Logger(ctx).Info("validator has zero power", "reduction", k.PowerReduction(ctx), "power", validator.PotentialConsensusPower(k.PowerReduction(ctx)))
+			k.Logger(ctx).Debug("validator has zero power", "reduction", k.PowerReduction(ctx), "power", validator.PotentialConsensusPower(k.PowerReduction(ctx)))
 			break
 		}
 

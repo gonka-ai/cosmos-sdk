@@ -96,24 +96,47 @@ func (k Keeper) SetComputeValidatorsBeforeValidatorIndexFixHeight(ctx context.Co
 	return k.GetAllValidators(ctx)
 }
 
+// TombstoneChecker reports whether the validator with the given consensus address is
+// tombstoned in the slashing module. Injected via Keeper.SetTombstoneChecker so the
+// epoch recompute can keep a permanently-banned validator out of the active set.
+type TombstoneChecker func(ctx context.Context, consAddr sdk.ConsAddress) bool
+
 // SetComputeValidators is the main entry point for updating the validator set.
-// It synchronizes the state with the provided list of compute results.
+// It synchronizes the state with the provided list of compute results and
+// returns the resulting validator set.
 func (k Keeper) SetComputeValidators(
 	ctx context.Context,
 	computeResults []ComputeResult,
 	isTestnet bool,
 ) ([]types.Validator, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	currentHeight := sdkCtx.BlockHeight()
-	if currentHeight < ValidatorIndexFixHeight && !isTestnet {
+	if sdkCtx.BlockHeight() < ValidatorIndexFixHeight && !isTestnet {
 		return k.SetComputeValidatorsBeforeValidatorIndexFixHeight(ctx, computeResults)
+	}
+	if err := k.ApplyComputeValidators(ctx, computeResults, isTestnet); err != nil {
+		return nil, err
+	}
+	return k.GetAllValidators(ctx)
+}
+
+// ApplyComputeValidators is SetComputeValidators without re-reading the whole
+// validator set afterwards, for callers that discard it.
+func (k Keeper) ApplyComputeValidators(
+	ctx context.Context,
+	computeResults []ComputeResult,
+	isTestnet bool,
+) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockHeight() < ValidatorIndexFixHeight && !isTestnet {
+		_, err := k.SetComputeValidatorsBeforeValidatorIndexFixHeight(ctx, computeResults)
+		return err
 	}
 	logger := k.Logger(sdkCtx)
 
 	currentValidators, err := k.GetAllValidators(ctx)
 	if err != nil {
 		logger.Error("failed to get all validators", "error", err)
-		return nil, err
+		return err
 	}
 
 	currentValsByConsensusAddress := make(map[string]types.Validator)
@@ -130,7 +153,18 @@ func (k Keeper) SetComputeValidators(
 		currentValsByConsensusAddress[consensusAddress] = val
 	}
 
-	computeResults = sortAndFilterComputeResult(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+	computeResults, staleToRemove := sortAndFilterComputeResult(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+
+	// Remove stale (tokens=0) validators that were blocking new participants from claiming
+	// their consensus key or changing it. The filter has already removed these from
+	// currentValsByConsensusAddress / currentValsByOperatorAddress so the downstream
+	// not-in-compute-results loop and create/update loop will treat the new entry as a
+	// fresh validator. See GON-191.
+	for _, stale := range staleToRemove {
+		if err := k.markValidatorForDeletion(ctx, stale); err != nil {
+			logger.Error("failed to mark stale validator for deletion", "operator", stale.OperatorAddress, "error", err)
+		}
+	}
 
 	resultsByOperatorAddress := make(map[string]ComputeResult)
 	for _, res := range computeResults {
@@ -148,6 +182,9 @@ func (k Keeper) SetComputeValidators(
 	for _, operatorAddress := range currentValKeys {
 		val := currentValsByOperatorAddress[operatorAddress]
 		if _, exists := resultsByOperatorAddress[operatorAddress]; !exists {
+			if marked, err := k.isMarkedForDeletion(ctx, val); err == nil && marked {
+				continue
+			}
 			logger.Info("marking validator for removal (not in compute results)", "operator", val.OperatorAddress, "status", val.Status, "jailed", val.Jailed)
 			if err := k.markValidatorForDeletion(ctx, val); err != nil {
 				logger.Error("failed to mark validator for deletion", "operator", val.OperatorAddress, "error", err)
@@ -166,6 +203,16 @@ func (k Keeper) SetComputeValidators(
 		result := resultsByOperatorAddress[operatorAddress]
 		val, found := currentValsByOperatorAddress[operatorAddress]
 		power := math.NewInt(result.Power)
+
+		// Skip a tombstoned validator: don't route it through updateValidator, which would
+		// unjail and re-bond it. Intentionally not markValidatorForDeletion either — its jailed
+		// branch deletes the ValidatorByConsAddr index and can halt slashing while the validator
+		// is still in CometBFT's LastCommit (see gonka-ai/gonka#1205).
+		if k.tombstoneChecker != nil && result.ValidatorPubKey != nil &&
+			k.tombstoneChecker(ctx, sdk.ConsAddress(result.ValidatorPubKey.Address())) {
+			logger.Info("skipping tombstoned validator in compute recompute (not resurrecting)", "operator", operatorAddress)
+			continue
+		}
 
 		if !found {
 			logger.Info("creating new validator", "pubkey", result.ValidatorPubKey.Address(), "power", power)
@@ -186,7 +233,7 @@ func (k Keeper) SetComputeValidators(
 		}
 	}
 
-	return k.GetAllValidators(ctx)
+	return nil
 }
 
 func sortAndFilterComputeResult(
@@ -194,7 +241,7 @@ func sortAndFilterComputeResult(
 	computeResults []ComputeResult,
 	currentValsByConsensusAddress map[string]types.Validator,
 	currentValsByOperatorAddress map[string]types.Validator,
-) []ComputeResult {
+) ([]ComputeResult, []types.Validator) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := sdkCtx.Logger()
 
@@ -232,7 +279,7 @@ func sortAndFilterComputeResult(
 	)
 
 	beforeFilter := computeResults
-	computeResults = filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
+	computeResults, staleToRemove := filterBasedOnExisting(ctx, computeResults, currentValsByConsensusAddress, currentValsByOperatorAddress)
 	logComputeResultsFilterStats(logger, "filter_based_on_existing", beforeFilter, computeResults)
 
 	beforeFilter = computeResults
@@ -243,7 +290,7 @@ func sortAndFilterComputeResult(
 	computeResults = filterDuplicateConsensusKeys(ctx, computeResults)
 	logComputeResultsFilterStats(logger, "filter_duplicate_consensus_keys", beforeFilter, computeResults)
 
-	return computeResults
+	return computeResults, staleToRemove
 }
 
 func sortComputeResultsInplace(computeResults []ComputeResult) {
@@ -279,15 +326,30 @@ func filterInvalidComputeResults(ctx context.Context, computeResults []ComputeRe
 	return filtered
 }
 
+// filterBasedOnExisting filters compute results against the existing validator set,
+// resolving conflicts where possible. It returns the filtered results and a list of
+// stale (tokens=0) validators that the caller should mark for deletion.
+//
+// Stale-conflict resolution (GON-191): when a participant re-registers with a fresh
+// account but reuses the same ed25519 validator key, the old validator entry can
+// remain in the staking store with tokens=0 and permanently block the new account
+// from claiming that consensus key. Previously the filter silently rejected the new
+// compute result; it now removes the stale entry from the working maps and signals
+// to the caller (via the returned slice) that it should be deleted from the store.
+//
+// The same logic applies when an operator changes its consensus key: if the old
+// entry has zero tokens, allow the change instead of rejecting it.
 func filterBasedOnExisting(
 	ctx context.Context,
 	computeResults []ComputeResult,
 	currentValsByConsensusAddress map[string]types.Validator,
 	currentValsByOperatorAddress map[string]types.Validator,
-) []ComputeResult {
+) ([]ComputeResult, []types.Validator) {
 	logger := sdk.UnwrapSDKContext(ctx).Logger()
 
 	filtered := make([]ComputeResult, 0, len(computeResults))
+	var staleToRemove []types.Validator
+
 	for _, res := range computeResults {
 		if res.ValidatorPubKey == nil || res.Power <= 0 {
 			continue
@@ -296,21 +358,49 @@ func filterBasedOnExisting(
 		consensusAddress := res.ValidatorPubKey.Address().String()
 		if val, exists := currentValsByConsensusAddress[consensusAddress]; exists {
 			if val.OperatorAddress != res.OperatorAddress {
-				logger.Warn("validator with the same consensus pubkey already exists, rejecting a new one", "consensusAddress", consensusAddress, "existingValidator", val.OperatorAddress, "newValidator", res.OperatorAddress)
-				continue
+				if val.Tokens.IsZero() {
+					logger.Info("removing stale zero-power validator to resolve consensus key conflict",
+						"consensusAddress", consensusAddress,
+						"staleOperator", val.OperatorAddress,
+						"newOperator", res.OperatorAddress)
+					staleToRemove = append(staleToRemove, val)
+					delete(currentValsByConsensusAddress, consensusAddress)
+					delete(currentValsByOperatorAddress, val.OperatorAddress)
+				} else {
+					logger.Warn("validator with the same consensus pubkey already exists, rejecting a new one", "consensusAddress", consensusAddress, "existingValidator", val.OperatorAddress, "newValidator", res.OperatorAddress)
+					continue
+				}
 			}
 		}
 
 		val, exists := currentValsByOperatorAddress[res.OperatorAddress]
-		if exists && val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String() != res.ValidatorPubKey.Address().String() {
-			logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "existingConsensusKey", val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String(), "newConsensusKey", res.ValidatorPubKey.Address().String())
-			continue
+		if exists {
+			existingConsKey := val.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey).Address().String()
+			if existingConsKey != res.ValidatorPubKey.Address().String() {
+				if val.Tokens.IsZero() {
+					logger.Info("allowing consensus key change for zero-power validator",
+						"operator", val.OperatorAddress,
+						"oldConsensusKey", existingConsKey,
+						"newConsensusKey", res.ValidatorPubKey.Address().String())
+					staleToRemove = append(staleToRemove, val)
+					delete(currentValsByOperatorAddress, res.OperatorAddress)
+					// Also drop the stale entry from the consensus-key map. Without this,
+					// a later compute result in the same batch that happens to reuse the
+					// old consensus key would find this ghost entry, see tokens=0, and
+					// queue the same stale validator for deletion a second time — causing
+					// a duplicate markValidatorForDeletion call. (PR review, GLiberman.)
+					delete(currentValsByConsensusAddress, existingConsKey)
+				} else {
+					logger.Warn("validator changed consensus pubkey, removing from validator set", "operator", val.OperatorAddress, "existingConsensusKey", existingConsKey, "newConsensusKey", res.ValidatorPubKey.Address().String())
+					continue
+				}
+			}
 		}
 
 		filtered = append(filtered, res)
 	}
 
-	return filtered
+	return filtered, staleToRemove
 }
 
 func filterDuplicateOperatorAddresses(ctx context.Context, computeResults []ComputeResult) []ComputeResult {
@@ -543,6 +633,26 @@ func (k Keeper) updateValidator(ctx context.Context, validator types.Validator, 
 	return nil
 }
 
+// isMarkedForDeletion reports whether markValidatorForDeletion would only rewrite the bytes
+// validator already has: a non-jailed validator with zero tokens and no unbonding ids,
+// a zero-power index entry and no self-delegation shares.
+func (k Keeper) isMarkedForDeletion(ctx context.Context, validator types.Validator) (bool, error) {
+	if validator.Jailed || !validator.Tokens.IsZero() || len(validator.UnbondingIds) > 0 {
+		return false, nil
+	}
+	valAddr, err := k.ValidatorAddressCodec().StringToBytes(validator.OperatorAddress)
+	if err != nil {
+		return false, err
+	}
+	store := k.storeService.OpenKVStore(ctx)
+	indexed, err := store.Has(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec))
+	if err != nil || !indexed {
+		return false, err
+	}
+	delegation, err := k.GetDelegation(ctx, sdk.AccAddress(valAddr), valAddr)
+	return err != nil || delegation.Shares.IsZero(), nil
+}
+
 // markValidatorForDeletion sets validator power to zero for immediate deletion.
 // In Proof of Compute, we skip the unbonding period since there are no tokens to lock.
 // Jailed validators are deleted immediately; others are processed in the next BlockValidatorUpdates.
@@ -556,10 +666,33 @@ func (k Keeper) markValidatorForDeletion(ctx context.Context, validator types.Va
 		return err
 	}
 
-	// Jailed validators can't be added to power index, so delete them immediately
+	// For jailed validators: zero out Tokens (the power proxy in PoC) and
+	// persist. Do NOT re-add to the power index (val_state_change.go:176
+	// invariant forbids jailed-in-power-store) and do NOT zero
+	// DelegatorShares — TokensFromShares (validator.go:308) computes
+	// `shares × Tokens / DelegatorShares`, and a zero denominator triggers a
+	// runtime divide-by-zero panic if any caller (e.g. slashing.Unjail at
+	// unjail.go:33) hits this validator before DeleteZeroPowerValidators
+	// cleans it up. With Tokens=0 and DelegatorShares unchanged, the formula
+	// returns 0 cleanly.
+	//
+	// jailValidator (val_state_change.go:335) already removed the validator
+	// from the power index, so ApplyAndReturnValidatorSetUpdates' main loop
+	// won't iterate it. The tail loop over `last` (LastValidatorPower) will
+	// emit the power-0 ValidatorUpdate and start the bondedToUnbonding
+	// transition. DeleteZeroPowerValidators will physically remove the
+	// record on a later block after LastValidatorPower is cleared, by which
+	// time CometBFT has dropped the validator from its active set.
 	if validator.Jailed {
-		logger.Info("deleting jailed validator immediately", "operator", validator.OperatorAddress)
-		return k.deleteValidatorInternal(ctx, validator, valAddr)
+		validator.Tokens = math.ZeroInt()
+		validator.UnbondingIds = []uint64{}
+
+		if err := k.SetValidator(ctx, validator); err != nil {
+			logger.Error("failed to set jailed validator with zero power", "validator", validator.OperatorAddress, "error", err)
+			return err
+		}
+
+		return nil
 	}
 
 	// For non-jailed validators, mark for deletion in next block
@@ -568,9 +701,14 @@ func (k Keeper) markValidatorForDeletion(ctx context.Context, validator types.Va
 		return err
 	}
 
-	// Set power to zero (status kept as-is for ApplyAndReturnValidatorSetUpdates)
+	// Set power to zero (status kept as-is for ApplyAndReturnValidatorSetUpdates).
+	// Do NOT zero DelegatorShares: TokensFromShares (validator.go:308) computes
+	// `shares × Tokens / DelegatorShares`, so a zero denominator panics if a
+	// caller (e.g. slashing.Unjail) hits this validator in the same block,
+	// before DeleteZeroPowerValidators removes it on the next block. Tokens=0
+	// already yields zero power; keeping DelegatorShares makes TokensFromShares
+	// return 0 cleanly. Same fix shape as the jailed branch above.
 	validator.Tokens = math.ZeroInt()
-	validator.DelegatorShares = math.LegacyZeroDec()
 	validator.UnbondingIds = []uint64{}
 
 	if err := k.SetValidator(ctx, validator); err != nil {

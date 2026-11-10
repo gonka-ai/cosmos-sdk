@@ -57,6 +57,9 @@ var (
 
 	DelegationByValIndexKey = []byte{0x71} // key for delegations by a validator
 
+	ValidatorIndexIntactKey = []byte{0x72} // set after a full RestoreValidatorIndex pass, cleared when a validator is deleted
+	ZeroPowerSweptKey       = []byte{0x73} // set after a DeleteZeroPowerValidators pass, cleared when a validator may have become deletable
+
 	// NOTE: keys in range 0x81–0x87 were previously used in liquid staking forks of the staking module.
 	// Module developers MUST NOT use these keys and MUST consider them "reserved".
 )

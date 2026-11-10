@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"errors"
 
 	storetypes "cosmossdk.io/store/types"
 
@@ -98,13 +97,15 @@ func (k Keeper) TrackHistoricalInfo(ctx context.Context) error {
 	// Since the entries to be deleted are always in a continuous range, we can iterate
 	// over the historical entries starting from the most recent version to be pruned
 	// and then return at the first empty entry.
+	// Has, not Get: the pruned entry (header + full valset) is never decoded.
+	store := k.storeService.OpenKVStore(ctx)
 	for i := sdkCtx.BlockHeight() - int64(entryNum); i >= 0; i-- {
-		_, err := k.GetHistoricalInfo(ctx, i)
+		has, err := store.Has(types.GetHistoricalInfoKey(i))
 		if err != nil {
-			if errors.Is(err, types.ErrNoHistoricalInfo) {
-				break
-			}
 			return err
+		}
+		if !has {
+			break
 		}
 		if err = k.DeleteHistoricalInfo(ctx, i); err != nil {
 			return err

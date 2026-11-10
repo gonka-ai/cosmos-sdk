@@ -4,6 +4,7 @@ import (
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -157,4 +158,32 @@ func (s *KeeperTestSuite) TestGetAllHistoricalInfo() {
 	infos, err := keeper.GetAllHistoricalInfo(ctx)
 	require.NoError(err)
 	require.Equal(expHistInfos, infos)
+}
+
+// Pruning checks presence only, so its gas does not grow with the pruned entry's valset.
+func (s *KeeperTestSuite) TestTrackHistoricalInfoPruneGasIgnoresEntrySize() {
+	keeper := s.stakingKeeper
+	require := s.Require()
+
+	_, addrVals := createValAddrs(25)
+	params := stakingtypes.DefaultParams()
+	params.HistoricalEntries = 5
+	require.NoError(keeper.SetParams(s.ctx, params))
+
+	pruneGas := func(nVals int) storetypes.Gas {
+		cms := s.ctx.MultiStore().CacheMultiStore()
+		ctx := s.ctx.WithMultiStore(cms).WithBlockHeight(10).WithGasMeter(storetypes.NewInfiniteGasMeter())
+		vals := make([]stakingtypes.Validator, nVals)
+		for i := range vals {
+			vals[i] = testutil.NewValidator(s.T(), addrVals[i], PKs[i])
+		}
+		hi := stakingtypes.NewHistoricalInfo(cmtproto.Header{ChainID: "HelloChain", Height: 5}, stakingtypes.Validators{Validators: vals}, keeper.PowerReduction(ctx))
+		require.NoError(keeper.SetHistoricalInfo(ctx, 5, &hi))
+		ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+		require.NoError(keeper.TrackHistoricalInfo(ctx))
+		_, err := keeper.GetHistoricalInfo(ctx, 5)
+		require.ErrorIs(err, stakingtypes.ErrNoHistoricalInfo)
+		return ctx.GasMeter().GasConsumed()
+	}
+	require.Equal(pruneGas(1), pruneGas(25))
 }

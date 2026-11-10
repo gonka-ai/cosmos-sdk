@@ -79,6 +79,9 @@ type Keeper struct {
 	authority             string
 	validatorAddressCodec addresscodec.Codec
 	consensusAddressCodec addresscodec.Codec
+	// tombstoneChecker, when set, reports whether a validator is tombstoned in the
+	// slashing module. Injected via SetTombstoneChecker to avoid a circular import.
+	tombstoneChecker TombstoneChecker
 }
 
 // NewKeeper creates a new staking Keeper instance
@@ -150,6 +153,14 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) {
 	k.hooks = sh
 }
 
+// SetTombstoneChecker injects a function reporting whether a validator (by consensus
+// address) is tombstoned in the slashing module. The epoch validator-set recompute
+// (SetComputeValidators) uses it so a permanently-banned (e.g. equivocating) validator
+// is not resurrected. Wired in app setup once the slashing keeper exists; nil = unchanged.
+func (k *Keeper) SetTombstoneChecker(fn TombstoneChecker) {
+	k.tombstoneChecker = fn
+}
+
 // GetLastTotalPower loads the last total validator power.
 func (k Keeper) GetLastTotalPower(ctx context.Context) (math.Int, error) {
 	store := k.storeService.OpenKVStore(ctx)
@@ -199,6 +210,16 @@ func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 // SetValidatorUpdates sets the ABCI validator power updates for the current block.
 func (k Keeper) SetValidatorUpdates(ctx context.Context, valUpdates []abci.ValidatorUpdate) error {
 	store := k.storeService.OpenKVStore(ctx)
+	if len(valUpdates) == 0 {
+		// Most blocks have no updates and the stored list is already empty: skip the rewrite.
+		prev, err := store.Get(types.ValidatorUpdatesKey)
+		if err != nil {
+			return err
+		}
+		if len(prev) == 0 {
+			return nil
+		}
+	}
 	bz, err := k.cdc.Marshal(&types.ValidatorUpdates{Updates: valUpdates})
 	if err != nil {
 		return err

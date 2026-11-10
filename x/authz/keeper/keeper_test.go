@@ -37,6 +37,7 @@ type TestSuite struct {
 	suite.Suite
 
 	ctx           sdk.Context
+	storeKey      *storetypes.KVStoreKey
 	addrs         []sdk.AccAddress
 	authzKeeper   authzkeeper.Keeper
 	accountKeeper *authztestutil.MockAccountKeeper
@@ -49,6 +50,7 @@ type TestSuite struct {
 
 func (s *TestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey(authzkeeper.StoreKey)
+	s.storeKey = key
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	s.ctx = testCtx.Ctx.WithBlockHeader(cmtproto.Header{Time: cmttime.Now()})

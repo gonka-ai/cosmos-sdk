@@ -118,7 +118,7 @@ func TestQueryValidatorHistoricalRewards(t *testing.T) {
 				Period:           1,
 			},
 			expectErr:          false,
-			expectedRefCount:   1,
+			expectedRefCount:   0,
 			expectNonZeroRatio: false,
 		},
 		{
@@ -138,8 +138,8 @@ func TestQueryValidatorHistoricalRewards(t *testing.T) {
 				Period:           3,
 			},
 			expectErr:          false,
-			expectedRefCount:   1,
-			expectNonZeroRatio: true,
+			expectedRefCount:   0,
+			expectNonZeroRatio: false,
 		},
 		{
 			name:        "nil request",
@@ -216,8 +216,8 @@ func TestQueryValidatorCurrentRewards(t *testing.T) {
 				ValidatorAddress: f.valAddr.String(),
 			},
 			expectErr:            false,
-			expectedPeriod:       3,
-			expectNonZeroRewards: false,
+			expectedPeriod:       1,
+			expectNonZeroRewards: true,
 		},
 		{
 			name:        "nil request",
@@ -291,8 +291,8 @@ func TestQueryDelegatorStartingInfo(t *testing.T) {
 				ValidatorAddress: f.valAddr.String(),
 			},
 			expectErr:      false,
-			expectedPeriod: 1,
-			expectedHeight: 1,
+			expectedPeriod: 0,
+			expectedHeight: 0,
 		},
 		{
 			name:        "nil request",

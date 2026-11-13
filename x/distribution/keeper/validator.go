@@ -40,113 +40,16 @@ func (k Keeper) initializeValidator(ctx context.Context, val stakingtypes.Valida
 	return err
 }
 
-// IncrementValidatorPeriod increments validator period, returning the period just ended
 func (k Keeper) IncrementValidatorPeriod(ctx context.Context, val stakingtypes.ValidatorI) (uint64, error) {
-	valBz, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
-	if err != nil {
-		return 0, err
-	}
-
-	// fetch current rewards
-	rewards, err := k.GetValidatorCurrentRewards(ctx, valBz)
-	if err != nil {
-		return 0, err
-	}
-
-	// calculate current ratio
-	var current sdk.DecCoins
-	if val.GetTokens().IsZero() {
-
-		// can't calculate ratio for zero-token validators
-		// ergo we instead add to the community pool
-		feePool, err := k.FeePool.Get(ctx)
-		if err != nil {
-			return 0, err
-		}
-
-		outstanding, err := k.GetValidatorOutstandingRewards(ctx, valBz)
-		if err != nil {
-			return 0, err
-		}
-
-		feePool.CommunityPool = feePool.CommunityPool.Add(rewards.Rewards...)
-		outstanding.Rewards = outstanding.GetRewards().Sub(rewards.Rewards)
-		err = k.FeePool.Set(ctx, feePool)
-		if err != nil {
-			return 0, err
-		}
-
-		err = k.SetValidatorOutstandingRewards(ctx, valBz, outstanding)
-		if err != nil {
-			return 0, err
-		}
-
-		current = sdk.DecCoins{}
-	} else {
-		// note: necessary to truncate so we don't allow withdrawing more rewards than owed
-		current = rewards.Rewards.QuoDecTruncate(math.LegacyNewDecFromInt(val.GetTokens()))
-	}
-
-	// fetch historical rewards for last period
-	historical, err := k.getValidatorHistoricalRewards(ctx, valBz, rewards.Period-1, true)
-	if err != nil {
-		return 0, err
-	}
-
-	cumRewardRatio := historical.CumulativeRewardRatio
-
-	// decrement reference count
-	err = k.decrementReferenceCount(ctx, valBz, rewards.Period-1)
-	if err != nil {
-		return 0, err
-	}
-
-	// set new historical rewards with reference count of 1
-	err = k.SetValidatorHistoricalRewards(ctx, valBz, rewards.Period, types.NewValidatorHistoricalRewards(cumRewardRatio.Add(current...), 1))
-	if err != nil {
-		return 0, err
-	}
-
-	// set current rewards, incrementing period by 1
-	err = k.SetValidatorCurrentRewards(ctx, valBz, types.NewValidatorCurrentRewards(sdk.DecCoins{}, rewards.Period+1))
-	if err != nil {
-		return 0, err
-	}
-
-	return rewards.Period, nil
+	return 0, nil
 }
 
-// incrementReferenceCount increments the reference count for a historical rewards value
 func (k Keeper) incrementReferenceCount(ctx context.Context, valAddr sdk.ValAddress, period uint64) error {
-	historical, err := k.getValidatorHistoricalRewards(ctx, valAddr, period, true)
-	if err != nil {
-		return err
-	}
-
-	historical.ReferenceCount++
-	if historical.ReferenceCount > 2 {
-		panic("reference count should never exceed 2")
-	}
-
-	return k.SetValidatorHistoricalRewards(ctx, valAddr, period, historical)
+	return nil
 }
 
-// decrementReferenceCount decrements the reference count for a historical rewards value, and delete if zero references remain
 func (k Keeper) decrementReferenceCount(ctx context.Context, valAddr sdk.ValAddress, period uint64) error {
-	historical, err := k.getValidatorHistoricalRewards(ctx, valAddr, period, true)
-	if err != nil {
-		return err
-	}
-
-	if historical.ReferenceCount == 0 {
-		panic("cannot set negative reference count")
-	}
-	historical.ReferenceCount--
-	if historical.ReferenceCount == 0 {
-		return k.DeleteValidatorHistoricalReward(ctx, valAddr, period)
-	}
-
-	return k.SetValidatorHistoricalRewards(ctx, valAddr, period, historical)
+	return nil
 }
 
 func (k Keeper) updateValidatorSlashFraction(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error {

@@ -16,7 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
@@ -114,22 +113,14 @@ func TestWithdrawValidatorCommission(t *testing.T) {
 	// set commission
 	require.NoError(t, distrKeeper.SetValidatorAccumulatedCommission(ctx, valAddr, types.ValidatorAccumulatedCommission{Commission: valCommission}))
 
-	// withdraw commission
-	coins := sdk.NewCoins(sdk.NewCoin("mytoken", math.NewInt(1)), sdk.NewCoin("stake", math.NewInt(1)))
-	// if SendCoinsFromModuleToAccount is called, we know that the withdraw was successful
-	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), "distribution", addrs[0], coins).Return(nil)
-
-	_, err := distrKeeper.WithdrawValidatorCommission(ctx, valAddr)
+	coins, err := distrKeeper.WithdrawValidatorCommission(ctx, valAddr)
 	require.NoError(t, err)
+	require.True(t, coins.IsZero())
 
-	// check remainder
+	// commission stays in the store; PoC does not pay it out
 	remainderValCommission, err := distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddr)
 	require.NoError(t, err)
-	remainder := remainderValCommission.Commission
-	require.Equal(t, sdk.DecCoins{
-		sdk.NewDecCoinFromDec("mytoken", math.LegacyNewDec(1).Quo(math.LegacyNewDec(4))),
-		sdk.NewDecCoinFromDec("stake", math.LegacyNewDec(1).Quo(math.LegacyNewDec(2))),
-	}, remainder)
+	require.Equal(t, valCommission, remainderValCommission.Commission)
 }
 
 func TestWithdrawValidatorCommission_BlockedWithdrawAddress(t *testing.T) {
@@ -175,14 +166,10 @@ func TestWithdrawValidatorCommission_BlockedWithdrawAddress(t *testing.T) {
 	bankKeeper.EXPECT().BlockedAddr(blockedAddr).Return(false).Times(1) // allow SetWithdrawAddr to succeed
 	require.NoError(t, distrKeeper.SetWithdrawAddr(ctx, accAddr, blockedAddr))
 
-	// strict resolver sees the addr as blocked and errors. Any partial state
-	// mutation done before the bank send is rolled back at the tx level by the
-	// msg server's cache context, so we don't assert keeper-level state here.
-	bankKeeper.EXPECT().BlockedAddr(blockedAddr).Return(true).Times(1)
-
-	sdkCtx := ctx.WithEventManager(sdk.NewEventManager())
-	_, err := distrKeeper.WithdrawValidatorCommission(sdkCtx, valAddr)
-	require.ErrorIs(t, err, sdkerrors.ErrUnauthorized)
+	// WithdrawValidatorCommission is a no-op and does not consult the blocked set.
+	coins, err := distrKeeper.WithdrawValidatorCommission(ctx, valAddr)
+	require.NoError(t, err)
+	require.True(t, coins.IsZero())
 }
 
 func TestWithdrawDelegationRewards_BlockedWithdrawAddress(t *testing.T) {
@@ -237,15 +224,9 @@ func TestWithdrawDelegationRewards_BlockedWithdrawAddress(t *testing.T) {
 	tokens := sdk.DecCoins{sdk.NewDecCoin(sdk.DefaultBondDenom, initial)}
 	require.NoError(t, distrKeeper.AllocateTokensToValidator(ctx, val, tokens))
 
-	// blocked addr is now blocked in the bank keeper
-	bankKeeper.EXPECT().BlockedAddr(blockedAddr).Return(true).Times(1)
-
-	// reset events so we can assert just the ones from this call
-	sdkCtx := ctx.WithEventManager(sdk.NewEventManager())
-
-	// try and withdraw rewards.
-	_, err = distrKeeper.WithdrawDelegationRewards(sdkCtx, addr, valAddr)
-	require.ErrorIs(t, err, sdkerrors.ErrUnauthorized)
+	coins, err := distrKeeper.WithdrawDelegationRewards(ctx, addr, valAddr)
+	require.NoError(t, err)
+	require.True(t, coins.IsZero())
 }
 
 func TestGetTotalRewards(t *testing.T) {
@@ -284,10 +265,7 @@ func TestGetTotalRewards(t *testing.T) {
 	require.NoError(t, distrKeeper.SetValidatorOutstandingRewards(ctx, valAddr0, types.ValidatorOutstandingRewards{Rewards: valCommission}))
 	require.NoError(t, distrKeeper.SetValidatorOutstandingRewards(ctx, valAddr1, types.ValidatorOutstandingRewards{Rewards: valCommission}))
 
-	expectedRewards := valCommission.MulDec(math.LegacyNewDec(2))
-	totalRewards := distrKeeper.GetTotalRewards(ctx)
-
-	require.Equal(t, expectedRewards, totalRewards)
+	require.True(t, distrKeeper.GetTotalRewards(ctx).IsZero())
 }
 
 func TestFundCommunityPool(t *testing.T) {

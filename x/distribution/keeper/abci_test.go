@@ -98,10 +98,9 @@ func TestBeginBlockNoOp(t *testing.T) {
 
 	require.True(t, feePoolBefore.CommunityPool.Equal(feePoolAfter.CommunityPool), fmt.Sprintf("before: %s, after: %s", feePoolBefore.CommunityPool.String(), feePoolAfter.CommunityPool.String()))
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }
 
 // Scenario:
@@ -167,10 +166,7 @@ func TestBeginBlockToMultipleValidators(t *testing.T) {
 		require.True(t, val1CurrentRewards.Rewards.IsZero())
 	})
 
-	// allocate tokens as if both had voted and second was proposer
-	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100)))
-	ts.bankKeeper.EXPECT().GetAllBalances(gomock.Any(), feeCollectorAcc.GetAddress()).Return(fees)
-	ts.bankKeeper.EXPECT().SendCoinsFromModuleToModule(gomock.Any(), "fee_collector", types.ModuleName, fees)
+	// AllocateTokens is a no-op, so no fee-collector reads or module transfers.
 
 	votes := []abci.VoteInfo{
 		{
@@ -195,48 +191,29 @@ func TestBeginBlockToMultipleValidators(t *testing.T) {
 	feePoolAfter, err := ts.distrKeeper.FeePool.Get(ctx)
 	require.NoError(t, err)
 
-	require.False(t, feePoolBefore.CommunityPool.Equal(feePoolAfter.CommunityPool), fmt.Sprintf("before: %s, after: %s", feePoolBefore.CommunityPool.String(), feePoolAfter.CommunityPool.String()))
+	require.True(t, feePoolBefore.CommunityPool.Equal(feePoolAfter.CommunityPool), fmt.Sprintf("before: %s, after: %s", feePoolBefore.CommunityPool.String(), feePoolAfter.CommunityPool.String()))
 
-	t.Run("assert rewards and commission distributed", func(t *testing.T) {
-		// 98 outstanding rewards (100 less 2 to community pool) - distributed among the two validators with the same stake weight
+	t.Run("assert no rewards or commission are distributed", func(t *testing.T) {
 		val0OutstandingRewards, err := ts.distrKeeper.GetValidatorOutstandingRewards(ctx, valAddr0)
 		require.NoError(t, err)
-		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDecWithPrec(490, 1)}}, val0OutstandingRewards.Rewards)
+		require.True(t, val0OutstandingRewards.Rewards.IsZero())
 
 		val1OutstandingRewards, err := ts.distrKeeper.GetValidatorOutstandingRewards(ctx, valAddr1)
 		require.NoError(t, err)
-		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDecWithPrec(490, 1)}}, val1OutstandingRewards.Rewards)
+		require.True(t, val1OutstandingRewards.Rewards.IsZero())
 
-		// 2 community pool coins
-		feePool, err := ts.distrKeeper.FeePool.Get(ctx)
-		require.NoError(t, err)
-		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDec(2)}}, feePool.CommunityPool)
-
-		// 50% commission for first proposer, (0.5 * 98%) * 100 / 2 = 23.25
 		val0Commission, err := ts.distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddr0)
 		require.NoError(t, err)
-		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDecWithPrec(2450, 2)}}, val0Commission.Commission)
+		require.True(t, val0Commission.Commission.IsZero())
 
-		// zero commission for second proposer
 		val1Commission, err := ts.distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddr1)
 		require.NoError(t, err)
 		require.True(t, val1Commission.Commission.IsZero())
-
-		// just staking.proportional for first proposer less commission = (0.5 * 98%) * 100 / 2 = 24.50
-		val0CurrentRewards, err := ts.distrKeeper.GetValidatorCurrentRewards(ctx, valAddr0)
-		require.NoError(t, err)
-		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDecWithPrec(2450, 2)}}, val0CurrentRewards.Rewards)
-
-		// proposer reward + staking.proportional for second proposer = (0.5 * (98%)) * 100 = 49
-		val1CurrentRewards, err := ts.distrKeeper.GetValidatorCurrentRewards(ctx, valAddr1)
-		require.NoError(t, err)
-		require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDecWithPrec(490, 1)}}, val1CurrentRewards.Rewards)
 	})
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }
 
 // Scenario:
@@ -311,11 +288,7 @@ func TestBeginBlockCommunityPoolCollectsDust(t *testing.T) {
 		require.True(t, val1CurrentRewards.Rewards.IsZero())
 	})
 
-	// allocate tokens as if both had voted and second was proposer
-	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(634195840)))
-	expectedCommunityPool := sdk.NewDecCoins(sdk.NewDecCoinFromDec(sdk.DefaultBondDenom, math.LegacyMustNewDecFromStr("12683916.800000001243023848")))
-	ts.bankKeeper.EXPECT().GetAllBalances(gomock.Any(), feeCollectorAcc.GetAddress()).Return(fees)
-	ts.bankKeeper.EXPECT().SendCoinsFromModuleToModule(gomock.Any(), "fee_collector", types.ModuleName, fees)
+	// AllocateTokens is a no-op, so dust is not swept into the community pool.
 
 	votes := []abci.VoteInfo{
 		{
@@ -346,9 +319,7 @@ func TestBeginBlockCommunityPoolCollectsDust(t *testing.T) {
 	feePoolAfter, err := ts.distrKeeper.FeePool.Get(ctx)
 	require.NoError(t, err)
 
-	// check that the community pool has collected all the dust from truncating rewards to sdk.Ints
-	require.False(t, feePoolBefore.CommunityPool.Equal(feePoolAfter.CommunityPool), fmt.Sprintf("before: %s, after: %s", feePoolBefore.CommunityPool.String(), feePoolAfter.CommunityPool.String()))
-	require.True(t, feePoolAfter.CommunityPool.Equal(expectedCommunityPool))
+	require.True(t, feePoolBefore.CommunityPool.Equal(feePoolAfter.CommunityPool), fmt.Sprintf("before: %s, after: %s", feePoolBefore.CommunityPool.String(), feePoolAfter.CommunityPool.String()))
 
 	t.Run("assert rewards distributed", func(t *testing.T) {
 		val0OutstandingRewards, err := ts.distrKeeper.GetValidatorOutstandingRewards(ctx, valAddr0)
@@ -364,8 +335,7 @@ func TestBeginBlockCommunityPoolCollectsDust(t *testing.T) {
 		require.True(t, val2OutstandingRewards.Rewards.IsValid())
 	})
 
-	// check cons address
-	got, err := ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
-	require.NoError(t, err)
-	require.Equal(t, testProposerAddress, got)
+	// the proposer is not recorded
+	_, err = ts.distrKeeper.GetPreviousProposerConsAddr(ctx)
+	require.Error(t, err)
 }

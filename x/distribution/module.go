@@ -31,7 +31,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/distribution module consensus version.
-const ConsensusVersion = 3
+const ConsensusVersion = 4
 
 var (
 	_ module.AppModuleBasic      = AppModule{}
@@ -128,6 +128,9 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
 
 	_ = keeper.NewMigrator(am.keeper)
+	if err := cfg.RegisterMigration(types.ModuleName, 3, func(ctx sdk.Context) error { return nil }); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 3 to 4: %v", types.ModuleName, err))
+	}
 }
 
 // InitGenesis performs genesis initialization for the distribution module. It returns

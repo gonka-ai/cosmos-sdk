@@ -108,106 +108,16 @@ func (k Keeper) SetWithdrawAddr(ctx context.Context, delegatorAddr, withdrawAddr
 
 // WithdrawDelegationRewards withdraws rewards from a delegation
 func (k Keeper) WithdrawDelegationRewards(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (sdk.Coins, error) {
-	val, err := k.stakingKeeper.Validator(ctx, valAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	if val == nil {
-		return nil, types.ErrNoValidatorDistInfo
-	}
-
-	del, err := k.stakingKeeper.Delegation(ctx, delAddr, valAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	if del == nil {
-		return nil, types.ErrEmptyDelegationDistInfo
-	}
-
-	// determine where rewards for this delegator should go
-	dest, err := k.resolveWithdrawDestinationStrict(ctx, delAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	rewards, err := k.withdrawDelegationRewards(ctx, val, del, dest)
-	if err != nil {
-		return nil, err
-	}
-
-	// reinitialize the delegation
-	err = k.initializeDelegation(ctx, valAddr, delAddr)
-	if err != nil {
-		return nil, err
-	}
-	return rewards, nil
+	return sdk.Coins{}, nil
 }
 
 // WithdrawValidatorCommission withdraws validator commission.
 func (k Keeper) WithdrawValidatorCommission(ctx context.Context, valAddr sdk.ValAddress) (sdk.Coins, error) {
-	// fetch validator accumulated commission
-	accumCommission, err := k.GetValidatorAccumulatedCommission(ctx, valAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	if accumCommission.Commission.IsZero() {
-		return nil, types.ErrNoValidatorCommission
-	}
-
-	commission, remainder := accumCommission.Commission.TruncateDecimal()
-	err = k.SetValidatorAccumulatedCommission(ctx, valAddr, types.ValidatorAccumulatedCommission{Commission: remainder}) // leave remainder to withdraw later
-	if err != nil {
-		return nil, err
-	}
-
-	// update outstanding
-	outstanding, err := k.GetValidatorOutstandingRewards(ctx, valAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	err = k.SetValidatorOutstandingRewards(ctx, valAddr, types.ValidatorOutstandingRewards{Rewards: outstanding.Rewards.Sub(sdk.NewDecCoinsFromCoins(commission...))})
-	if err != nil {
-		return nil, err
-	}
-
-	if !commission.IsZero() {
-		// determine where commission for this validator should go
-		dest, err := k.resolveWithdrawDestinationStrict(ctx, sdk.AccAddress(valAddr))
-		if err != nil {
-			return nil, err
-		}
-
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, dest.ResolvedWithdrawAddr, commission)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeWithdrawCommission,
-			sdk.NewAttribute(sdk.AttributeKeyAmount, commission.String()),
-		),
-	)
-
-	return commission, nil
+	return sdk.Coins{}, nil
 }
 
-// GetTotalRewards returns the total amount of fee distribution rewards held in the store
 func (k Keeper) GetTotalRewards(ctx context.Context) (totalRewards sdk.DecCoins) {
-	k.IterateValidatorOutstandingRewards(ctx,
-		func(_ sdk.ValAddress, rewards types.ValidatorOutstandingRewards) (stop bool) {
-			totalRewards = totalRewards.Add(rewards.Rewards...)
-			return false
-		},
-	)
-
-	return totalRewards
+	return sdk.DecCoins{}
 }
 
 // FundCommunityPool allows an account to directly fund the community fund pool.

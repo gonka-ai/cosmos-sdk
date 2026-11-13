@@ -130,19 +130,9 @@ func TestBeforeDelegationSharesModified(t *testing.T) {
 			expRewards := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, initial)}
 
 			bankKeeper.EXPECT().BlockedAddr(withdrawAddr).Return(tc.withdrawAddrBlocked).Times(1)
-			switch {
-			case !tc.withdrawAddrBlocked:
-				// happy path: hook sends rewards directly to configured withdraw addr
-				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), disttypes.ModuleName, withdrawAddr, expRewards).Return(nil).Times(1)
-			case !tc.strict:
-				// fallback path: check the owner addr next
+			if tc.withdrawAddrBlocked && !tc.strict {
 				bankKeeper.EXPECT().BlockedAddr(owner).Return(tc.ownerBlocked).Times(1)
-				if !tc.ownerBlocked {
-					bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), disttypes.ModuleName, owner, expRewards).Return(nil).Times(1)
-				}
-				// else: rewards go to community pool, no bank Send
 			}
-			// strict + withdrawAddrBlocked: resolver errors immediately, no further bank calls
 
 			var cpBefore disttypes.FeePool
 			if tc.expectedWithdrawAddress == disttypes.AttributeValueCommunityPool {
@@ -168,20 +158,15 @@ func TestBeforeDelegationSharesModified(t *testing.T) {
 				requireRedirectEvent(t, eventCtx.EventManager(), withdrawAddr.String(), tc.expectedWithdrawAddress)
 			}
 
-			// pool-fallback path: pool absorbs the full truncated reward, and
-			// outstanding rewards drain to zero.
+			// withdrawDelegationRewards is a no-op, so the community pool and
+			// outstanding rewards stay where AllocateTokensToValidator left them.
 			if tc.expectedWithdrawAddress == disttypes.AttributeValueCommunityPool {
 				cpAfter, err := distrKeeper.FeePool.Get(ctx)
 				require.NoError(t, err)
-				diff := cpAfter.CommunityPool.Sub(cpBefore.CommunityPool)
-				require.True(t,
-					diff.AmountOf(sdk.DefaultBondDenom).Equal(math.LegacyNewDecFromInt(expRewards[0].Amount)),
-					"community pool delta should equal the truncated reward amount; got %s want %s",
-					diff, expRewards[0].Amount,
-				)
+				require.True(t, cpAfter.CommunityPool.Equal(cpBefore.CommunityPool))
 				outstanding, err := distrKeeper.GetValidatorOutstandingRewardsCoins(ctx, valAddr)
 				require.NoError(t, err)
-				require.True(t, outstanding.IsZero(), "expected outstanding rewards to be fully drained, got %s", outstanding)
+				require.True(t, outstanding.AmountOf(sdk.DefaultBondDenom).Equal(math.LegacyNewDecFromInt(expRewards[0].Amount)))
 			}
 		})
 	}

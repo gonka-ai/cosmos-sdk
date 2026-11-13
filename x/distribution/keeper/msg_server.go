@@ -4,11 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/go-metrics"
-
 	"cosmossdk.io/errors"
 
-	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -27,79 +24,15 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 func (k msgServer) SetWithdrawAddress(ctx context.Context, msg *types.MsgSetWithdrawAddress) (*types.MsgSetWithdrawAddressResponse, error) {
-	delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(msg.DelegatorAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
-	}
-
-	withdrawAddress, err := k.authKeeper.AddressCodec().StringToBytes(msg.WithdrawAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid withdraw address: %s", err)
-	}
-
-	err = k.SetWithdrawAddr(ctx, delegatorAddress, withdrawAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.MsgSetWithdrawAddressResponse{}, nil
+	return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "SetWithdrawAddress is disabled")
 }
 
 func (k msgServer) WithdrawDelegatorReward(ctx context.Context, msg *types.MsgWithdrawDelegatorReward) (*types.MsgWithdrawDelegatorRewardResponse, error) {
-	valAddr, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(msg.ValidatorAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
-	}
-
-	delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(msg.DelegatorAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
-	}
-
-	amount, err := k.WithdrawDelegationRewards(ctx, delegatorAddress, valAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		for _, a := range amount {
-			if a.Amount.IsInt64() {
-				telemetry.SetGaugeWithLabels( //nolint:staticcheck // TODO: switch to OpenTelemetry
-					[]string{"tx", "msg", "withdraw_reward"},
-					float32(a.Amount.Int64()),
-					[]metrics.Label{telemetry.NewLabel("denom", a.Denom)}, //nolint:staticcheck // TODO: switch to OpenTelemetry
-				)
-			}
-		}
-	}()
-
-	return &types.MsgWithdrawDelegatorRewardResponse{Amount: amount}, nil
+	return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "WithdrawDelegatorReward is disabled")
 }
 
 func (k msgServer) WithdrawValidatorCommission(ctx context.Context, msg *types.MsgWithdrawValidatorCommission) (*types.MsgWithdrawValidatorCommissionResponse, error) {
-	valAddr, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(msg.ValidatorAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
-	}
-
-	amount, err := k.Keeper.WithdrawValidatorCommission(ctx, valAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		for _, a := range amount {
-			if a.Amount.IsInt64() {
-				telemetry.SetGaugeWithLabels( //nolint:staticcheck // TODO: switch to OpenTelemetry
-					[]string{"tx", "msg", "withdraw_commission"},
-					float32(a.Amount.Int64()),
-					[]metrics.Label{telemetry.NewLabel("denom", a.Denom)}, //nolint:staticcheck // TODO: switch to OpenTelemetry
-				)
-			}
-		}
-	}()
-
-	return &types.MsgWithdrawValidatorCommissionResponse{Amount: amount}, nil
+	return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "WithdrawValidatorCommission is disabled")
 }
 
 func (k msgServer) FundCommunityPool(ctx context.Context, msg *types.MsgFundCommunityPool) (*types.MsgFundCommunityPoolResponse, error) {

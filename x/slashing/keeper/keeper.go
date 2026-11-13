@@ -15,6 +15,16 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
+// MaintenanceChecker is an optional interface that, when set, allows the
+// slashing keeper to skip missed-block accounting and downtime jailing for
+// validators that are currently in a scheduled maintenance window.
+// This is injected after construction via SetMaintenanceChecker to avoid
+// import cycles between the slashing module and the application-level
+// maintenance state owner.
+type MaintenanceChecker interface {
+	IsValidatorInActiveMaintenance(ctx context.Context, consAddr sdk.ConsAddress) bool
+}
+
 // Keeper of the slashing store
 type Keeper struct {
 	storeService storetypes.KVStoreService
@@ -25,6 +35,10 @@ type Keeper struct {
 	// the address capable of executing a MsgUpdateParams message. Typically, this
 	// should be the x/gov module account.
 	authority string
+
+	// maintenanceChecker is an optional checker for maintenance window exemptions.
+	// When non-nil, validators in active maintenance skip liveness accounting.
+	maintenanceChecker MaintenanceChecker
 }
 
 // NewKeeper creates a slashing keeper
@@ -38,6 +52,12 @@ func NewKeeper(cdc codec.BinaryCodec, legacyAmino *codec.LegacyAmino, storeServi
 	}
 }
 
+// SetMaintenanceChecker sets the optional maintenance checker used to exempt
+// validators in active maintenance from downtime liveness accounting.
+func (k *Keeper) SetMaintenanceChecker(mc MaintenanceChecker) {
+	k.maintenanceChecker = mc
+}
+
 // GetAuthority returns the x/slashing module's authority.
 func (k Keeper) GetAuthority() string {
 	return k.authority
@@ -47,6 +67,11 @@ func (k Keeper) GetAuthority() string {
 func (k Keeper) Logger(ctx context.Context) log.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
+}
+
+// RestoreValidatorIndex exposes the underlying staking keeper's RestoreValidatorIndex.
+func (k Keeper) RestoreValidatorIndex(ctx context.Context) {
+	k.sk.RestoreValidatorIndex(ctx)
 }
 
 // AddPubkey sets a address-pubkey relation

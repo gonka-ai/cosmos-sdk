@@ -28,7 +28,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/slashing module consensus version.
-const ConsensusVersion = 4
+const ConsensusVersion = 5
 
 var (
 	_ module.AppModuleBasic      = AppModule{}
@@ -123,6 +123,10 @@ func (am AppModule) IsAppModule() {}
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+
+	if err := cfg.RegisterMigration(types.ModuleName, 4, func(ctx sdk.Context) error { return nil }); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 4 to 5: %v", types.ModuleName, err))
+	}
 }
 
 // InitGenesis performs genesis initialization for the slashing module. It returns

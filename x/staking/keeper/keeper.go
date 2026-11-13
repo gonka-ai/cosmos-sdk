@@ -145,6 +145,10 @@ func (k Keeper) ValidatorAddressCodec() addresscodec.Codec {
 	return k.validatorAddressCodec
 }
 
+// RestoreValidatorIndex satisfies the slashing keeper. The Proof-of-Compute
+// scan replaces this empty method in the staking port.
+func (k Keeper) RestoreValidatorIndex(context.Context) {}
+
 // ConsensusAddressCodec returns the app consensus address codec.
 func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 	return k.consensusAddressCodec

@@ -33,9 +33,18 @@ func TestGrantQueueKey(t *testing.T) {
 	blockTime := time.Now().UTC()
 	queueKey := GrantQueueKey(blockTime, granter, grantee)
 
-	expiration, granter1, grantee1, err := parseGrantQueueKey(queueKey)
+	expiration, granter1, grantee1, typeStart, err := parseGrantQueueKey(queueKey)
 	require.NoError(t, err)
 	require.Equal(t, blockTime, expiration)
 	require.Equal(t, granter, granter1)
 	require.Equal(t, grantee, grantee1)
+	require.Equal(t, len(queueKey), typeStart)
+
+	typeKey := grantQueueTypeKey(blockTime, granter, grantee, msgType)
+	expiration, granter1, grantee1, typeStart, err = parseGrantQueueKey(typeKey)
+	require.NoError(t, err)
+	require.Equal(t, blockTime, expiration)
+	require.Equal(t, granter, granter1)
+	require.Equal(t, grantee, grantee1)
+	require.Equal(t, msgType, string(typeKey[typeStart:]))
 }

@@ -399,6 +399,7 @@ func (k BaseKeeper) MintCoins(ctx context.Context, moduleName string, amounts sd
 // BurnCoins burns coins from the balance of the module account.
 // It will panic if the module account does not exist or is unauthorized.
 func (k BaseKeeper) BurnCoins(ctx context.Context, moduleName string, amounts sdk.Coins) error {
+	k.logger.Error("burning coins", "amount", amounts.String(), "from", moduleName)
 	acc := k.ak.GetModuleAccount(ctx, moduleName)
 	if acc == nil {
 		panic(errorsmod.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", moduleName))

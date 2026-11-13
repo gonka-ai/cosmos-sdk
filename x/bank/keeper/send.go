@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"runtime"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
@@ -302,6 +303,10 @@ func (k BaseSendKeeper) emitSendCoinsEvents(ctx context.Context, fromAddr, toAdd
 //
 // A coin_spent event is emitted after the operation.
 func (k BaseSendKeeper) subUnlockedCoins(ctx context.Context, addr sdk.AccAddress, amt sdk.Coins) error {
+	if !amt.IsValid() {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
+	}
+
 	lockedCoins := k.LockedCoins(ctx, addr)
 
 	for _, coin := range amt {
@@ -321,6 +326,18 @@ func (k BaseSendKeeper) subUnlockedCoins(ctx context.Context, addr sdk.AccAddres
 			if len(spendable) == 0 {
 				spendable = sdk.Coins{sdk.Coin{Denom: coin.Denom, Amount: math.ZeroInt()}}
 			}
+
+			stack := make([]byte, 2048)
+			runtime.Stack(stack, false)
+			k.logger.Error("insufficient spendable funds",
+				"spendable", spendable,
+				"required", coin,
+				"locked", locked.String(),
+				"balance", balance.String(),
+				"caller", caller(0),
+				"account", addr.String(),
+				"stack", string(stack))
+
 			return errorsmod.Wrapf(
 				sdkerrors.ErrInsufficientFunds,
 				"spendable balance %s is smaller than %s",
@@ -341,6 +358,14 @@ func (k BaseSendKeeper) subUnlockedCoins(ctx context.Context, addr sdk.AccAddres
 	)
 
 	return nil
+}
+
+func caller(skip int) string {
+	if pc, file, line, ok := runtime.Caller(skip); ok {
+		fn := runtime.FuncForPC(pc)
+		return fmt.Sprintf("%s:%d %s", file, line, fn.Name())
+	}
+	return "unknown"
 }
 
 // addCoins increases the balance of the given address by the specified amount.

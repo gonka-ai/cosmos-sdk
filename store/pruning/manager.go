@@ -109,6 +109,16 @@ func (m *Manager) HandleSnapshotHeight(height int64) {
 	m.pruneSnapshotHeights = append(m.pruneSnapshotHeights, height)
 	sort.Slice(m.pruneSnapshotHeights, func(i, j int) bool { return m.pruneSnapshotHeights[i] < m.pruneSnapshotHeights[j] })
 
+	// Gonka (#11): If no snapshots are currently in-flight, any gap > snapshotInterval
+	// is a permanent gap (missed height or interval change), not an out-of-order
+	// in-flight snapshot. Evict stale leading heights so pruning cannot freeze.
+	if len(m.inflightSnapshotHeights) == 0 && m.snapshotInterval > 0 {
+		for len(m.pruneSnapshotHeights) > 1 &&
+			m.pruneSnapshotHeights[1]-m.pruneSnapshotHeights[0] > int64(m.snapshotInterval) {
+			m.pruneSnapshotHeights = m.pruneSnapshotHeights[1:]
+		}
+	}
+
 	// in-flight snapshots may land out of order due to the concurrent nature of the snapshotter.
 	// we need to detect them to prevent pruning their heights while the snapshots are still in progress.
 	k := 1

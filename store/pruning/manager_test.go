@@ -497,6 +497,18 @@ func TestInt64SliceToBytes(t *testing.T) {
 	}
 }
 
+func TestHandleSnapshotHeightPermanentGapDoesNotFreezePruning(t *testing.T) {
+	manager := NewManager(db.NewMemDB(), log.NewNopLogger())
+	manager.SetOptions(types.PruningOptions{KeepRecent: 10, Interval: 10, Strategy: types.PruningCustom})
+	manager.SetSnapshotInterval(1000)
+
+	manager.HandleSnapshotHeight(1000)
+	manager.HandleSnapshotHeight(3000)
+
+	// A missed snapshot at 2000 must not leave pruning capped at 1999.
+	require.Greater(t, manager.GetPruningHeight(5000), int64(1999))
+}
+
 func BenchmarkInt64SliceToBytes(b *testing.B) {
 	data := make([]int64, 1024)
 	for i := range data {

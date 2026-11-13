@@ -84,12 +84,18 @@ func (k Keeper) burnNotBondedTokens(ctx context.Context, amt math.Int) error {
 
 // TotalValidatorPower total validator power based on the bonded supply for the staking implementation
 func (k Keeper) TotalValidatorPower(ctx context.Context) (math.Int, error) {
-	bondedPool := k.GetBondedPool(ctx)
-	bondDenom, err := k.BondDenom(ctx)
+	// PoC: validator power is the sum of bonded validator tokens, not the bonded pool balance.
+	validators, err := k.GetAllValidators(ctx)
 	if err != nil {
 		return math.ZeroInt(), err
 	}
-	return k.bankKeeper.GetBalance(ctx, bondedPool.GetAddress(), bondDenom).Amount, nil
+	totalBonded := math.ZeroInt()
+	for _, validator := range validators {
+		if validator.IsBonded() {
+			totalBonded = totalBonded.Add(validator.GetTokens())
+		}
+	}
+	return totalBonded, nil
 }
 
 // StakingTokenSupply staking tokens from the total supply

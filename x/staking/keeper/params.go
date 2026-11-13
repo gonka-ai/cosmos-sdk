@@ -82,7 +82,7 @@ func (k Keeper) GetParams(ctx context.Context) (params types.Params, err error) 
 	}
 
 	if bz == nil {
-		return params, nil
+		return types.DefaultParams(), nil
 	}
 
 	err = k.cdc.Unmarshal(bz, &params)

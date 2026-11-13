@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	consensusVersion uint64 = 6
+	consensusVersion uint64 = 7
 )
 
 var (
@@ -135,6 +135,9 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	m := keeper.NewMigrator(am.keeper)
 	if err := cfg.RegisterMigration(types.ModuleName, 5, m.Migrate5to6); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 5 to 6: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 6, m.Migrate5to6); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 6 to 7: %v", types.ModuleName, err))
 	}
 }
 

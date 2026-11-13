@@ -1,0 +1,4531 @@
+[
+  {
+    "ValidatorPubKey": {
+      "key": "f0pIRnCz3CR8Llv/A8dMkyGITRDp0ukI7+5dhHQWk1Y="
+    },
+    "OperatorAddress": "gonkavaloper1qzmhx83xnamk0uqup3lxpf2te9karrwj89f4qn",
+    "Power": 4199
+  },
+  {
+    "Power": 1447,
+    "ValidatorPubKey": {
+      "key": "FQguuk3tdFk9zyTimDcgPVGTiyQqugbZYjFp68LX4zY="
+    },
+    "OperatorAddress": "gonkavaloper1qrna7lsqy0r9aejpvzdrn683tfx34hg5yjaank"
+  },
+  {
+    "Power": 1396,
+    "ValidatorPubKey": {
+      "key": "ijA+BKedB19bq0uZ9yZtPDhlkAk+uhgDNdcZ3TWBCGo="
+    },
+    "OperatorAddress": "gonkavaloper1qre9aepalndahwj37xrcepndmut2vu9dl38szx"
+  },
+  {
+    "Power": 2116,
+    "ValidatorPubKey": {
+      "key": "gTw7W7Ihjpkz+nKoc/13LKTsAKQNE3yb/ap1gAXs3CA="
+    },
+    "OperatorAddress": "gonkavaloper1qyw37eedekdrhu9937k2ewvh5ql99qlmvvq59c"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1qy72uqasgd00un7qwexvfdl4zzy8ejaqw2n3h4",
+    "Power": 1195,
+    "ValidatorPubKey": {
+      "key": "UwkYqukGfcJUuZUXbhHGJUggSdd90Xxo+h1htbaXrwE="
+    }
+  },
+  {
+    "Power": 358,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1q96dv6st48490vtzx2pwuwkjg439dr4h56u997"
+  },
+  {
+    "Power": 5043,
+    "ValidatorPubKey": {
+      "key": "V5XXZ2gCSVQme5HJASswjwyhEDkxpaMIBdZpNuMI020="
+    },
+    "OperatorAddress": "gonkavaloper1q9aufvwxg7e36pr83ajfw9u2dtx9fh0d93q9vp"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "eWoJFqn/6bTf/gfiMQKLKeuhwndFppt6M5/rNVqVHco="
+    },
+    "OperatorAddress": "gonkavaloper1qxy42sc078ut52ws06nsa5fyzcfjyx7ag6wfsc",
+    "Power": 4315
+  },
+  {
+    "Power": 809,
+    "ValidatorPubKey": {
+      "key": "v3VGirQuGfABiudKsSwdp8taya0IrgHkejLfyWzIYQs="
+    },
+    "OperatorAddress": "gonkavaloper1qx3znmtpxqgmz3t4tgpdk68dsfxuccn6yxzxsa"
+  },
+  {
+    "Power": 4512,
+    "ValidatorPubKey": {
+      "key": "+MGRFI9gVeLhSQBTIIgL6yZ0EEhOykg7VyCc5n7w7II="
+    },
+    "OperatorAddress": "gonkavaloper1qx3stahnpknaf8lq0kzdtedtxmq965hjetsg9p"
+  },
+  {
+    "Power": 4280,
+    "ValidatorPubKey": {
+      "key": "6CMcGBLz9bQR+CYMtoyW/lssvhUeWdIMRKpTmLUWCnw="
+    },
+    "OperatorAddress": "gonkavaloper1q2z8yy5lj200k3xgk38cqqlnypkqxphuzgjj5u"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1qtd6sqrfhqlfzl5guvq4rh2jduayekf8vx0t45",
+    "Power": 5040,
+    "ValidatorPubKey": {
+      "key": "Js5QpHThc+rczMkL6Q0yQofcJ1vbsQFAaO4GmdAUidc="
+    }
+  },
+  {
+    "Power": 4314,
+    "ValidatorPubKey": {
+      "key": "vcA/hMGw5qE9gmHpg5gJjdfk3XIPOe5okRyFtWGKcTw="
+    },
+    "OperatorAddress": "gonkavaloper1qvzmfwlcx663f6klq9050h0hs7neacy6rt4vca"
+  },
+  {
+    "Power": 3907,
+    "ValidatorPubKey": {
+      "key": "Di+RN4O4LDwrhXCTf6hCjkKK28HGlpOxfxgTTPELpUA="
+    },
+    "OperatorAddress": "gonkavaloper1qdulrz55xwma52j8xtmw09pgg6h5penan0yhxd"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1q3n37e2uc4npkheyjllx2ztx5yh42rk6szq3l7",
+    "Power": 2588,
+    "ValidatorPubKey": {
+      "key": "dPiIs2SpIPbPere6I2zb6uq/qEw9a6pKPQD0egVKfj8="
+    }
+  },
+  {
+    "Power": 7758,
+    "ValidatorPubKey": {
+      "key": "TJwlE8LBJ374V7NBQDwQrmxliw5tCDrfiLKBKizvWm0="
+    },
+    "OperatorAddress": "gonkavaloper1qjpz06uz5myq6dhww8dn9z522u8w8a5x0dczlt"
+  },
+  {
+    "Power": 12,
+    "ValidatorPubKey": {
+      "key": "ebak1P5q2ic+uy67OuYw2TiN43Z49BBaGC/nV/VzUl4="
+    },
+    "OperatorAddress": "gonkavaloper1qn23ufgpfs6vyg0jkx3pqpq2asp3m950jcgpyz"
+  },
+  {
+    "Power": 1407,
+    "ValidatorPubKey": {
+      "key": "JUWwqlJz+vrEFY25pS4a5d8AGrcqfo0pUkI0zUxIjMI="
+    },
+    "OperatorAddress": "gonkavaloper1qk0gctucm7l3vvpxuauyw4d8pflxhxsfa8tq7k"
+  },
+  {
+    "Power": 4798,
+    "ValidatorPubKey": {
+      "key": "CHmCdbsbcBtNRGQMZ7tUS87LLgUlf3PspDKdWSs47Q8="
+    },
+    "OperatorAddress": "gonkavaloper1qhzauckmv78r9wpsr6lvjku5g70hmktgs28mfq"
+  },
+  {
+    "Power": 4729,
+    "ValidatorPubKey": {
+      "key": "yALY5fKPVFq+faGPo04i87NKAYBxvvA8agjHlvSXTow="
+    },
+    "OperatorAddress": "gonkavaloper1qcamnqy86hqzcatvlgr78mvgmpcc25msf0s298"
+  },
+  {
+    "Power": 4726,
+    "ValidatorPubKey": {
+      "key": "PAI3MgOPC9Fq11wCoZJxw1olgO1UgSGp9BFoGak/d6E="
+    },
+    "OperatorAddress": "gonkavaloper1quxrzzy8dwhzpmsdql05nqdzj3u3n0sy24jakw"
+  },
+  {
+    "Power": 4742,
+    "ValidatorPubKey": {
+      "key": "BnAn00aYan5VNipOx4/mYrvQuVj0MTc06BAuz7x8B5I="
+    },
+    "OperatorAddress": "gonkavaloper1qlqjyqpmmq4r3fa8tfner44z78728z8n3ket04"
+  },
+  {
+    "Power": 430,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1qlt90c4hxccgnuc478jaa3xl5klga84x7rax6s"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "V6pQbY84BXVIxV5YXz+nc5dSfrvCCVDcGEMeWq1y6Ko="
+    },
+    "OperatorAddress": "gonkavaloper1pq5f5c4k8qn7k73qkzza460y435r3duspx4vna",
+    "Power": 4389
+  },
+  {
+    "Power": 5911,
+    "ValidatorPubKey": {
+      "key": "/JxUyJKEZf8QtjgRd+UzPmUET3ZV6WsCvYnvdxFLe+U="
+    },
+    "OperatorAddress": "gonkavaloper1ppqspznyn94e87rxzhnnedc57y4r2haekgq3d3"
+  },
+  {
+    "Power": 2116,
+    "ValidatorPubKey": {
+      "key": "SvzZLZKT7rvwFXsVzVSHuraqpamWgv29hMKDgCBhCBg="
+    },
+    "OperatorAddress": "gonkavaloper1pp7y8xc4qshmn24k3kkj4ymxwj88aq3h2jtg65"
+  },
+  {
+    "Power": 461,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1pzdzdgd3auppy7x8a73suxaucgjcutfesrl99v"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1pzeet74x2wvssdh9t24f258vz426ydu6xpfydy",
+    "Power": 4299,
+    "ValidatorPubKey": {
+      "key": "BcW4iJWUIS5OWmnvY1E7bcah7Hn5a8rYE6YP6e7lQMo="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1py2eckpy6nqu6uxnxzq8zdfwl533xewpyaka8t",
+    "Power": 4745,
+    "ValidatorPubKey": {
+      "key": "qm/VUIO9RHUMr+eeH8Ge6e7uIqLxypaOWZnF5oluF88="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "QwzRK50dMRUHZZZFTK97qXsuZwkCnkYLdmHNPyjvmYM="
+    },
+    "OperatorAddress": "gonkavaloper1pyvqmxs6rkv8sqpax42gkf9ffvlnqjcxnh6gms",
+    "Power": 4187
+  },
+  {
+    "Power": 6656,
+    "ValidatorPubKey": {
+      "key": "JfSoMJkqtmUxGLLs26Pn2XIrclaHB30Dks/Q4tzQSBg="
+    },
+    "OperatorAddress": "gonkavaloper1py4j23jhz2nah9d8lqpxn2lq6e07lx6exj26nk"
+  },
+  {
+    "Power": 1495,
+    "ValidatorPubKey": {
+      "key": "BV9z1q42jTBiiPLN9Yo1vm5XxZep1uQTChL1QmgOWUM="
+    },
+    "OperatorAddress": "gonkavaloper1p8wl8gugrjcs46zhv087cqyr4weqxwyyxjwn4z"
+  },
+  {
+    "Power": 81,
+    "ValidatorPubKey": {
+      "key": "AJJrdFvxMsia6lA/+6+RTIIy1sVWRr4B5vjSJ7L4TrI="
+    },
+    "OperatorAddress": "gonkavaloper1pfgtn4aa7hy5jwxe5wfll8n4d5dmqgugtpumda"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1pf4z32nqz5ax7zsxsmf4tan8wsnp957yety8ux",
+    "Power": 4180,
+    "ValidatorPubKey": {
+      "key": "FRBXdAoFYqtWLcknGvrqjSlYm1K7VoZj0DLAlcGUjlM="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1p2959dx973hd57qsalxvesrcv649296xe0jrfh",
+    "Power": 116939,
+    "ValidatorPubKey": {
+      "key": "buCQ1A8fTVtAtyQj7TI9Cz7OWOAYzhHWbyvO23IDQt8="
+    }
+  },
+  {
+    "Power": 19249,
+    "ValidatorPubKey": {
+      "key": "NOgHBFFD4s8LntQ5FV1396UAAfQKWYaXRNpDqZA8suY="
+    },
+    "OperatorAddress": "gonkavaloper1p22v6ncqsys9fh85gdmkakpe24x2zqfya679rd"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "P7gYjHkMNemab+46wYDCQNJE0TdHMFRyoWkMvvKaYYg="
+    },
+    "OperatorAddress": "gonkavaloper1p2t9xrr5qs8xxx7rayy37tjh7pvl0x4s3gz2s6",
+    "Power": 4508
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "LLqBxOz+vD3p7sQsdEhBfrFH2QFMjy3fMasB9yBGSqs="
+    },
+    "OperatorAddress": "gonkavaloper1p2lhgng7tcqju7emk989s5fpdr7k2c3e26xddk",
+    "Power": 1458
+  },
+  {
+    "Power": 777,
+    "ValidatorPubKey": {
+      "key": "L+2EUc/rYBP2d2CNgSTuUCkQjuA4Mup0qt2XBtAErhk="
+    },
+    "OperatorAddress": "gonkavaloper1ptc29e7kfydvx6093qtlsh9vt2rndlw57d6k8v"
+  },
+  {
+    "Power": 1311,
+    "ValidatorPubKey": {
+      "key": "LY0SCeGy8JX7/y5931YBDlMKlpGz5W+RT0I5qTnR500="
+    },
+    "OperatorAddress": "gonkavaloper1pvfuygufq6u5qkeamedeqatmklxqy47km3h4xm"
+  },
+  {
+    "Power": 616,
+    "ValidatorPubKey": {
+      "key": "+idgyiBCR7FGIaaAaOeWUUQdTSmHohNXwbQzSeOZVV8="
+    },
+    "OperatorAddress": "gonkavaloper1pvmxfx2cy6s2d57tp98mklkkv83xnjjnxy5a5c"
+  },
+  {
+    "Power": 4903,
+    "ValidatorPubKey": {
+      "key": "/l2MkTK9WjjkmSjeWD6CXWehuOFc9bVDoF0SxYiZD7Y="
+    },
+    "OperatorAddress": "gonkavaloper1pd4dw77pux8rz63v7wqeyx2nlun874e2r44lm5"
+  },
+  {
+    "Power": 4840,
+    "ValidatorPubKey": {
+      "key": "dUQALxzca14emDjrT2S/66uGEPs1PVpsZbpdKi40T9o="
+    },
+    "OperatorAddress": "gonkavaloper1pwumgsfldkzspvpun6rgty0evpz47l9mja0zmg"
+  },
+  {
+    "Power": 423,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1p0pu0d98mseulw5sjcueacl4m8ecrgqehh2t54"
+  },
+  {
+    "Power": 4098,
+    "ValidatorPubKey": {
+      "key": "HRBtwjpHrkfgh0Cod09rz0J1PNmYZmxk8uivE2nTSLo="
+    },
+    "OperatorAddress": "gonkavaloper1p0jj3c80gtax49285au9jqvrgqdqedyx6gnnjh"
+  },
+  {
+    "Power": 4857,
+    "ValidatorPubKey": {
+      "key": "hl9bDZ4p00Y2g9WLAERjF5Q8c5W2R4TVwKRkzGFp7MI="
+    },
+    "OperatorAddress": "gonkavaloper1p3jfqqnjuu20zyk5t5d9xhemys2z7zxrrn9tmz"
+  },
+  {
+    "Power": 9615,
+    "ValidatorPubKey": {
+      "key": "dAOI5LXWOoPSAJD9NOlXYndQxeAWX/Am1LQQH9BRIws="
+    },
+    "OperatorAddress": "gonkavaloper1pj07u20jn9cx48r0jwen6evz7mrfj75tdaj0mc"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1pjsg254jtuaz4rm9kq27nyplrp266x798xcwhr",
+    "Power": 397,
+    "ValidatorPubKey": {
+      "key": "gs7j6sFHmZ4ahPpxCpw/i6UrKMjUsD49sQam5yk8C7s="
+    }
+  },
+  {
+    "Power": 2653,
+    "ValidatorPubKey": {
+      "key": "6Qo/kmWOwen27ODV8KiHVo1CslPXa9Gzst6x5DU0DIE="
+    },
+    "OperatorAddress": "gonkavaloper1pjl7nk82v5fmpah2qfjd87e97jnl6gfp83226l"
+  },
+  {
+    "Power": 10945,
+    "ValidatorPubKey": {
+      "key": "iDFRlh39tKkHrx0wNrw2NLm8sDzq46KUZJHFTP55zJ4="
+    },
+    "OperatorAddress": "gonkavaloper1pnfzqvyp6kexsjuc8hpsp36snxfagsl47dzxy7"
+  },
+  {
+    "Power": 1047,
+    "ValidatorPubKey": {
+      "key": "7FKbN3QwYV2KmKcYlTxXncqQph0n3/5uwlXC7EWyEpg="
+    },
+    "OperatorAddress": "gonkavaloper1p5882nxdv07qaxr0d75pwzg2qwft39qslc78c9"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "GfzunBQiVnWZTPgARCdz0HMgLamizyva0oOFqfEyMvo="
+    },
+    "OperatorAddress": "gonkavaloper1p57jas3hm3gmdvh64z92ycr28z968j0f06za9q",
+    "Power": 3977
+  },
+  {
+    "OperatorAddress": "gonkavaloper1pks9m29wqac2kxdj8v8acq58rjshh6u8c2vef8",
+    "Power": 4082,
+    "ValidatorPubKey": {
+      "key": "DhJeeLNwfNCSxiwDmcM8aZ0wLprka2bixyyBMySHVCg="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1p6wekfevflq2h4rx9jekc86qaqa4usswmlg08q",
+    "Power": 50226,
+    "ValidatorPubKey": {
+      "key": "9cwxqKlZ+r4P50f49mKEmjtPUgikG+oWteDEiy+w69M="
+    }
+  },
+  {
+    "Power": 4011,
+    "ValidatorPubKey": {
+      "key": "ZEftv1B80AuP2JN3pU8S+2REVNeuWmkwD3tXtAczy6U="
+    },
+    "OperatorAddress": "gonkavaloper1pl2xyrfma445tlrjkzkc7wjmdgm5e0alp9eh77"
+  },
+  {
+    "Power": 4480,
+    "ValidatorPubKey": {
+      "key": "GMUSmkyfPvLpnuoqsfbolCRUWygVALlWcQNpZ4GYu1g="
+    },
+    "OperatorAddress": "gonkavaloper1pla6kzmj079jzaxdk9n3qrkjfdavuwcs8f3lqa"
+  },
+  {
+    "Power": 4995,
+    "ValidatorPubKey": {
+      "key": "eUDnBBF19LntlFggPux7skJ4HLjBlwlOMuGFlB/xfrI="
+    },
+    "OperatorAddress": "gonkavaloper1zqxg52qngwtgzgnrvljdwcwt9q0jz9r23j8xnl"
+  },
+  {
+    "Power": 408,
+    "ValidatorPubKey": {
+      "key": "eO9U85RarUdVY0mM3dBD9R9lR5SrbMFL7lwosdYv09A="
+    },
+    "OperatorAddress": "gonkavaloper1zqw2tpr69zj44qv38flanuyce9ufakpdsrypyp"
+  },
+  {
+    "Power": 4814,
+    "ValidatorPubKey": {
+      "key": "kXXRohEiBK0gj+8dywJoEECXyZbmlHW1vDY7Wu7/nw8="
+    },
+    "OperatorAddress": "gonkavaloper1zzkxnpq2txntwh5eu49jk67x42yh8wyshn86vf"
+  },
+  {
+    "Power": 626,
+    "ValidatorPubKey": {
+      "key": "N9DWVTCJk6FOZ4yV2G4gowwaL5VCUrqg38/sIreiqAs="
+    },
+    "OperatorAddress": "gonkavaloper1zrzapmfar303hfdqpfglkcxn5xf0s5957q6d02"
+  },
+  {
+    "Power": 4873,
+    "ValidatorPubKey": {
+      "key": "TDLLZgBZWd8/3oHyvdZfCyTiQ8jlfypU2BcxhlB3v+U="
+    },
+    "OperatorAddress": "gonkavaloper1zrmra5s53f6pgzxx89znkn5k0duwsksrkxd9p5"
+  },
+  {
+    "Power": 10920,
+    "ValidatorPubKey": {
+      "key": "KehMFhDQkawr9Klpx7nBnk2gd+N7tOogmHmVmr9j1Sw="
+    },
+    "OperatorAddress": "gonkavaloper1z8dh5kqdn2nnsg527qawy58ca5fme38x4f3e26"
+  },
+  {
+    "Power": 526,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1zv89w02sdfzwy74s9vcthk38dnfsw36sfh0hju"
+  },
+  {
+    "Power": 5271,
+    "ValidatorPubKey": {
+      "key": "7/xDazPLkId798A3aHKeglK4p7o1VkEYQcVN0wiLR3M="
+    },
+    "OperatorAddress": "gonkavaloper1zvuzj7ya9zafw309prasd0r4jhykf47mtcsxxt"
+  },
+  {
+    "Power": 4664,
+    "ValidatorPubKey": {
+      "key": "jm69k13tHh/P5anxMbh2ZjRjnBXXqXNWzknkU2AsWA8="
+    },
+    "OperatorAddress": "gonkavaloper1zw680tan4k6uwklyq6eedmga8ew85ys4pr3369"
+  },
+  {
+    "Power": 3174,
+    "ValidatorPubKey": {
+      "key": "w3eciYp0MP+D8RGeNuZvWzk392AkieSE32IJBbyvQ6A="
+    },
+    "OperatorAddress": "gonkavaloper1zsgtetvur6vnzlzqc75dajnqymtksmxezlzn0z"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1z3kelh3gx3t6kz303f8trdll3j5ap3zzmcpr7k",
+    "Power": 1393,
+    "ValidatorPubKey": {
+      "key": "kfkhgOg+elzvlpTolIDhKawFVtF/Kjk85UoMIJCpbGE="
+    }
+  },
+  {
+    "Power": 3946,
+    "ValidatorPubKey": {
+      "key": "hgn2cfEQW+ept3EGjn9hEdvefxD3MLVvnzFG9RIKOmA="
+    },
+    "OperatorAddress": "gonkavaloper1zjajt7pt4tx0djf9r7gksur320gug5e9cm332y"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1z4ldfav9tl7x3w9aqfry89zd0kt7sa2ltfcau5",
+    "Power": 41854,
+    "ValidatorPubKey": {
+      "key": "RVt5ugqMGlhN8VDbMg3Lq+fwDJIY1DHzdGnFPRHegJI="
+    }
+  },
+  {
+    "Power": 4553,
+    "ValidatorPubKey": {
+      "key": "Hkf4mAXoKoISKC4q2NBmatPiEz65doOiH50v5B5dyKA="
+    },
+    "OperatorAddress": "gonkavaloper1zkmn95dkr6kpt7vaqc4vdues0q4f72rthccphh"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1zh5kme35psmcvlx2tgrg5nzlm0mu0ea3m6kxdn",
+    "Power": 4349,
+    "ValidatorPubKey": {
+      "key": "anSBq2itAmAbxninL2iNjYI+ZRn2uxS0+KuIrYZC90k="
+    }
+  },
+  {
+    "Power": 4615,
+    "ValidatorPubKey": {
+      "key": "hJAWFJqASHDXjfvq36Mq837S9wGSVhO8kESaxw8V+o0="
+    },
+    "OperatorAddress": "gonkavaloper1zepcpcnw6qa45k38muhgavzflelun6rhghdkrm"
+  },
+  {
+    "Power": 177,
+    "ValidatorPubKey": {
+      "key": "S7OViN1aK/DsDX/9wUp6PGi0IGBTird0wHbM8wU4Vd0="
+    },
+    "OperatorAddress": "gonkavaloper1zeaucp7k6cauj84e92wccnxnsua0a73rr86xml"
+  },
+  {
+    "Power": 4477,
+    "ValidatorPubKey": {
+      "key": "WPMphGyt5Fu40cNPRE1QGFJHyJ2l9jC06BNyFFFQyEI="
+    },
+    "OperatorAddress": "gonkavaloper1zmx4cwayvhf8hevcu6am0sk8ul5trckckucvvv"
+  },
+  {
+    "Power": 4699,
+    "ValidatorPubKey": {
+      "key": "HJcJEA8D4o40Bc8fT4g6TCX54sMUIryxekQGy/iTA5k="
+    },
+    "OperatorAddress": "gonkavaloper1zaklf2yedw6my8lw6vt797vzpn67qeusw5va4j"
+  },
+  {
+    "Power": 38502,
+    "ValidatorPubKey": {
+      "key": "691crwHryEDljUU3jwFRo33Bd5ifx/dzj0nYJKJo7bQ="
+    },
+    "OperatorAddress": "gonkavaloper1z7h4mzz5kkcydj4l6lzr9j73x49dlcq8fm235p"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "6TrmDNSVMP3Ua2fbIefwDBzmuahpVMCu1zTrtIQVxb8="
+    },
+    "OperatorAddress": "gonkavaloper1rpf7xk4nkk4qzn4wd373a74rdc8wja792zhu5s",
+    "Power": 36231
+  },
+  {
+    "Power": 4609,
+    "ValidatorPubKey": {
+      "key": "+rYukEA3BjsWGux8E0WbdxCmzed0IZKf7GwgTVdsK9I="
+    },
+    "OperatorAddress": "gonkavaloper1rpszx3te4396yyplpl7lmcqngcwtk5vwnt9enk"
+  },
+  {
+    "Power": 4449,
+    "ValidatorPubKey": {
+      "key": "fK0ISLNqdb8vCjzasBtdiwICQIiW7gfV/ofgdcHtymA="
+    },
+    "OperatorAddress": "gonkavaloper1rzchltn9xn5ysur4c6x89xvtuuddzccvh8n85r"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1r9u4nyprt7ym64pdea4a7wpjf446c0zs8px83g",
+    "Power": 4568,
+    "ValidatorPubKey": {
+      "key": "meEbSq+Wtd1w8lJyBFYi14aqRu/V1e44q3lwrQZey64="
+    }
+  },
+  {
+    "Power": 4052,
+    "ValidatorPubKey": {
+      "key": "ZLceVGwSVLC2VH8EY7tyB9zuOKxIHL+Fv3gOXkWutX8="
+    },
+    "OperatorAddress": "gonkavaloper1rtylvt6ylcdphuez6eqerj7d7pv7dc3kt64t44"
+  },
+  {
+    "Power": 2177,
+    "ValidatorPubKey": {
+      "key": "07dwdotjfjbZVxHxR6lElcFxSslpQSwaKEkGjMxHp0Y="
+    },
+    "OperatorAddress": "gonkavaloper1rvjfqzm8spt5nfq84jvfdr8we8pgkv8e0t7q8e"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "/W7g/Pcb5Un9kgCnNA7vXCVmTCzXPTFmQvdplnMrl9U="
+    },
+    "OperatorAddress": "gonkavaloper1rdarkrtrfnfcvrnf58jyndccqj0r4k63nnqq56",
+    "Power": 9972
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "N+Ay3UIK6VyKi7+Y0dTBGJWo9UVh1RWp8ZDzohw9AnA="
+    },
+    "OperatorAddress": "gonkavaloper1rs07h66nfduhnf5qg7u968zqumragmmayuv562",
+    "Power": 5010
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "nP2boXtFvEM4aqVXb9dYJ14vED1Gw5niA0kZZI857OY="
+    },
+    "OperatorAddress": "gonkavaloper1rss07hzdm9d3y45fg3s3rnxjgzs26yt0t78s8h",
+    "Power": 4898
+  },
+  {
+    "OperatorAddress": "gonkavaloper1r34p353cxrvxf3x29raz0x8axflen82an4g5mc",
+    "Power": 57863,
+    "ValidatorPubKey": {
+      "key": "ndDjYEShRcinv1E/wd1vuJse/kuLvGbcKRo8cPfIHhM="
+    }
+  },
+  {
+    "Power": 5077,
+    "ValidatorPubKey": {
+      "key": "7fGaaZLzhjjvpdXstbaKRf1cUMFmGBbtGnFufVdhu0I="
+    },
+    "OperatorAddress": "gonkavaloper1rn5jll76utekvhjaxpqa4mwap3twnknn36ctc4"
+  },
+  {
+    "Power": 3789,
+    "ValidatorPubKey": {
+      "key": "xTUhMCxfqMXv8pPjfxAIPL+S58T86K2C1WeplVN1Lw4="
+    },
+    "OperatorAddress": "gonkavaloper1rn5nud8367cnspgas0dmtq2plxkacjsthq62n2"
+  },
+  {
+    "Power": 4706,
+    "ValidatorPubKey": {
+      "key": "BAlLtJHLuIPFeQQEkhpqx0JRi7uV7ESgVZf1jd8nXHE="
+    },
+    "OperatorAddress": "gonkavaloper1r4zuhduduwqzyw4a5y5y5aw57sj9jl56upsekm"
+  },
+  {
+    "Power": 5000,
+    "ValidatorPubKey": {
+      "key": "fDmTysPFimMM7ADSfd+ghf7yJqITl9AtS0F7r/traGk="
+    },
+    "OperatorAddress": "gonkavaloper1r4cynx8smndx0vc3j8h0x8ld8h9wyzzsz3fpn5"
+  },
+  {
+    "Power": 442,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1rccd6tq06vl2tq2rz9p6uxuuc8tn9878re5dlv"
+  },
+  {
+    "Power": 243,
+    "ValidatorPubKey": {
+      "key": "sPAjVLHQjIl4a2VQI+kX7GOfi80NzXsH2AksWNLCyOg="
+    },
+    "OperatorAddress": "gonkavaloper1rc6f9ejjzjkmvhs7seztw0208yj206llvp2ley"
+  },
+  {
+    "Power": 209,
+    "ValidatorPubKey": {
+      "key": "h1KdHRbuYKRGULxPCWS4eVQ7xjtiVjUo8cUB/Im5G/g="
+    },
+    "OperatorAddress": "gonkavaloper1rmr4x8lyw76gzuyzta68gj965zfa00gzt2vh40"
+  },
+  {
+    "Power": 62,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1ra2jy33a2uuyu4jq2f9gf8va555f4tkhl3gj9g"
+  },
+  {
+    "Power": 1234,
+    "ValidatorPubKey": {
+      "key": "Utv3qA0flLhrk1d0d4RGhDmJ9rTq74SJeRV/rhTHBlE="
+    },
+    "OperatorAddress": "gonkavaloper1r7s7ael2cz3ftshsr25v4syk0gns960n6j3nw8"
+  },
+  {
+    "Power": 46,
+    "ValidatorPubKey": {
+      "key": "AitSNV0kg86UOn/7MzfSWz/NLeeR2Ax+UrNHxdqiY2w="
+    },
+    "OperatorAddress": "gonkavaloper1yq4vwn7fc9x7lykjhc0x3e7r2atee32c7yqjvx"
+  },
+  {
+    "Power": 57,
+    "ValidatorPubKey": {
+      "key": "gxJj5nMZ/6DcZ/6oXeVFjCDpuhL7ozoBmFSAgHIzhpw="
+    },
+    "OperatorAddress": "gonkavaloper1yps5566s8222gefuwxep5yusv5fndvach0ad9d"
+  },
+  {
+    "Power": 1642,
+    "ValidatorPubKey": {
+      "key": "NVnZA/uuO+ML7QDJlel975UFs/oEzcY5kgCZboTbgf4="
+    },
+    "OperatorAddress": "gonkavaloper1yysfdney9ayqhgd8e03zdkhqte3pr09z7ea25d"
+  },
+  {
+    "Power": 4646,
+    "ValidatorPubKey": {
+      "key": "OM3u0k7LzpQhgX1xcOah0wM5W2xBfYRP3/L5tlAuXq8="
+    },
+    "OperatorAddress": "gonkavaloper1y9vdzmy84uy9c9dgqx8adnusg3ssv7wj8sf022"
+  },
+  {
+    "Power": 94485,
+    "ValidatorPubKey": {
+      "key": "ZSHcnEKVrEBQZYQUkDWlUdrkm8Q6P8DuQtNbR95Fmo8="
+    },
+    "OperatorAddress": "gonkavaloper1y95qr73kms3zv5ju0kxtu58ksxdyrkyzmm7jxz"
+  },
+  {
+    "Power": 5173,
+    "ValidatorPubKey": {
+      "key": "Psr7ryjVIN22gBN54KvJnbAeUYZUqHJqOIJzi9CQivo="
+    },
+    "OperatorAddress": "gonkavaloper1y2e6vzpws7dguken363g9zfs3835l7k382sq3z"
+  },
+  {
+    "Power": 551,
+    "ValidatorPubKey": {
+      "key": "OPwcpfQYOoWDuHKYivRVq5jxrELH0moP5qdznvj3Dps="
+    },
+    "OperatorAddress": "gonkavaloper1y2a9p56kv044327uycmqdexl7zs82fs5lyang5"
+  },
+  {
+    "Power": 4084,
+    "ValidatorPubKey": {
+      "key": "FYpHj46XjK9Bn6Okup6u43+0GrHtJPz+F6Q6EieU5eg="
+    },
+    "OperatorAddress": "gonkavaloper1yt2gm863yknevuu6nq6dzafckpxkjdmzdm7x0x"
+  },
+  {
+    "Power": 702,
+    "ValidatorPubKey": {
+      "key": "F0XfNtp3o8qKDrI0pFigghWFo97Eg3RpKHHL5g4VAIY="
+    },
+    "OperatorAddress": "gonkavaloper1yv5nq3kzyaa0urcdfs4cu0ampcdw9d2cgd8g9c"
+  },
+  {
+    "Power": 5038,
+    "ValidatorPubKey": {
+      "key": "NAgbdV30wUSEWGZGC6DxI55w5QuNZP4EPs5cFT9tjjg="
+    },
+    "OperatorAddress": "gonkavaloper1yw3ggwwftvp2u3vt9l5hcyqftkd05nu4w3xe8w"
+  },
+  {
+    "Power": 383,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1yjcp4wm5ue2vsxf48wk7203a38lnetm46fv823"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1yn54kaefrf7sjk66c74gqap0mquzjqvtts4se5",
+    "Power": 102176,
+    "ValidatorPubKey": {
+      "key": "fBcBI6z5LcgoOcvOPQTVH8/LsX03KwWHsitiGbBPYWo="
+    }
+  },
+  {
+    "Power": 4298,
+    "ValidatorPubKey": {
+      "key": "e+OhRshF1daYUn8HSpEWGk51h1iSA46v3dc3/BdvJcU="
+    },
+    "OperatorAddress": "gonkavaloper1y46v988rv03mdn2c320fxtle6lramzk40fkhdw"
+  },
+  {
+    "Power": 3837,
+    "ValidatorPubKey": {
+      "key": "YjvDNoD6P7S49BVyf/rnZVn/JjEmiENeMj6IIuYiTe8="
+    },
+    "OperatorAddress": "gonkavaloper1yk34z38t92jzjgq2ga7tkfpj07sf4ss3hjt5ak"
+  },
+  {
+    "Power": 291,
+    "ValidatorPubKey": {
+      "key": "X02yW1Pxj+TglL991GhOL4FMbYARh56zH8ezffm7LR8="
+    },
+    "OperatorAddress": "gonkavaloper1ycyya4sw9qyfhzq5c8mz9xqgdyd5jcxapwkkzu"
+  },
+  {
+    "Power": 3493,
+    "ValidatorPubKey": {
+      "key": "uQDlmeuOEOT5SzAUdb4D628g3VnofycwywZVUiaTzZc="
+    },
+    "OperatorAddress": "gonkavaloper1ycmm7dsxa6sg09x2yg05elta6wwcj3mkxe2jrj"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "tu5jsg0gruzIuCmXOxv82LSLqR/be6PqD0vTaa0MuZM="
+    },
+    "OperatorAddress": "gonkavaloper1ye7unfm0nf6qa7awmcgxql7u2zq9fqv0553fx6",
+    "Power": 432
+  },
+  {
+    "Power": 4755,
+    "ValidatorPubKey": {
+      "key": "K8hIYKcqWD0VBmMjjOeHndwLiBgn9NruFQj1zUNU/Ko="
+    },
+    "OperatorAddress": "gonkavaloper1y6g6xx6lyp3gdnyq7k9tm9fa7ykzjdx6mh49kt"
+  },
+  {
+    "Power": 16464,
+    "ValidatorPubKey": {
+      "key": "RpybUPIxWuzq83a7BqPL2dvUMc2cyPWljCcIwW/RFRI="
+    },
+    "OperatorAddress": "gonkavaloper1ym3np7guxart483yfdxnlztuazx22cjtney6av"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1yuhp76axp2uvnflmlhjch2cmqcp0xf75e5n3g4",
+    "Power": 437,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    }
+  },
+  {
+    "Power": 4569,
+    "ValidatorPubKey": {
+      "key": "gcyaxq6XXkcEqTezeFF9q1MmDweY22WSQECnmYnu3PY="
+    },
+    "OperatorAddress": "gonkavaloper1yaqxj5hxmme0q7m2wutngne0fdyaajv8dp9nsy"
+  },
+  {
+    "Power": 4080,
+    "ValidatorPubKey": {
+      "key": "Fx83F1aWChTTyIQTRpkXe/ws476FH0/QmJOfDckbQBk="
+    },
+    "OperatorAddress": "gonkavaloper1ya6mzkqvk7ss3l4jnu5fspt5vvzzmnn24t3t6s"
+  },
+  {
+    "Power": 4660,
+    "ValidatorPubKey": {
+      "key": "/oFynyr5ZHTr56n2KgSELyyv4DmBxNseDDOvHXxOKwI="
+    },
+    "OperatorAddress": "gonkavaloper1ylhpz2dd9f6x6apkzr773yw0kaagkhpaahkah7"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "MOeJszUtILVfEBw8A/eCyMEQCoguOcJhvw8MVHnqXMc="
+    },
+    "OperatorAddress": "gonkavaloper19rsdxkmu05suy48sz5ly78djzdprk2x6rw36kj",
+    "Power": 4963
+  },
+  {
+    "Power": 427,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper199lgrq8l9xcqqnr0agajzl78c4dpfvwnvcy7gk"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1982cyglwds69k8uvn6xl4aq8jwtx4gm36nh72f",
+    "Power": 9644,
+    "ValidatorPubKey": {
+      "key": "wi9TogZ+N+pR6G3rPTdglEnAJCFIhY1Q23ymylVkWOY="
+    }
+  },
+  {
+    "Power": 3889,
+    "ValidatorPubKey": {
+      "key": "B57f0J8rUIvCQRlT9WY8C2RG7E0v5nF/kpO78a6nmT4="
+    },
+    "OperatorAddress": "gonkavaloper19gp65p7td0e6rnh5p7cjhjf402e2rejc2g4k9a"
+  },
+  {
+    "OperatorAddress": "gonkavaloper19ghzvgfr065s3fr5awuvs3nhy9fq4n7wlr53wj",
+    "Power": 1017,
+    "ValidatorPubKey": {
+      "key": "iwu7dAwrBQfX5uWEOEYjENLEdlAlvrTANO+wm6RV0M0="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper19fpma3577v3fnk8nxjkvg442ss8hvglxjqe94h",
+    "Power": 66909,
+    "ValidatorPubKey": {
+      "key": "pM9MGrvN6zoLAuA6SKndq2GT/AY8b9tr8PodsnmV4Bk="
+    }
+  },
+  {
+    "Power": 383,
+    "ValidatorPubKey": {
+      "key": "dspiCRE/LVIF1/ziB9+4k/+51YGUwNE50pLrpm4YtC8="
+    },
+    "OperatorAddress": "gonkavaloper19f3n6z7pdz7q8kp7vgyvx5jkm47h3lxzuzmy9g"
+  },
+  {
+    "Power": 341,
+    "ValidatorPubKey": {
+      "key": "zlE2JbsbEyVtJ1ZuYdqzEneITdP3xlJTeBrJwhvKbUM="
+    },
+    "OperatorAddress": "gonkavaloper19tvnzlndce56yjskv9ggxtrf0dtsld6yw2xsul"
+  },
+  {
+    "Power": 2717,
+    "ValidatorPubKey": {
+      "key": "fh8D5WWHZfbHjVwu4+W6DrwJ5bcgsbOt61Y9oRwFH/Y="
+    },
+    "OperatorAddress": "gonkavaloper19td66n4atq5nj2u3zy3dn39nr5jy0m93fd4gmt"
+  },
+  {
+    "OperatorAddress": "gonkavaloper19w5vy2z5gz9f4jr76f8uz09023wz2snyya6rce",
+    "Power": 4519,
+    "ValidatorPubKey": {
+      "key": "qP1FYWhDZadD2qJNApBSk+MfQb+IkHOa7WC06T1XwPY="
+    }
+  },
+  {
+    "Power": 4314,
+    "ValidatorPubKey": {
+      "key": "peGf7dy4wiVD4UcNPXFRYn2LFVtAtnDhj1Mp70SycCQ="
+    },
+    "OperatorAddress": "gonkavaloper19s258ae7sx5t0psuwz9sunlksaglwu67n5fx4m"
+  },
+  {
+    "Power": 132737,
+    "ValidatorPubKey": {
+      "key": "fVhXDNAkzePLEVitbxqklsp9OTf90LJd3QBy5ZP0ITU="
+    },
+    "OperatorAddress": "gonkavaloper19ne8zk9j5xk50zvwcpwyeyl2wn72xmwk4yf585"
+  },
+  {
+    "Power": 89,
+    "ValidatorPubKey": {
+      "key": "Hxki2XkLL/R3kE74r8dw7A1ffLhsNgTSq91YyCbewzo="
+    },
+    "OperatorAddress": "gonkavaloper1948n747ayualpznexxchnx95pdnpu25mahkgz5"
+  },
+  {
+    "Power": 1338,
+    "ValidatorPubKey": {
+      "key": "5NQ4MvDs7LjYoRXQ8jvORUC6GUT8sgAa0LHh6UZ/ics="
+    },
+    "OperatorAddress": "gonkavaloper19k7cswucfu8mz9fszkdnyp66lvjddaa5gqqs6r"
+  },
+  {
+    "Power": 57347,
+    "ValidatorPubKey": {
+      "key": "pMdh8KpXERNXSADOYglby9rYNjKFcBSv5BWEgDfJotc="
+    },
+    "OperatorAddress": "gonkavaloper19hfr9trsvue37wfn7tpaqjlp6sdjhyzvcefren"
+  },
+  {
+    "OperatorAddress": "gonkavaloper19h26fcdqq54uv6mv2n6vtr23avhsfz5etx7xtg",
+    "Power": 261,
+    "ValidatorPubKey": {
+      "key": "iYU/AUcc0KP4QSljD4vCaDr8Je6hZLj5Qqh1krI3Dyw="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "9nDAetOU3WeZrXIVf91cGh4WABD3zBvUNODzyFhoER8="
+    },
+    "OperatorAddress": "gonkavaloper19h06zf4dmh2qgcdj90cthnw85vpz59cuva0dnl",
+    "Power": 4474
+  },
+  {
+    "Power": 1146,
+    "ValidatorPubKey": {
+      "key": "nw/LE6xwPd1iP422btPH/GN9PLv9I5Zr962Y57sYH+g="
+    },
+    "OperatorAddress": "gonkavaloper19am2quuhpyqh5fp22qhytdre50pmnjfsr35df6"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "ROFvRHA+NGghpMg0VqqyAp3lyV8s3FO33767aX/SH/0="
+    },
+    "OperatorAddress": "gonkavaloper1xqt2sd42lzgcgvun37dcu65muyj4zfyh3h82ph",
+    "Power": 4066
+  },
+  {
+    "Power": 338,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1xzt80teg2sx6245gt3p96qax6dcdr56fxkg8ew"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "sbAy1QqrHJ6BatPTL9ay5Y4Atump1EJWsymQTYcSa7Y="
+    },
+    "OperatorAddress": "gonkavaloper1xzajvz25mj3jaujmdu3c07phzwdm3zy06hyr3g",
+    "Power": 532
+  },
+  {
+    "Power": 5044,
+    "ValidatorPubKey": {
+      "key": "LVK+V3+3UzEKizsMSpPLKBD7cUm0Mogk5nEYtm3yRzk="
+    },
+    "OperatorAddress": "gonkavaloper1xrcdrdjy0s0e5nhy6nw3tcm9vrzn347qhc6jk8"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "vdanTP47RrOx8HZbr8BErqdIs5MxgW0ZzSLOIPD1ISE="
+    },
+    "OperatorAddress": "gonkavaloper1xyxak0gyx76hrrkwukvyc6g2rpkruwjkauxgkh",
+    "Power": 719
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "P9uXd/FnWg6W8fN+XM4tz38dpJdE10DC9u2R8MtiECQ="
+    },
+    "OperatorAddress": "gonkavaloper1xyj2jlq36rhauw7lx6zwmj26dregc7qq36tgm0",
+    "Power": 386
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "BpxhzPYN2gHwxGkI7Jpniw9tru5LQkTdgC7c8KvYI6A="
+    },
+    "OperatorAddress": "gonkavaloper1xycg2mc0ktaz4372q4ln3f0thefk86shtgd3cr",
+    "Power": 4730
+  },
+  {
+    "OperatorAddress": "gonkavaloper1x9qndq86jt6x8r5pqx4hlx92rl0x3qu2tnm2xw",
+    "Power": 4381,
+    "ValidatorPubKey": {
+      "key": "l0vSbcCSBs0XsP3cOnEiGIiJ2FaHFbQtAZ+tbmiR8WQ="
+    }
+  },
+  {
+    "Power": 4910,
+    "ValidatorPubKey": {
+      "key": "cAznynPHABl3mHiS/nd4W8e+8VWLhGRHBgephMs7EL4="
+    },
+    "OperatorAddress": "gonkavaloper1x8pupvvcgcn00kguy9umycj98qgqehwl6ttcju"
+  },
+  {
+    "Power": 846,
+    "ValidatorPubKey": {
+      "key": "rwBMwnCEHebgb8wDs3HkyIlb7WykaTm/X6SVB0CYsqQ="
+    },
+    "OperatorAddress": "gonkavaloper1x2qapwtlprmlcxrdtvrskswuznn8v29rfsgnu4"
+  },
+  {
+    "Power": 29052,
+    "ValidatorPubKey": {
+      "key": "P+lKN9sSbRGkUgOwHmxfu2wgeLsMwump22WIcG0tF+8="
+    },
+    "OperatorAddress": "gonkavaloper1x2lalvrn6cucvzwfcd5cwwhggfuxqckwmk795d"
+  },
+  {
+    "Power": 1316,
+    "ValidatorPubKey": {
+      "key": "bB9KuvIZVN6Uf2BeGr+TjL38JdO38YGJNE7g848RWWk="
+    },
+    "OperatorAddress": "gonkavaloper1xdx6tywcwjj74hmyxdr7v9mexg58zp7syulmv7"
+  },
+  {
+    "Power": 4492,
+    "ValidatorPubKey": {
+      "key": "wl/BTGT98IWdgCORcFRBjfLEXYn138l3beyE1EBDOaA="
+    },
+    "OperatorAddress": "gonkavaloper1xspavhncfmlpsllpfajs3r5623a4s8tcqmjues"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "FIFuq4AX1G1rbqJkGLATDGcD0A1u4AjuWQDCsYa+13k="
+    },
+    "OperatorAddress": "gonkavaloper1x4wafrl70272pzg3897zzefexwtmeuyal76hgj",
+    "Power": 4537
+  },
+  {
+    "Power": 3474,
+    "ValidatorPubKey": {
+      "key": "Bm3Yr7rSEIqHrhfSQhvnhwWlGuRdB92TXvuymQUR04M="
+    },
+    "OperatorAddress": "gonkavaloper1xk4mz0avlmvzser49tfrcgsjglq4a8u0gj9nkh"
+  },
+  {
+    "Power": 4851,
+    "ValidatorPubKey": {
+      "key": "16RwmpdCEHaUwizUUB66HZQnq3xezvujyiGDcSFsq9E="
+    },
+    "OperatorAddress": "gonkavaloper1xcvj6xlqy7p7fzyne5jqrnz96fa4xfh3gv4uex"
+  },
+  {
+    "Power": 5028,
+    "ValidatorPubKey": {
+      "key": "XjI0dLw4y2iRLut7qPsk5biWCZnejnASc2SBhU+Y+34="
+    },
+    "OperatorAddress": "gonkavaloper1xcjc32p5g72gc4tjxsm890star2l7w2gmnteeh"
+  },
+  {
+    "Power": 4672,
+    "ValidatorPubKey": {
+      "key": "WyOO6mbpjCKppplun+qXsqmjcrLbDdzrp29V/9u9PTY="
+    },
+    "OperatorAddress": "gonkavaloper1xec9u9kczf7jckvtxgalghsfcnk938h20g5wgd"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "7wv7E3HUlE03ggL9s/rEjIsTXfv8munb0SS0dR4YISk="
+    },
+    "OperatorAddress": "gonkavaloper1xuk3ganuhygvpge340sfepuwlr89s50fctwpav",
+    "Power": 5370
+  },
+  {
+    "Power": 142,
+    "ValidatorPubKey": {
+      "key": "xMN0gb7sxhgJ2Vf3rX2vWIKpAgJ9K/gdfblCH05Abkg="
+    },
+    "OperatorAddress": "gonkavaloper1xaqsz52keh4td77z5g792kq5f2yqkukdsz2tny"
+  },
+  {
+    "Power": 5027,
+    "ValidatorPubKey": {
+      "key": "fLa9lsN139gzoG66CI3gcg0aEF8BOWWd1NAPki7BoF8="
+    },
+    "OperatorAddress": "gonkavaloper1xlvxvzec4n4xn8mjyj88jrg7zlkmfqy9qgwm03"
+  },
+  {
+    "Power": 70271,
+    "ValidatorPubKey": {
+      "key": "L6KwXqf06rQhF+58e7XmXQHl+K50KrVuNsDJdOvZ9+A="
+    },
+    "OperatorAddress": "gonkavaloper1xl56zt2c2ahfuk0u68x084avulmth95lathz0a"
+  },
+  {
+    "Power": 48267,
+    "ValidatorPubKey": {
+      "key": "ZMwnWRnuUh3bQrv1EMXInU2Kr3/MiiYGrwdoAI4d3bw="
+    },
+    "OperatorAddress": "gonkavaloper18qd8fhk9uj0zk5xlgnsfkpj78ed65spt40r3ew"
+  },
+  {
+    "Power": 3980,
+    "ValidatorPubKey": {
+      "key": "yK8xKfOn6kVu7OLSpHEwN5UBeeVTUxhF7gbNgS7inbY="
+    },
+    "OperatorAddress": "gonkavaloper18zgw37evwkpes7redzgh79pjy77rkv5h64hx4n"
+  },
+  {
+    "Power": 4691,
+    "ValidatorPubKey": {
+      "key": "h7y3L3ADUQpm8zJEwUrn3HTpL0rvnGeMg5EEqCcVmzQ="
+    },
+    "OperatorAddress": "gonkavaloper182wjthlm5zdkwpcc3x5cfy83sel392ljjuch4n"
+  },
+  {
+    "Power": 1229,
+    "ValidatorPubKey": {
+      "key": "r+ZIRkrkyIJv5H7eAlWY3uMUq23FVeAn/HIpdg/vGAM="
+    },
+    "OperatorAddress": "gonkavaloper182s2d5pre7k3q2qacp06fdr6j34czwyatgk76n"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "aVN0eRRRD5Xi8J6blZG3z1BpB5VQlEOKyHhm8rP+LnU="
+    },
+    "OperatorAddress": "gonkavaloper18tzk9e0wxed2qx9m0uefr9qpv7pqlju9ls0vg4",
+    "Power": 390
+  },
+  {
+    "Power": 1950,
+    "ValidatorPubKey": {
+      "key": "dUBdt2yjaZX6hC5cgQ/NEGIfrk9CwH5/4GTXNWSIzHc="
+    },
+    "OperatorAddress": "gonkavaloper18vgk40336ml0a6hc2svn0j6e7agvgu0fh7ss9d"
+  },
+  {
+    "Power": 184,
+    "ValidatorPubKey": {
+      "key": "zdVGMd38n/vGHhc18ZIvk1DpVpSNBwDa1hQOsvLY/kg="
+    },
+    "OperatorAddress": "gonkavaloper18v2az8fn2z28ykxu7zyc09crqdmjuldm0aegl8"
+  },
+  {
+    "Power": 1147,
+    "ValidatorPubKey": {
+      "key": "nWtsryyqAWDH0cCSZ9jOnPbL+40pxiOJqFI1nZtUaUg="
+    },
+    "OperatorAddress": "gonkavaloper180h3x4dv834pyn2ua3k596hrsk7d2l5uhlrvlh"
+  },
+  {
+    "OperatorAddress": "gonkavaloper18jd4my9aae5jc3gp8sjkxtt988ctazxwyu7g40",
+    "Power": 4315,
+    "ValidatorPubKey": {
+      "key": "O+b+amhK37zp+JXuTegOtApClk4nFxvmvifKchYyhyk="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper185qz338ahgj324udxakau55tk9frygxrv8n2t0",
+    "Power": 4995,
+    "ValidatorPubKey": {
+      "key": "kAu+DkKRE+wwVSf5pFFN9C4SRJLx1uPGXvWY7VWzBv0="
+    }
+  },
+  {
+    "Power": 452,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper185kgdje9wjucxtkdu0nqhpqlwxutc5kcznphs3"
+  },
+  {
+    "Power": 350,
+    "ValidatorPubKey": {
+      "key": "8SlSf8L6m+xp4EEMEnEUJV0x2GUYEMZYJlwmxeaBkQE="
+    },
+    "OperatorAddress": "gonkavaloper184jz8ja5gqkr3kt98a3a4syyypwj07j0unemp9"
+  },
+  {
+    "Power": 14372,
+    "ValidatorPubKey": {
+      "key": "T0meHfRZRzuPeEb6xf05Dn8chiJl7K3RFzT/v0wTZxA="
+    },
+    "OperatorAddress": "gonkavaloper184k54ycpzw9jfsx95yucggq66resf60zftcx4z"
+  },
+  {
+    "Power": 1077,
+    "ValidatorPubKey": {
+      "key": "qvotrmilpGhxKl/JybQX9YwR+QHffa0V7/gOoZD1YaM="
+    },
+    "OperatorAddress": "gonkavaloper18kcyrz9hazs4p62mdusln02cnana8fxvwcehmv"
+  },
+  {
+    "Power": 12377,
+    "ValidatorPubKey": {
+      "key": "nfQMbFdJB4HdOmy6qHBzcx8pCnh5O64uTP2vsVVtDNA="
+    },
+    "OperatorAddress": "gonkavaloper18ee58ff309k3fv2dn9f8zfa9q94huk4u994euc"
+  },
+  {
+    "Power": 26106,
+    "ValidatorPubKey": {
+      "key": "bYhHswrRd/5lMBtyZhMgmBVp8thNxGCw16UyR6NSvC4="
+    },
+    "OperatorAddress": "gonkavaloper18ulrvu3qfvvtq3s079dl2dwql2rev66z8gr3jn"
+  },
+  {
+    "Power": 1091,
+    "ValidatorPubKey": {
+      "key": "4NavoPCtsxCCiVKRXNIaI2ebSWx4fftsfVLoNw1L46A="
+    },
+    "OperatorAddress": "gonkavaloper1gqruzgfhxqqg5ftvpg3945wm7mjsfxd02q5ztv"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1gz6d9j834xvhvyt7c67ux6egugns7dlcgdn86a",
+    "Power": 3888,
+    "ValidatorPubKey": {
+      "key": "OR5P5T1zrxcUP5wOkU8Acn+mjivYZl+2VbHDiA4cxLE="
+    }
+  },
+  {
+    "Power": 4726,
+    "ValidatorPubKey": {
+      "key": "2RAKEHEdPFdbgvzZFydM2RAx9/ot9m4HpaPy8RG3I1Q="
+    },
+    "OperatorAddress": "gonkavaloper1gr8njjad9rwfmay75xvkr6dmtkky3e3fjcgm3d"
+  },
+  {
+    "Power": 4968,
+    "ValidatorPubKey": {
+      "key": "LMOMqyULPjLDawPVVVYdEb3PmpPTi/0z1ZSBSzjuYPI="
+    },
+    "OperatorAddress": "gonkavaloper1gg2jwjfjf22gda82gm947mjs8z0gpg9t22gsxk"
+  },
+  {
+    "Power": 486,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1gd79gdm2s35rc4mhssgwrqh2lnmaff0wu42fhh"
+  },
+  {
+    "Power": 4702,
+    "ValidatorPubKey": {
+      "key": "jN5AsctpnuBO3DDrL9vXzH3MIAvQ1JNMcKKgMCC86Mw="
+    },
+    "OperatorAddress": "gonkavaloper1gwakaz7dzpay0e4at7jmj0mrnqwjex6k7ay2gy"
+  },
+  {
+    "Power": 8711,
+    "ValidatorPubKey": {
+      "key": "BWiNCCv6cfM0W+5YzLQcnp9/Gbt9QHdhyUtEDLkKl2w="
+    },
+    "OperatorAddress": "gonkavaloper1gsarmv9gsc7g9fv9nsqtk6t0d7erxpur452tmj"
+  },
+  {
+    "Power": 328,
+    "ValidatorPubKey": {
+      "key": "tT9LkZVlDwLNKgznoUcNV9Iduyx4mtYJ91ZFNz7gkkg="
+    },
+    "OperatorAddress": "gonkavaloper1gjq6euu48kuvfcpm29a4ndsh4fv5cupls2lnz3"
+  },
+  {
+    "Power": 4136,
+    "ValidatorPubKey": {
+      "key": "9Cd9TbPkPnlcAxkYkB7hffSiLUFv8KfqBd56a1Kx6DA="
+    },
+    "OperatorAddress": "gonkavaloper1gjlhk2wnct7hhya548chqjj2ezrs3za0achpy4"
+  },
+  {
+    "Power": 4410,
+    "ValidatorPubKey": {
+      "key": "F/yzLSpArbXAn6UNW2UNCHRVGW/OulAAF5uJHzxmj0w="
+    },
+    "OperatorAddress": "gonkavaloper1g5t786e2hnry8c4d6fd4rh5t3vsfdnev9j6hmf"
+  },
+  {
+    "Power": 1081,
+    "ValidatorPubKey": {
+      "key": "duJfjsVWUU+PJOmVrYBtALq4gSCDvFOMWN6/SEq46D4="
+    },
+    "OperatorAddress": "gonkavaloper1g5d7f2pwkzez2kmu92xshk56u3k957r40ydpv7"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1gkdl40hfau92xwh39updqzzrpllaqv7fwazsgk",
+    "Power": 49,
+    "ValidatorPubKey": {
+      "key": "wKs8U00gJuSYogK4dDb2q5GUm9KMIMcsxMbyvulJZTg="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "NLlRXhUFf8jZz/VsE3/f9lqKt2WmTu2axSzq1+cfsOI="
+    },
+    "OperatorAddress": "gonkavaloper1gmed6tx2mr5n25xq599tfxsspxqqgdudcxjxcg",
+    "Power": 1153
+  },
+  {
+    "Power": 218,
+    "ValidatorPubKey": {
+      "key": "yO3jDhzU3iino3pHQcbWbvUa3QzeOeGuGvU6BlD/kEA="
+    },
+    "OperatorAddress": "gonkavaloper1guzkdc9hp24shxslgsgdhde4p2k039earanfha"
+  },
+  {
+    "Power": 4604,
+    "ValidatorPubKey": {
+      "key": "josbIeXXtzpvdJB+HVZk35ckCQ09zQ27ojVkjv5ld1w="
+    },
+    "OperatorAddress": "gonkavaloper1fp444xd5027mzhx0tnlxkx6euczhp9glh5cgjs"
+  },
+  {
+    "Power": 4439,
+    "ValidatorPubKey": {
+      "key": "k+4KkWk9cB85L5waz8SzPaXuRgcXORga72pDTjC4cv0="
+    },
+    "OperatorAddress": "gonkavaloper1fzd9ne43l0rjuptdaxdvlhh9x65krl0vqcjwrq"
+  },
+  {
+    "Power": 4308,
+    "ValidatorPubKey": {
+      "key": "iqSO2hd4eQqUtdXFHeP1p75U8UwEDYAgsoaqN9LUUac="
+    },
+    "OperatorAddress": "gonkavaloper1frfr2z4lclq0wjqsrstnhm48rmvkmd0t4sphmm"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1f9py6qeqf7wvqcrfgykx3j0xxg63rtnkt7zpn2",
+    "Power": 1474,
+    "ValidatorPubKey": {
+      "key": "mkTidxMbNcFm0rCxQQiZ1tnZqVG6Hog3EkOd/j2GG+I="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1fxdt48vp78uxa7apuuamv4clwafxagnj59gmg4",
+    "Power": 439,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1f8eugzqqtwfq8t00q6nyyc9hew30mc9jen7pup",
+    "Power": 2693,
+    "ValidatorPubKey": {
+      "key": "P2uPBlTwc/Ed75R9c0BZVOwgSEOnHY2Ajr1xGgJ2Cyc="
+    }
+  },
+  {
+    "Power": 10124,
+    "ValidatorPubKey": {
+      "key": "yD+hnHIYb0vGSZKnCU8Eusfr2B5xI9+3320gS0jXoPI="
+    },
+    "OperatorAddress": "gonkavaloper1ffjt0acf87chys5w93wsrdj2s94rrmcqmm6jsj"
+  },
+  {
+    "Power": 5425,
+    "ValidatorPubKey": {
+      "key": "CvkbjgGE31Il2BiDiIb6NqL/+7J0aae82WKiqSnzoUk="
+    },
+    "OperatorAddress": "gonkavaloper1fvw4sad9uqe75tg3q9gaj8rhav7dc454jrm035"
+  },
+  {
+    "Power": 939,
+    "ValidatorPubKey": {
+      "key": "jBSFkSNipxef9ORbb6V+I1gFjYMk9UBibDl2ETW+Kvo="
+    },
+    "OperatorAddress": "gonkavaloper1f3t8ksnaxly2w69udasl5gteejszplgggdwsu6"
+  },
+  {
+    "Power": 4481,
+    "ValidatorPubKey": {
+      "key": "Bo9GK/1DW9DJ/CtxYMW7AHtOzhEkbE00p5son8MuviU="
+    },
+    "OperatorAddress": "gonkavaloper1fjrq7m6xy9wpmm88vr63d08ps8dt9em3mlx8c2"
+  },
+  {
+    "Power": 736,
+    "ValidatorPubKey": {
+      "key": "WX/A9W7yY/nORymvyKu6cxnRq2bYi46Cx6PYNTyiY00="
+    },
+    "OperatorAddress": "gonkavaloper1f4mcr5pzn9rtdyzdv9dfg4x47vrqxk0fkur88n"
+  },
+  {
+    "Power": 4702,
+    "ValidatorPubKey": {
+      "key": "DW7LFwdv+yb10XSx0xJ8XKZ3i+IV7wlWQ+HqpXiFLIs="
+    },
+    "OperatorAddress": "gonkavaloper1f47q2ppldw5f9wkfv7xgwhvmptd27knqllkp5c"
+  },
+  {
+    "Power": 2997,
+    "ValidatorPubKey": {
+      "key": "rzDeDCuXzB+MgrfbS/6a3Cb9vTRP9Gpo4TG3tA2QUNQ="
+    },
+    "OperatorAddress": "gonkavaloper1fhwdrlzmynw7lwfgws5fdnazxlwqa2xsgtua3r"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1fczfacxeypuvc20judf2s6t92djtd8tgrsnuee",
+    "Power": 4124,
+    "ValidatorPubKey": {
+      "key": "Er0k+c01q9C8spEXg8ufIqpQ8M1G82SkHOAosxYACo4="
+    }
+  },
+  {
+    "Power": 108,
+    "ValidatorPubKey": {
+      "key": "+/FNcU3RB4bP0De/Bndm16QkxjvMjcgQ76r14LPmXFc="
+    },
+    "OperatorAddress": "gonkavaloper1f7d5j263cw6ukux38kg5gglup83aazctyh2vk2"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "v3b8j5GLgPeAV5OKIKBeOPOcbU7wemEKp5bYpOFx/Qw="
+    },
+    "OperatorAddress": "gonkavaloper1fl2ux2967t2pgcqf9evta9lc4l3a4l2gplgeu9",
+    "Power": 254
+  },
+  {
+    "Power": 53292,
+    "ValidatorPubKey": {
+      "key": "rfLCDIEtoWDsXegWEBkCz9K7HfqfNaW/Np43sDabQRA="
+    },
+    "OperatorAddress": "gonkavaloper12pwvrkm7vqkme62y0u6pgms79w8eqyt5zsmt0t"
+  },
+  {
+    "Power": 4239,
+    "ValidatorPubKey": {
+      "key": "13y/rmBc0kHunLJvpQUV8G8AOf3WK0OZUxEmQMrP4hw="
+    },
+    "OperatorAddress": "gonkavaloper129wh6ap5m5v0skcxvdcgn5nrfa8d0v5jjfnqxv"
+  },
+  {
+    "Power": 9848,
+    "ValidatorPubKey": {
+      "key": "iOa0oenuiZUX5WtoCB0Dy8WhM3sBunj4Xsk16nIir8g="
+    },
+    "OperatorAddress": "gonkavaloper12gwxa8vcvahyd4ygcxp4624ywaw98wp9g3lmms"
+  },
+  {
+    "Power": 4239,
+    "ValidatorPubKey": {
+      "key": "vShgOqphGLcwBrdpZb0xleKjiOhGlEreZ6vPAmaeOK0="
+    },
+    "OperatorAddress": "gonkavaloper12gmwdxjwyqs8y2cxjzrnza8jtf2pyp34qdsqju"
+  },
+  {
+    "Power": 4391,
+    "ValidatorPubKey": {
+      "key": "XyNOL9kiBGsQSmAMCM4838gZOpu8mSorE6sPXtT/dlo="
+    },
+    "OperatorAddress": "gonkavaloper12fnudtsmw6heu6t982rnk8c5lgpgz4wmswuera"
+  },
+  {
+    "Power": 4978,
+    "ValidatorPubKey": {
+      "key": "6LAmfdKpQSuQtdTTu62GWixI9vh24lQkSncAwNbIFNo="
+    },
+    "OperatorAddress": "gonkavaloper122yzg0agje5a4nq8spx2fwe2cye79x7h73pslj"
+  },
+  {
+    "Power": 4362,
+    "ValidatorPubKey": {
+      "key": "zNjjg6I0GRl9we4j49nUCHT9s+JNII4ogeil9/x37sk="
+    },
+    "OperatorAddress": "gonkavaloper122dtadquy0ayf6nzx7thg6643w7cv0fc0qphhh"
+  },
+  {
+    "Power": 1116,
+    "ValidatorPubKey": {
+      "key": "eHN/9VPK3n66mYBrEJNHbP6wa6o8t719U3+zaUsNBc8="
+    },
+    "OperatorAddress": "gonkavaloper1227320u62rpdyw8j0ve62yv6yqzy0h67q4yhhw"
+  },
+  {
+    "Power": 3433,
+    "ValidatorPubKey": {
+      "key": "hICk/bTUAFgta7sbmw9RcEZtPDUa9WeV7rUGTBJ8/DA="
+    },
+    "OperatorAddress": "gonkavaloper12n7ekj4sg7xd63qe772qpeae59v4zw76h0hx6e"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "ff5GY53/WzBgDnPmCgWViH3W3sk6KMEBpDMBS6Tk0T8="
+    },
+    "OperatorAddress": "gonkavaloper12c27qus5pw87x4ayaulmcp34q5pkeseehtlkyw",
+    "Power": 4319
+  },
+  {
+    "Power": 4761,
+    "ValidatorPubKey": {
+      "key": "a8OUDVckANTlO/ZsOxcQdF3O6wkAH41UWemv1fRl2hg="
+    },
+    "OperatorAddress": "gonkavaloper12chgl62wfzvkvjwj7mz568ct7xyzdaa0rdy2s4"
+  },
+  {
+    "OperatorAddress": "gonkavaloper12mqkaycdsc7qr37ey5rqw6vhjvkk7wax3c0y96",
+    "Power": 2614,
+    "ValidatorPubKey": {
+      "key": "SwFQWzK1JTcJU5tOGwDLbM/Xs419iCB+EjKbcUpAatw="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "mscsh9kdlHlv2DFAompOV5mHvrOl/FM1gER1dZ0yjs4="
+    },
+    "OperatorAddress": "gonkavaloper12u5pjkvehkhzky5s0yn3j0teseqa2wk382t6he",
+    "Power": 313
+  },
+  {
+    "Power": 2789,
+    "ValidatorPubKey": {
+      "key": "Lp4VtbnoVGJmUX7gYg0NX1yPWJBnNvyroonStxFbRX0="
+    },
+    "OperatorAddress": "gonkavaloper12ua7rs4dfx827nnqqjw93e5eu7yuq0q64ngzt7"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "08U6jDtJsms3C98UI7Ynu0jNp3/hcMHGGDBDHfyDwbk="
+    },
+    "OperatorAddress": "gonkavaloper127ut4ut239agy405vmznj2jz3z57egrfqzve6r",
+    "Power": 121343
+  },
+  {
+    "OperatorAddress": "gonkavaloper12l3fwycgvs9tdpze59za89zq4cexhkxd3acp66",
+    "Power": 2780,
+    "ValidatorPubKey": {
+      "key": "dCGvAsmIAB3KmPHXtPb3f0UYATEO1rfhMreLrcb/LsU="
+    }
+  },
+  {
+    "Power": 5041,
+    "ValidatorPubKey": {
+      "key": "2S9H1MTzzjXUkfJY3M4HMP7YLkvdRrbfrBZcx3jUpyk="
+    },
+    "OperatorAddress": "gonkavaloper1tqr0yuykhd4j4wgzdzng46rd22c9jlfu6kndx2"
+  },
+  {
+    "Power": 4740,
+    "ValidatorPubKey": {
+      "key": "4LkwroDgD2Idh8xLnM34SY2NeV5GCBnxp4Ll269vMcI="
+    },
+    "OperatorAddress": "gonkavaloper1tpvcpcmmqcku5g53tv2q4wehgqw3nmeqdj8jm7"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "VOAM7d1KXvF9uwXqnbs/f83t0ywpEBmyUxvNBPVSNt8="
+    },
+    "OperatorAddress": "gonkavaloper1tx980hp394dfn80rut6gr3j5yujz7wdln8umka",
+    "Power": 17368
+  },
+  {
+    "Power": 39,
+    "ValidatorPubKey": {
+      "key": "WxXkpjoF3s5ayMTXeCu22GpwDWIxKifsR7I0GWvZ6T0="
+    },
+    "OperatorAddress": "gonkavaloper1t88kkvnrayz5l2u043tccd2pks4rt8y3f6nz6p"
+  },
+  {
+    "Power": 93,
+    "ValidatorPubKey": {
+      "key": "hUatdvjmEOJYyN+TU2ZgrVNrtY9GikIzng2h0vMBnzo="
+    },
+    "OperatorAddress": "gonkavaloper1tgtsqayddf96dwxry4mnu5qy0ae377q84elk0v"
+  },
+  {
+    "Power": 4855,
+    "ValidatorPubKey": {
+      "key": "jUi+wMZaz9NH0PEKYjLZIr86iQDb73mBvpVosZIvyIg="
+    },
+    "OperatorAddress": "gonkavaloper1tvgem50n2xna9apg29wm0ts5rjmjxj0zs2qvdg"
+  },
+  {
+    "Power": 61282,
+    "ValidatorPubKey": {
+      "key": "iUKudiXRfL4KBXn319/6Rbw6eN7u77rGPlYOFvVmL18="
+    },
+    "OperatorAddress": "gonkavaloper1tdu4zkr4lldjssencfagv2azcw9uwy4ylawuwk"
+  },
+  {
+    "Power": 5254,
+    "ValidatorPubKey": {
+      "key": "iOrmLmuXYbpCfdnMMBINHH5oIg4oXSKXA7ug0NKu1Dw="
+    },
+    "OperatorAddress": "gonkavaloper1t0gevkpnxe8000ke344zuhf5ljwefmdx0fnxc9"
+  },
+  {
+    "Power": 409,
+    "ValidatorPubKey": {
+      "key": "jpSLBJDHgn28NVOZz30C7tGatXo6CI81dHUEYonD5bs="
+    },
+    "OperatorAddress": "gonkavaloper1t4xds4ltl85hyj025aksrvpuqrwfgmvxs9zf4e"
+  },
+  {
+    "Power": 4845,
+    "ValidatorPubKey": {
+      "key": "kCi70sCFw5bxPRcjyZiuq4ZM9NxXkVV4LpmnlToe+g8="
+    },
+    "OperatorAddress": "gonkavaloper1t4jkhfkwexdz6rm95rdd9qg2905uwd59wc0rnx"
+  },
+  {
+    "Power": 4561,
+    "ValidatorPubKey": {
+      "key": "b8gkdY0CptAUFhcZXtwtk5R05pSABaagf0YD8+a2Fzg="
+    },
+    "OperatorAddress": "gonkavaloper1thdyumjevc50uf822fzk6ypmychmvsdqq6l5y0"
+  },
+  {
+    "Power": 404,
+    "ValidatorPubKey": {
+      "key": "uMh8pbeLoh9lEMr+jpUcRNa4WimXU5vZL4NhzHljH+U="
+    },
+    "OperatorAddress": "gonkavaloper1tml58t8c87c65amrqee5rpurmlskr9v9a3u7d8"
+  },
+  {
+    "Power": 4933,
+    "ValidatorPubKey": {
+      "key": "VDc82Kwy4nrcqNga5rluuAbUCHSyi5a6aicX3FJgrBw="
+    },
+    "OperatorAddress": "gonkavaloper1ta39vdtx4qmlwpvmpjyajn5yulflf0yekndjvc"
+  },
+  {
+    "Power": 2731,
+    "ValidatorPubKey": {
+      "key": "f5TikVN2N4ovt9BH5Gmyi4Mo6bYloRpW308cqKV8Clk="
+    },
+    "OperatorAddress": "gonkavaloper1tajslmg8lwwgn6nsmtnjw6dksujcd0nj5fc0mf"
+  },
+  {
+    "Power": 1144,
+    "ValidatorPubKey": {
+      "key": "cTMsiWBrraq7GxtOZp2gfJ7Yj+ZC628HINvCnLjhxro="
+    },
+    "OperatorAddress": "gonkavaloper1ta6mqt9guj3rvg874nker75wkac2jszsfjpjdm"
+  },
+  {
+    "Power": 343,
+    "ValidatorPubKey": {
+      "key": "FuOi4ELvtoePrzvskIQfuy+sUfDqUquPeZSqCxa+zV8="
+    },
+    "OperatorAddress": "gonkavaloper1vp9m8e9yw6yky45fkcekspx9u3useaj0paqeh7"
+  },
+  {
+    "Power": 34001,
+    "ValidatorPubKey": {
+      "key": "4mLE1tadDqzT7XR3R68lAP5tirMaB8mx7NQ244qhMkg="
+    },
+    "OperatorAddress": "gonkavaloper1vy396smh98ak3ts4zlthjnsv2ypr845mlfne3e"
+  },
+  {
+    "Power": 2228,
+    "ValidatorPubKey": {
+      "key": "yN/wHompvzyvUM5xSsz2S8OO6xv/iXEH2r9hGAJDtTk="
+    },
+    "OperatorAddress": "gonkavaloper1vxs4azxcym36wts0t7z5nj65ma8pnkvp8ylp2z"
+  },
+  {
+    "Power": 892,
+    "ValidatorPubKey": {
+      "key": "+hoa4aCKK1rqOuUui7Vdve/ok/YILkEYGQ9ao+wVYkM="
+    },
+    "OperatorAddress": "gonkavaloper1vxmmas5zkp4pee0rkv9dsy54pugy7ln34apas7"
+  },
+  {
+    "Power": 4957,
+    "ValidatorPubKey": {
+      "key": "BnwXo3e2u6SITZFjmAwzBFT/yexSCQDqOhvECwIxSH8="
+    },
+    "OperatorAddress": "gonkavaloper1v8z57yg47n8h4zveyj4cdpn0ll8k9zpc87g0pp"
+  },
+  {
+    "Power": 1252,
+    "ValidatorPubKey": {
+      "key": "NZVxOdIn+vH2k8QZSRey8LmLtEaDPvBTfM2g+vwD8lQ="
+    },
+    "OperatorAddress": "gonkavaloper1vtq7skdleemwn3vzh9xlt7x29a2s8yke3cfnwe"
+  },
+  {
+    "Power": 2128,
+    "ValidatorPubKey": {
+      "key": "y6rqHmhnbWK3iB5ReSmWNdEstAVAAIQwrGDlj92nHns="
+    },
+    "OperatorAddress": "gonkavaloper1vttxzd68fur26l9lew5netz6wxnx7hmm7d8857"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1vdw6tst3lelc84garssnnjzx7fjpkja2jzspw2",
+    "Power": 5966,
+    "ValidatorPubKey": {
+      "key": "a9P9EgYc20g8/94XofZN5dwN8rc1zF4eBBagq4L3hhg="
+    }
+  },
+  {
+    "Power": 9958,
+    "ValidatorPubKey": {
+      "key": "yr0XGbdWM2Q/wbGtvx9CTAQ9Nv05wD0ZFmOmuv0HWhk="
+    },
+    "OperatorAddress": "gonkavaloper1vwsp87trl60t4g67fa677k7d7jztuc3gfqrlxr"
+  },
+  {
+    "Power": 4988,
+    "ValidatorPubKey": {
+      "key": "SeTyIp4wLI5r96jVveFuwosDj1D7c683wz1ZBMnUi/8="
+    },
+    "OperatorAddress": "gonkavaloper1v0uvvhrxje6zqeyqqransjulw8h6wfkh8u6n88"
+  },
+  {
+    "Power": 4042,
+    "ValidatorPubKey": {
+      "key": "SSWb5XzWu1f2EHNhUki6F2QFw98x+DRuRNtRWdJTkzA="
+    },
+    "OperatorAddress": "gonkavaloper1vs26xk4zvv6dv56j8r9ns7wzk6s00p8ehk0ftn"
+  },
+  {
+    "Power": 57651,
+    "ValidatorPubKey": {
+      "key": "NkqfxtvWyRyOvTvHlZPHGj81NRZ2pM6XsMFTB2FUs6o="
+    },
+    "OperatorAddress": "gonkavaloper1vjshzxh3sfam2xh0f7vzz4klrv5pkq4zqt8qhx"
+  },
+  {
+    "Power": 4877,
+    "ValidatorPubKey": {
+      "key": "yIDFbsmnCKMVH6U7L6LghhG0Em6MeOOR0RiQJUp7b9o="
+    },
+    "OperatorAddress": "gonkavaloper1vnmmnq4x9f7d3kume6xq2fh8x3mdye255cw9g7"
+  },
+  {
+    "Power": 153706,
+    "ValidatorPubKey": {
+      "key": "WbCmwtGWrOTGTtkHSz2QBq6quxVdtht9fZdUg0HSSwA="
+    },
+    "OperatorAddress": "gonkavaloper1v5ggga7lslfg2e57m9anxud40v2s4t9dj844d2"
+  },
+  {
+    "Power": 3990,
+    "ValidatorPubKey": {
+      "key": "0UHaHndnUIHDPOgMQAP8rtUQoQRzdsnPQVfpPvP0VJ4="
+    },
+    "OperatorAddress": "gonkavaloper1v5k8fqqfc0v798gm8svcv6tczppvegsehwyu74"
+  },
+  {
+    "Power": 10165,
+    "ValidatorPubKey": {
+      "key": "4Rbxxe+7uZvOg8eEX2u4/pEKf8QwKHr3B3rikbWQm+M="
+    },
+    "OperatorAddress": "gonkavaloper1v425qs8gxupjcw3lqx5fsldtve88vd9gpa0ydz"
+  },
+  {
+    "Power": 248,
+    "ValidatorPubKey": {
+      "key": "XM47sEEE9GPEsaXmF04ZFYXlo9jARhHbYIRdAcCWHhE="
+    },
+    "OperatorAddress": "gonkavaloper1vkh8e2uqk9mdw0ql83g0p4ge0wmqstcavuw5l7"
+  },
+  {
+    "Power": 7483,
+    "ValidatorPubKey": {
+      "key": "Bmtokd52Qzq3zJ+Uwfx9U76G6LkgY3mFoSfk2TuPQK0="
+    },
+    "OperatorAddress": "gonkavaloper1vkafyzr5yz5aht6gzapw6lc52h5wwmnrwwa8g0"
+  },
+  {
+    "Power": 25825,
+    "ValidatorPubKey": {
+      "key": "2ykmApZ4pfSMfoREBUDu/vImEYlOym8ymVWOw2wcMQo="
+    },
+    "OperatorAddress": "gonkavaloper1vhprg9epy683xghp8ddtdlw2y9cycecm86yv95"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "lIXfqtbysg3Yrk5XLvdReWN1lbSjfZkfcduODFz0XJs="
+    },
+    "OperatorAddress": "gonkavaloper1vmhd38lxl68lm76755u4xdxp5wqm646akhvh45",
+    "Power": 4864
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "zGsXA1eJjr7eR6h5QCawFre2OiaSHhSutMt2qOxAHy8="
+    },
+    "OperatorAddress": "gonkavaloper1v765pascdp3v6qqtpdrcqm8qwdwq4hxam5emr0",
+    "Power": 4919
+  },
+  {
+    "Power": 395,
+    "ValidatorPubKey": {
+      "key": "AyyFgn6neTON0/UL3dPJUvMRcaYjBVsh2ABYU7tZFMU="
+    },
+    "OperatorAddress": "gonkavaloper1vlcd8tr2nh5x6h4wl9vacpzucpp9a2p9lvklrn"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "jS79un/DByt6uHuy4Mr4jFBv0xnHTAkmm4NmBUjPZZY="
+    },
+    "OperatorAddress": "gonkavaloper1dqgcdz94x42ukcfmy6crj55a0j2qucsa9chg9e",
+    "Power": 4576
+  },
+  {
+    "Power": 2884,
+    "ValidatorPubKey": {
+      "key": "iRKQ7adoz+mr9WyVo5nxG6v2T17IWMWlb2eQHhBv4iQ="
+    },
+    "OperatorAddress": "gonkavaloper1dq73jrtl7uw8v4qkspxw7x8ca6kv3arc74rw2c"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1dzk7rawvnkfwfptkzhdf7dh5s4xsqfmlz26u0f",
+    "Power": 44720,
+    "ValidatorPubKey": {
+      "key": "LnkNJCxjtBkLVpwVerCXPEO/Er4rO5H+TXfZ+NJrBps="
+    }
+  },
+  {
+    "Power": 4492,
+    "ValidatorPubKey": {
+      "key": "P7BZfQ+ZdHyOzkDDWGBlR0mmTOXjm6Q5xnFbHzr6np0="
+    },
+    "OperatorAddress": "gonkavaloper1dr9jslmgk9pp3kt0twe98g3hm5cnn2z39hs648"
+  },
+  {
+    "Power": 444,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1dydrqvyaa0s8puwmk9e5d5x5hchrm8839c85ll"
+  },
+  {
+    "Power": 4210,
+    "ValidatorPubKey": {
+      "key": "jnjXImCskmhl42Ep3oAf9qm8YQHD022Cw/k8A9aq8N0="
+    },
+    "OperatorAddress": "gonkavaloper1dxs4az0nz6mxpdcjjtf2fk9fylrsr9f8333975"
+  },
+  {
+    "Power": 4645,
+    "ValidatorPubKey": {
+      "key": "DzEYNhirghYdQKVvDk7YYtcB2wlWA4SNH/83Km+nwDY="
+    },
+    "OperatorAddress": "gonkavaloper1d8v8s56a27wrjc0gfj4c0vafq67j2ddhl7znpn"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1dgkjlfqrm56tr6evkydg2qkkldzancnmn90s9c",
+    "Power": 137,
+    "ValidatorPubKey": {
+      "key": "b/b2ODEo896+gJ7OeQzRthzGV2GKP0MTrQK8+6rADw8="
+    }
+  },
+  {
+    "Power": 61519,
+    "ValidatorPubKey": {
+      "key": "TmYk23a4Ziv+BbfDvuw4/pUSO5E42FUpVk7dPuJ571g="
+    },
+    "OperatorAddress": "gonkavaloper1d249js0g2tlnk507jcrhtk7l948ylg4af5h5vz"
+  },
+  {
+    "Power": 202,
+    "ValidatorPubKey": {
+      "key": "dxBuFHZDALir0Jcit4ziTRW+T8Q7btjCAEisuJDbuTk="
+    },
+    "OperatorAddress": "gonkavaloper1ddswmmmn38esxegjf6qw36mt4aqyw6etsyprrt"
+  },
+  {
+    "Power": 4330,
+    "ValidatorPubKey": {
+      "key": "u4nmu29clJ/+Q9Fwq6BeIMIC60Oqwt2Pq5qGIusHoqU="
+    },
+    "OperatorAddress": "gonkavaloper1d3vxnhh9tm8lahmnehhwcuqy7lc72rud05xwk9"
+  },
+  {
+    "Power": 4544,
+    "ValidatorPubKey": {
+      "key": "LLupQaq2q6TrT2RTMHviS2Ey4aoKf16PTqOfaNbwY0M="
+    },
+    "OperatorAddress": "gonkavaloper1djqnccng4mece9p7kpyh588thq6hzt3v22cug7"
+  },
+  {
+    "Power": 4928,
+    "ValidatorPubKey": {
+      "key": "FCccEnKIASvvdVbSkceQbHCPEZvK++fiz2N/b79CAMI="
+    },
+    "OperatorAddress": "gonkavaloper1dn2gwpylkpjmxhgpyp6vfwqp5awydtguyk9f0e"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1dkl4mah5erqggvhqkpc8j3qs5tyuetgdc59d0v",
+    "Power": 517,
+    "ValidatorPubKey": {
+      "key": "YHtcky8VaH0qQNhYJkN61RPf83oKWsCPXdaewvDEYLo="
+    }
+  },
+  {
+    "Power": 385,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1desd6924c4aturcdmwk59jpye5em3q2z98et97"
+  },
+  {
+    "Power": 9816,
+    "ValidatorPubKey": {
+      "key": "LwngrUxcdmuyFgV4DN6wlzk0YjrU1hlEopTjdw0GAMA="
+    },
+    "OperatorAddress": "gonkavaloper1dms4wtzer5zjx32c3grc5twksd8kdp0uh99dln"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "OVlq+USj2y0TszI+VTXbeePyuI+rOVCRAMUNabNPYlM="
+    },
+    "OperatorAddress": "gonkavaloper1dmjrdj39n950jzcxqw6zqa7vhtg945gqq56wqk",
+    "Power": 4415
+  },
+  {
+    "Power": 3704,
+    "ValidatorPubKey": {
+      "key": "nElq1iklpcEPpHqF+ZnSwXgYpOcYl1K2Jg65WhY2dns="
+    },
+    "OperatorAddress": "gonkavaloper1du3ra0wra9l7d8uqctdrdzneufpw54k3lne4v5"
+  },
+  {
+    "Power": 1473,
+    "ValidatorPubKey": {
+      "key": "5QYFI0kdyBPrcld3FfOwoZdynfwN5li0qUbg3zwFK4I="
+    },
+    "OperatorAddress": "gonkavaloper1d7p03cu2y2yt3vytq9wlfm6tlz0lfhlgs9xqav"
+  },
+  {
+    "Power": 3983,
+    "ValidatorPubKey": {
+      "key": "nlknyOjxeg6KfUk6LYo6gVxC5alija+z/xR5FYBQTFE="
+    },
+    "OperatorAddress": "gonkavaloper1d7sgezy57w3lqh9jkyrt3qwnqyxfmx67ynt9q4"
+  },
+  {
+    "Power": 1153,
+    "ValidatorPubKey": {
+      "key": "KaJByXVj1dh76z2wPRsxTytdEPGSj28PgR4KnSk833Q="
+    },
+    "OperatorAddress": "gonkavaloper1d7erkmqm6acwpugjrzytdnrcw2wgx9t4st04tk"
+  },
+  {
+    "Power": 4984,
+    "ValidatorPubKey": {
+      "key": "0BZFSmvW2s78jQtkAwb8XstoGvPRJHBH4fC+BXSyqNk="
+    },
+    "OperatorAddress": "gonkavaloper1wpar5p0kmn5cwwn5awzjeycgt6rkr587k3cvu7"
+  },
+  {
+    "Power": 4234,
+    "ValidatorPubKey": {
+      "key": "V2FVWfzQPHhjDH3dNzoMSpbaX3Awyld3B0CzuuxVw00="
+    },
+    "OperatorAddress": "gonkavaloper1wrcr9gxu2r94chjsuk3wpcqefsv7ts0r0c5jm5"
+  },
+  {
+    "Power": 343,
+    "ValidatorPubKey": {
+      "key": "14Az8+r7S9MIiKyQs62lxJm+pdVe9SlHNRVFQdglMPk="
+    },
+    "OperatorAddress": "gonkavaloper1wyhnm2w3hpah5kfyjc0jnha4mcdfwuukl3t3jh"
+  },
+  {
+    "Power": 529,
+    "ValidatorPubKey": {
+      "key": "xjPB4Ezez4wFbBio/Yvpxjy95kU5c93lsm4okCNF79s="
+    },
+    "OperatorAddress": "gonkavaloper1w994snv5susy327tnjlxr86q6udc3x8p983ju9"
+  },
+  {
+    "Power": 1137,
+    "ValidatorPubKey": {
+      "key": "s0XOkMwwBDnjG+xK7ykpaSUY9WJjGVdiLY+PFxTgKyE="
+    },
+    "OperatorAddress": "gonkavaloper1wxzy4uh88gxl08gwyw4l2cq6gmkjjq4ysv5jdw"
+  },
+  {
+    "Power": 4211,
+    "ValidatorPubKey": {
+      "key": "XOe8pXuGRmNe4YBxYC4iI4qCaIsKwATlqIoJX6Wagdo="
+    },
+    "OperatorAddress": "gonkavaloper1wg894suuxx088yaw6etlh273y0fk946y5lkh50"
+  },
+  {
+    "Power": 2774,
+    "ValidatorPubKey": {
+      "key": "ZCcwX/M4IHuRnqJ5NS2+uikATklY/mzUt/+wLwu93jU="
+    },
+    "OperatorAddress": "gonkavaloper1wffadfyz0m0r8rrkgkzqvwq3h60z58t9nvmt3n"
+  },
+  {
+    "Power": 359,
+    "ValidatorPubKey": {
+      "key": "QYcT7fy9XuyNmokUR6LUBReZT6Zmjfl0zZWQpIhVPno="
+    },
+    "OperatorAddress": "gonkavaloper1w2pxkv4v6r5h6sdvges287l2g5rsd3r4670gsz"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "9/OqYC99Y7HnWw/7a1Es3rOkxAyysc/5lYQxa4GbXGA="
+    },
+    "OperatorAddress": "gonkavaloper1wd0evpm3u4ugfsr6vsr2jsdfqqmy57pwn3wjzc",
+    "Power": 33816
+  },
+  {
+    "OperatorAddress": "gonkavaloper1wjxkarkm69harhu6h77n56slpqmjg6ygprcjuj",
+    "Power": 4672,
+    "ValidatorPubKey": {
+      "key": "qigloDRtjB9Ms2xVOS/kib8LUbMozDlsO7O+J5VWRtc="
+    }
+  },
+  {
+    "Power": 37061,
+    "ValidatorPubKey": {
+      "key": "3vvNJi92ySNETdxdcz5GehuPbN5K0ZT/KtRZSTjkfcU="
+    },
+    "OperatorAddress": "gonkavaloper1wn9aqvsgnl7zdf4qqndczawav7a22gtqk3363z"
+  },
+  {
+    "Power": 1327,
+    "ValidatorPubKey": {
+      "key": "QAFqZfKnANr+KWLN7NorSq3Nl1B/a/v5SYiKWe8Yf1k="
+    },
+    "OperatorAddress": "gonkavaloper1wn5t79a8vl7pe90xndxe5rj4uqsntwqakkkzrz"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1wnhd4uqvf3k38av7m9s3ssdzu0kvqskm9stzl3",
+    "Power": 402
+  },
+  {
+    "Power": 4919,
+    "ValidatorPubKey": {
+      "key": "BC+tCIuxDJ/KX7s5IY9B+v+m0yQ/7FcTrY5cAeBr9pU="
+    },
+    "OperatorAddress": "gonkavaloper1w50e3hn86mt8gmaknecnr4mez0j94vlwn4wl9d"
+  },
+  {
+    "Power": 4782,
+    "ValidatorPubKey": {
+      "key": "whyIlfv0IU4McIbz1yrP5gdX3UP6lZ815jQQadg1dRM="
+    },
+    "OperatorAddress": "gonkavaloper1wcqxjxzjsfwvaxl3l24qzemjlf0e8nexhxxtsl"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "g29fcnYK/8e42n1DqN7UY2GaPojpNoO5lwOAhut1ejE="
+    },
+    "OperatorAddress": "gonkavaloper1wcxzxzhwjqzdr3uv6ej73ewxs0zw6dcn6vzys5",
+    "Power": 4681
+  },
+  {
+    "Power": 212555,
+    "ValidatorPubKey": {
+      "key": "PK3ag1lgmYcyLVbs7+VQWM+qbkz7qwtlHUHMPgVqq5M="
+    },
+    "OperatorAddress": "gonkavaloper1w6wwv3wq25p8qge4lqsnfzs8lsd3s8tyxadarv"
+  },
+  {
+    "Power": 64,
+    "ValidatorPubKey": {
+      "key": "uG7Yt+k3aYgGavRdwV8yzkFc6Mz1pMQ6GETgPzaD3bA="
+    },
+    "OperatorAddress": "gonkavaloper1w6439pku8l32dzxrvy73y6t85jf8azfeh7dcyy"
+  },
+  {
+    "Power": 233,
+    "ValidatorPubKey": {
+      "key": "zRYA4ehSmp6TLKD3/ic2KcA/CZWG1J+qy4JaKFFcZlY="
+    },
+    "OperatorAddress": "gonkavaloper1w6cjf08fgm3yalqf7ytt0hz6thlhs53dkfze98"
+  },
+  {
+    "Power": 5007,
+    "ValidatorPubKey": {
+      "key": "lJ3qUbwjvyt1ZAWp6UTKsPXk6CSMPxL5wi5HMy+BdHI="
+    },
+    "OperatorAddress": "gonkavaloper10qpuqx5xcp4l4yjfh49gdcedgjsh3eazwmyecp"
+  },
+  {
+    "Power": 4927,
+    "ValidatorPubKey": {
+      "key": "qUswIdIpcXOYqseZ9n7feH3RclOECu/5zB7s6mRxSh4="
+    },
+    "OperatorAddress": "gonkavaloper10prje5tj49lek50dpch085f66crl62suh2zgmr"
+  },
+  {
+    "Power": 262,
+    "ValidatorPubKey": {
+      "key": "qPNJstwie86DcDsq8YKd9Yq2CkisY7BAYX77PCW+tdc="
+    },
+    "OperatorAddress": "gonkavaloper10rzq9m43l6dl2zz9c60man27gnqmw3q8frc6qd"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "qedPtregj+Gh+4nWpvSGd/2WScGmtcKKXRhTA2iVqwY="
+    },
+    "OperatorAddress": "gonkavaloper10r5p7vd7sw6tthp0nuld8yajvpgufamr36q7km",
+    "Power": 4517
+  },
+  {
+    "Power": 748,
+    "ValidatorPubKey": {
+      "key": "RiEllI4PsxcacOeDz4DV8IM1PJvXtDxt4XHRdn4ia0s="
+    },
+    "OperatorAddress": "gonkavaloper10r7l6unulyg0wtk8kl980k7fpvjskxux3tzvfx"
+  },
+  {
+    "Power": 397,
+    "ValidatorPubKey": {
+      "key": "EAn7eWGYoU/+wm6hJzmcuUWQ9vK1nSnbEM1aJ94io48="
+    },
+    "OperatorAddress": "gonkavaloper109xyam3aq9xt6tjgkgtwwahky7hfd84nr86ttv"
+  },
+  {
+    "Power": 9559,
+    "ValidatorPubKey": {
+      "key": "vsdFhxlNhSo6hT3f+L5xOkbQ//WG3MPrVnj6oQVSm3s="
+    },
+    "OperatorAddress": "gonkavaloper109g8dnt43nj45xhg83jyjt5f2ywz336wd639nj"
+  },
+  {
+    "Power": 1281,
+    "ValidatorPubKey": {
+      "key": "5W2qIud6U6uE2RX1WpaZ5TbFJqwfuqS2YLJhU27+b6g="
+    },
+    "OperatorAddress": "gonkavaloper109kcrv69kse73734uahg2jpht2dr9xdhafe60k"
+  },
+  {
+    "Power": 4398,
+    "ValidatorPubKey": {
+      "key": "Li65ujQIKyJc19Y0Y3aYDQJUOsVYlekMAmld9bPMhjo="
+    },
+    "OperatorAddress": "gonkavaloper10xrtfzs46mmjs8dy48auh2xfxq07dxs08hulvv"
+  },
+  {
+    "Power": 2989,
+    "ValidatorPubKey": {
+      "key": "IZhz+0GPHw/pQx0XvphPpx6JFzQco9IiHI9ov7H+ZaI="
+    },
+    "OperatorAddress": "gonkavaloper10x8cx2unwzuya5m655kyuhln86q3ysy58e6uh0"
+  },
+  {
+    "Power": 1550,
+    "ValidatorPubKey": {
+      "key": "jY9X7ZLEek8mL+rK/T204QFQBXA8tnUB6fd886BMgWw="
+    },
+    "OperatorAddress": "gonkavaloper10xfyg4v6wwvfzgf7h5fkkkt70xl2e8uykzk7n8"
+  },
+  {
+    "Power": 2750,
+    "ValidatorPubKey": {
+      "key": "iUds4p0jy/t39K2d+ez/RRmuWM5ofmoRixp/oHx4l3M="
+    },
+    "OperatorAddress": "gonkavaloper108taqcfv9n0428arameap7u6f48dl2z42vc64k"
+  },
+  {
+    "Power": 4441,
+    "ValidatorPubKey": {
+      "key": "0wUdgFC9tIPXP8mrdeyHYoIsuTbRYWqw9xLDPtQfQuQ="
+    },
+    "OperatorAddress": "gonkavaloper10gj5lnsxalcwzeve04k2pdzhx2nrlqp4tkj7mq"
+  },
+  {
+    "Power": 8517,
+    "ValidatorPubKey": {
+      "key": "pzyBA+xqzIr6nzYGRogMJohnlaxj/8aYs99gnAwZZbs="
+    },
+    "OperatorAddress": "gonkavaloper100009u7hegukxy5ne3w6ycfleaj7uuvhkjdphq"
+  },
+  {
+    "Power": 10497,
+    "ValidatorPubKey": {
+      "key": "DTWn0Y3ZtUYfD0cUFN+1a475gNki3p1d0fPNBqSpEu0="
+    },
+    "OperatorAddress": "gonkavaloper10000627dkz6nvmf09ctqy073v0fls696qzzfl9"
+  },
+  {
+    "Power": 14780,
+    "ValidatorPubKey": {
+      "key": "sJVKCkHzT8Cuc8NnUHwbmcL/PaJ4sDmLdui8waUIpzA="
+    },
+    "OperatorAddress": "gonkavaloper10000uv63da0ee5drk26erkwrvcmpmj7k568fz2"
+  },
+  {
+    "OperatorAddress": "gonkavaloper100070ewvrcraax995yd78cm0nraryzp4tawkqm",
+    "Power": 11835,
+    "ValidatorPubKey": {
+      "key": "f0vGv6FReEQrse3JaRhdjTTWAQymOU8R8FV0Ax7iEDo="
+    }
+  },
+  {
+    "Power": 212,
+    "ValidatorPubKey": {
+      "key": "KlGlJr+uTNapXfHsdSrK5bE2XUk0KzT7O//FKmoueoo="
+    },
+    "OperatorAddress": "gonkavaloper100mrlhdj7rvj9dxskmtkerhcrmpjq7lxe5nqqf"
+  },
+  {
+    "OperatorAddress": "gonkavaloper10sy48qz62el4y2srve5hhydgvump8whm02v84f",
+    "Power": 4250,
+    "ValidatorPubKey": {
+      "key": "mve0I3FB1e4YY1lS2tubnkD4SnGRxvcsh9WJnmsov50="
+    }
+  },
+  {
+    "Power": 1338,
+    "ValidatorPubKey": {
+      "key": "rnFqddm6zLAuyKq2XU08K/9Zdx1msunJAP3z+Nb26IQ="
+    },
+    "OperatorAddress": "gonkavaloper10nqlxm9jn7hswf4h8amytr6l9dgfjrz4csws6r"
+  },
+  {
+    "Power": 118,
+    "ValidatorPubKey": {
+      "key": "+yGjXu8JYcadfoZYPGqOxlQSt5PMFZdGGd8SsAkUIYo="
+    },
+    "OperatorAddress": "gonkavaloper10cgs0yszeu9r9yh8q3a4xqumr2xrllpn7w7jmz"
+  },
+  {
+    "Power": 408,
+    "ValidatorPubKey": {
+      "key": "GdI0fntAsEgSQfISxDBpihd5Db0GLtB+6/yVKfOYcbA="
+    },
+    "OperatorAddress": "gonkavaloper10cllk38hyhjgz96dv2x586wd4thntwx8074frc"
+  },
+  {
+    "Power": 2742,
+    "ValidatorPubKey": {
+      "key": "Pdm73XqDxwMA4oSdsp3WK8nfjrtDEskuJMeBmEu9rJg="
+    },
+    "OperatorAddress": "gonkavaloper10etnufq85u67k075yuxq6h3rzwlcln5r4fxcnt"
+  },
+  {
+    "Power": 4569,
+    "ValidatorPubKey": {
+      "key": "jwjDnKfhv7OuTQbL9mTyl9jaEtDpqUAX4I+v9aboLxI="
+    },
+    "OperatorAddress": "gonkavaloper10ejjacwvwma37rn8wrf3je7gt8u7luluzvxqgf"
+  },
+  {
+    "Power": 4474,
+    "ValidatorPubKey": {
+      "key": "d7IJ2Krjz5AFuuBGFVh5M7WWlWBFJRdxgN88zUXkqpg="
+    },
+    "OperatorAddress": "gonkavaloper10ekkjpyfad6265m2502d4tp3n8yp9n0dzrw9pc"
+  },
+  {
+    "OperatorAddress": "gonkavaloper106wrpdwkuudnxdm0lwzw2zharr8tfx7u500xjy",
+    "Power": 5075,
+    "ValidatorPubKey": {
+      "key": "lOYPIaNTM/1INgc5SU3fnpKuIrBQXoEy3qASTZT8Ytw="
+    }
+  },
+  {
+    "Power": 3455,
+    "ValidatorPubKey": {
+      "key": "GBbqEdxxujlaZ1CKhSsVylrq5I7SLoCkJMBvlM9Xkms="
+    },
+    "OperatorAddress": "gonkavaloper1060g3x0qxkarfvupav5srccyuht95swyr08x44"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1sqsj2qdw0wxgwuv25zhlffz5fufe4fnpnwd8u2",
+    "Power": 1088,
+    "ValidatorPubKey": {
+      "key": "T+qsV5EDCOWE3XJgXp9JaInaOTSlv1DulEPC0cH622M="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1szk5zjwpx7lzq4phdnqepdyfkf7hnmvhmlvf6x",
+    "Power": 4338,
+    "ValidatorPubKey": {
+      "key": "Zkwkk68WTsmKQYjdCZYKnnqhITH4RK4g27MYmODeHlM="
+    }
+  },
+  {
+    "Power": 150,
+    "ValidatorPubKey": {
+      "key": "rEoltSgiwCnD8FKBFgiDml6QFoFJaf6tPs1JmjDMsB0="
+    },
+    "OperatorAddress": "gonkavaloper1sy673yew46jqh7c7h77qt0sq32ryjwrk8ytauy"
+  },
+  {
+    "Power": 2830,
+    "ValidatorPubKey": {
+      "key": "8Y23K7z2gyV4dAnICNAibMtBv3xbX8xGNtdSXdGJR+k="
+    },
+    "OperatorAddress": "gonkavaloper1sgsj2eacel5g57yfwn23c99mzpz9kuq8psphj3"
+  },
+  {
+    "Power": 4453,
+    "ValidatorPubKey": {
+      "key": "K94uq5VZt7XvzpxV7pr+55pvQ4zNcFKRNZDxM97ijew="
+    },
+    "OperatorAddress": "gonkavaloper1strn82prjujtuh0dkpt024a4j49qgf373qkk67"
+  },
+  {
+    "Power": 5140,
+    "ValidatorPubKey": {
+      "key": "UQqcFwnuFt4DHKrZ1Wys5uZEHIRZGBgFAz0UGCrS6TY="
+    },
+    "OperatorAddress": "gonkavaloper1sw7d7r42hqwgxz4ln2x4p4pjqxgejwqn6xn4xy"
+  },
+  {
+    "Power": 3017,
+    "ValidatorPubKey": {
+      "key": "/Uh+M96zwCsJoMhQCCFSwPcuNUwb1lqkyv8LuH1h9HI="
+    },
+    "OperatorAddress": "gonkavaloper1s06n9an8mzjskm0vuejxh5vvgkdtn3t9fd7c3a"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1sszyf9vva7xvyk84fnc7zwk0gde3avrhvtsqnd",
+    "Power": 46320,
+    "ValidatorPubKey": {
+      "key": "3VjPRQeyxbRQartdl2Iq3gFvA919eDcj6m4EERLyEC8="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1sn2fuds6qh5dhrdp7afdyepmr6lcpwvsqwncn5",
+    "Power": 4838,
+    "ValidatorPubKey": {
+      "key": "DrFRSHZd+WtFqLX4bLkUQeD9Nnt4gROUZ3axlaK+AJc="
+    }
+  },
+  {
+    "Power": 4216,
+    "ValidatorPubKey": {
+      "key": "288XXCodzk7bE3sfYXXrh3Uhm5tGalq9GkYkQK5Vmzk="
+    },
+    "OperatorAddress": "gonkavaloper1s5ysllxfjd9gglayqe3zpqfzsr4juq9zhzjess"
+  },
+  {
+    "Power": 1424,
+    "ValidatorPubKey": {
+      "key": "ZdlZRhlEuYIMYA6emulTztCyqStSViezSnVlMNXKbCU="
+    },
+    "OperatorAddress": "gonkavaloper1s49nsfqljwk8er0h8ph720yw9u6u77hqvhk0fg"
+  },
+  {
+    "Power": 421,
+    "ValidatorPubKey": {
+      "key": "FLhV9bMVJ0ZZ9ty/SJx95bi5Ogn8V/sh7+jFPiy7cS0="
+    },
+    "OperatorAddress": "gonkavaloper1skf6lv8rwvugww5tap9sfuhxzkw27g6zvzkfnh"
+  },
+  {
+    "Power": 4379,
+    "ValidatorPubKey": {
+      "key": "oJcgbBLGFpvhTfKxiH/mtFJfaY0UDxhNYKFGqXieg1o="
+    },
+    "OperatorAddress": "gonkavaloper1skdtv4vlkwgcnqel2e48vvquhp40mq838244gn"
+  },
+  {
+    "Power": 10309,
+    "ValidatorPubKey": {
+      "key": "DiPANpevLwGgrWF6Vd198icDN3hUAajqAlhSfuBE0ss="
+    },
+    "OperatorAddress": "gonkavaloper1shc0ywxd993zz3w3h5xdp5uhgu9rv27wv72uht"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1scl6c3zk73p920m83r2lndljprz68rjeaenatu",
+    "Power": 4941,
+    "ValidatorPubKey": {
+      "key": "xIOD+qdAOoT1i64gFM9fbiCwD1jlpyvXc1PgI6xHpag="
+    }
+  },
+  {
+    "Power": 4431,
+    "ValidatorPubKey": {
+      "key": "aT3WviDyVrGHNhmNTn3Xr85srGOqsHw8y4U2WjlqiqQ="
+    },
+    "OperatorAddress": "gonkavaloper13qk3jur62xvma480z767lc0ks8c8esc2mnhumx"
+  },
+  {
+    "Power": 9864,
+    "ValidatorPubKey": {
+      "key": "59EKnPeCIChMpkbI32ErJtEEiSKQXIXvZMMDik0vjr8="
+    },
+    "OperatorAddress": "gonkavaloper13pacjyw9quwfvzllp2h7u27h6f5khqlfhwq4vm"
+  },
+  {
+    "Power": 4405,
+    "ValidatorPubKey": {
+      "key": "nAnD4jswEbX8mVCH9PrajsfGv+nTHdmvCGzSEcnvUL0="
+    },
+    "OperatorAddress": "gonkavaloper13ykzwj2f5zzngs7jl7ywczgestspevqhkvv08l"
+  },
+  {
+    "Power": 3184,
+    "ValidatorPubKey": {
+      "key": "VcETnFgltkLusz+nNVauGHnsfuWIydhsAWb0IZq6h+4="
+    },
+    "OperatorAddress": "gonkavaloper139qugrjwz49z4qqjxxdszspd6f5dyhurgsv94z"
+  },
+  {
+    "Power": 65340,
+    "ValidatorPubKey": {
+      "key": "upO++f6EUTPi4oK47fh9XgGz87n58/GF8o8veBtOOIA="
+    },
+    "OperatorAddress": "gonkavaloper13x8n3ttss76js4f86maeck6uey5nklvyxla2yr"
+  },
+  {
+    "Power": 761,
+    "ValidatorPubKey": {
+      "key": "DsQRdK16zkr0GH2S+d7mpCS7Z2vs//zHyuQ+Ui3VwgE="
+    },
+    "OperatorAddress": "gonkavaloper13x3udp8tx4yejz269h87sq27jn8jm6m5qzxnmt"
+  },
+  {
+    "Power": 4215,
+    "ValidatorPubKey": {
+      "key": "ZyQ6J/GwWkKocJcALIZSVtyc7JL86RsjhlZVtoRKbGk="
+    },
+    "OperatorAddress": "gonkavaloper13fpvt243g8sh87ere5avz74qx5qj7vzevr7xzl"
+  },
+  {
+    "Power": 465,
+    "ValidatorPubKey": {
+      "key": "Y9JwceYEcSo79tIeH76Vu0RPRJjLnxlNnXfMTP09Nyg="
+    },
+    "OperatorAddress": "gonkavaloper13fcjk6av5s3hll54eqlyn80u8l0crr8m8ptsca"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "wxV03DIivaH66m9CjcafKPg9bEckQfobhKCXBaoKtN4="
+    },
+    "OperatorAddress": "gonkavaloper13vpvregum5amwn0s0qyfac0cdngxc2cqdcsaf7",
+    "Power": 4940
+  },
+  {
+    "Power": 4439,
+    "ValidatorPubKey": {
+      "key": "UocmVvNg4bbv6W7zxdr6O/kSKufxc8ioZb/np7ubRGk="
+    },
+    "OperatorAddress": "gonkavaloper13dv9pz037mzr7grelf7035nnanwfazzwcd8rwh"
+  },
+  {
+    "Power": 48789,
+    "ValidatorPubKey": {
+      "key": "bI4VFxeAtUsHTD910KXkIU8CdXapWjuI8KNLiTO7Rsg="
+    },
+    "OperatorAddress": "gonkavaloper1338kw8rwv6qlujzrgfacce3ej6emekzjjuuyl5"
+  },
+  {
+    "Power": 479,
+    "ValidatorPubKey": {
+      "key": "eaYq4nrI/u7sxKZsYBD0xBUJ+A0e6+Dqb2FueG3R9ak="
+    },
+    "OperatorAddress": "gonkavaloper13jw6k5lleqepjyjsm8r4lhrfnn955h8wleh248"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "winhq8opLWCLVfMMnyu3PkAEUZywDY3mAK4tKEfjn3g="
+    },
+    "OperatorAddress": "gonkavaloper13nm5aqjguh95v7kkte9rrq3gnn68dkdujshkx7",
+    "Power": 2655
+  },
+  {
+    "Power": 4573,
+    "ValidatorPubKey": {
+      "key": "9K+CcH9GYVfrEmTrlPUw1w/LAo10CaCjLv3Blm36FfY="
+    },
+    "OperatorAddress": "gonkavaloper135jr9e2gyzq5lfqvc9tq8n0k3c398dgm8w4qxe"
+  },
+  {
+    "OperatorAddress": "gonkavaloper13hqh2wcv3jaeqq5yfxqq5fce66tp2vyeq5kd94",
+    "Power": 677,
+    "ValidatorPubKey": {
+      "key": "okHbkTTJl9iAbjzlkco9XQkUocvqWMH4pi4BJHGImpM="
+    }
+  },
+  {
+    "Power": 3783,
+    "ValidatorPubKey": {
+      "key": "+1zqFgLDk8Qafg/eWnqlzvSb02Gx9cr18HQMvYfMZj0="
+    },
+    "OperatorAddress": "gonkavaloper13crxlqch46e2jdm6uq03g8wsxndqkpdgpyt4x3"
+  },
+  {
+    "Power": 3060,
+    "ValidatorPubKey": {
+      "key": "h3UY715NxCcueb1940S/Ihd6i55PPVJJXKM9kGZ4ZvI="
+    },
+    "OperatorAddress": "gonkavaloper13e4hxru79npd00cp7gg6z8pqhyvela5658slk7"
+  },
+  {
+    "Power": 4924,
+    "ValidatorPubKey": {
+      "key": "Qk5FneAM+oK+XmIGjVqUjoJb/kcxVr1elid/Ll5In84="
+    },
+    "OperatorAddress": "gonkavaloper1362yedf9k0xpce8y30xg4g4e2mmgvsta489ahq"
+  },
+  {
+    "Power": 3089,
+    "ValidatorPubKey": {
+      "key": "z508uZcsE8+gOYM+LaFYBcU3yurNArT95CigjwpopRE="
+    },
+    "OperatorAddress": "gonkavaloper136wz0ecwyuda2dpyngezyrdf3khk4t5zjj38e8"
+  },
+  {
+    "Power": 1054,
+    "ValidatorPubKey": {
+      "key": "n7l0jE4XAl+V0JjMaYU4GIVs5AwPomuBh/KxKnrzY+Q="
+    },
+    "OperatorAddress": "gonkavaloper13uwt8t3sp5ycp8lefzgm942uxfvu4svvg0fcrv"
+  },
+  {
+    "Power": 4899,
+    "ValidatorPubKey": {
+      "key": "4WXw0bIjnQsLa5nJ8sgIOAwKb/8/Mb09HpWayd6/hmo="
+    },
+    "OperatorAddress": "gonkavaloper13uuqfsenjazwu6am5fctzscar364s2407e8n8x"
+  },
+  {
+    "Power": 1308,
+    "ValidatorPubKey": {
+      "key": "5M4mQiBrAoy38vY9ewqkxV++eYuU62s2C/IgzPGDpV0="
+    },
+    "OperatorAddress": "gonkavaloper13lduw4kdvyyf05psepnncm306k4wuyfwyg0rf2"
+  },
+  {
+    "Power": 906,
+    "ValidatorPubKey": {
+      "key": "GahAcbqmk1RUYmTOJWR/zqR49mxrc0k8C12d/VE8G/o="
+    },
+    "OperatorAddress": "gonkavaloper1jqqgjh962ndm59pk0n4j2yqqssy5gv0t5a3t68"
+  },
+  {
+    "Power": 2892,
+    "ValidatorPubKey": {
+      "key": "jtPvF3pihbRSnhqhFQ1zM5iX8VUMuJfj9XbA9Qs58FQ="
+    },
+    "OperatorAddress": "gonkavaloper1jzyg4dde2ftdlg0rfg4s0kuzm9vw2gpwtzv6he"
+  },
+  {
+    "Power": 5032,
+    "ValidatorPubKey": {
+      "key": "lxP23Igvrt9s7WLLFNsCtkNK5SpBvyUM/or6o7TdlF8="
+    },
+    "OperatorAddress": "gonkavaloper1jrwj2hqjwy5ulgkpdsdv6gwch7x4alnjm8luve"
+  },
+  {
+    "Power": 1293,
+    "ValidatorPubKey": {
+      "key": "0pHRQVTCj+gqAM3etGs/doxfHuTWeMKMdqEWmtiM4gg="
+    },
+    "OperatorAddress": "gonkavaloper1jyqp04yrjn8vdwqwkuwfd8nqal4d4vr3rpurtm"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "FVymB0JlFfDgQep7JIwRHFgMiLbH+FlnihbR8OkP0oc="
+    },
+    "OperatorAddress": "gonkavaloper1jyc3hel96ml8txk2yvj0hmnwdgrvwrcksvcdlq",
+    "Power": 937
+  },
+  {
+    "Power": 4264,
+    "ValidatorPubKey": {
+      "key": "KShuE9n4o/in2s77x/++3zV07eKi9CGzouL/5Am0Jak="
+    },
+    "OperatorAddress": "gonkavaloper1j9rxapzwm06quxcul5686e7f39g6swhftwhves"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1j2g3g844qspgnjjrtmcrt55ssg4h6akdh4cads",
+    "Power": 4972,
+    "ValidatorPubKey": {
+      "key": "5upO6ytfUag8932RykDwvRamlW9N064qNrUyy/uTR6o="
+    }
+  },
+  {
+    "Power": 195,
+    "ValidatorPubKey": {
+      "key": "G0QZb93PFNkG8XqZ8i7M+iWQUUWZzWRlcQPF+D1fcJQ="
+    },
+    "OperatorAddress": "gonkavaloper1jt5mqrx0yg5k6qdqhnkc4kpya4mzy52n5yxkz4"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "V6SZWrgAQ8ZfWHkhz/Rb1lcWI0kwfBp9m14+1D+TUQg="
+    },
+    "OperatorAddress": "gonkavaloper1jvp4r2dx3t0d736fmxy5ncgwp0w3kdy0x32nka",
+    "Power": 4844
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "t0rXfS5TlUCYxC2yOttXlKbPrkwAHNWKs6CJH5pjnXI="
+    },
+    "OperatorAddress": "gonkavaloper1jve3qdmmea6kgcl4y5r3hhll3lm0zuz72u687x",
+    "Power": 4057
+  },
+  {
+    "Power": 2967,
+    "ValidatorPubKey": {
+      "key": "/VN4L3kcgB0YyphJ23Ao47riKdlSbkIOy7E9D7ALjyo="
+    },
+    "OperatorAddress": "gonkavaloper1jwzxe329gv3t03q339ttchpym9smv9zc5mag4s"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1j3xajqgg0mu9lvfu320mknu736nl0ltm9e34wn",
+    "Power": 4837,
+    "ValidatorPubKey": {
+      "key": "XcdswBUrTN7TMtbTHz+jWes9u18IY2SZGxWrTyl9rcY="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "Hy2WDIMJWaFG59TVO8u8Dijl3G8bw/27eQIBTJq1S3g="
+    },
+    "OperatorAddress": "gonkavaloper1j30fkfedpfqhz5zez0tkaue38hz5e06nvdg354",
+    "Power": 2607
+  },
+  {
+    "OperatorAddress": "gonkavaloper1j4zdyxve2f9fkj8d2nx2cvg09wv67cy76ufuc6",
+    "Power": 4319,
+    "ValidatorPubKey": {
+      "key": "lYWSViM20rus/e69QdK2fjWeo+67Mv3EyzP3Z0iiYdw="
+    }
+  },
+  {
+    "Power": 49507,
+    "ValidatorPubKey": {
+      "key": "1S0s+tlU2sW3E7Jkq+LRPnmNl0b9UYkkNQJUn2F0C54="
+    },
+    "OperatorAddress": "gonkavaloper1j4gwddnpf9h6n6899znss7tprqzxpwpe3k06ny"
+  },
+  {
+    "Power": 4557,
+    "ValidatorPubKey": {
+      "key": "uYu3Pcgh21Pb2LoSZxMoeZUVfW1bqS5EWCSOrbrPDD0="
+    },
+    "OperatorAddress": "gonkavaloper1jmynyvawnx9jlwd6he7q8hdltpy2dv2t77y220"
+  },
+  {
+    "Power": 1097,
+    "ValidatorPubKey": {
+      "key": "FwqklnE784yOGP+2G4cN6/igAyuPtet6+i+/rOOI0gA="
+    },
+    "OperatorAddress": "gonkavaloper1jmazay9q7j62mawcu644zre75hzqnnfal07xll"
+  },
+  {
+    "Power": 1067,
+    "ValidatorPubKey": {
+      "key": "fsYS38wPcanabb0JmiWPnoEz6hSSddymDMKj935GZd4="
+    },
+    "OperatorAddress": "gonkavaloper1j72x6qpf0aetl8pyvzx5xlgp2dmp6044ztym3j"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "V1WAztSpd9Tu/9dld04cNIOAPpaLKo6pyiB/+oGVdHQ="
+    },
+    "OperatorAddress": "gonkavaloper1jltjehxsnum94nt8c00ts7khmpy4lafvxgjr4m",
+    "Power": 22355
+  },
+  {
+    "Power": 4118,
+    "ValidatorPubKey": {
+      "key": "K6W2sOfP9dt4h9nMFab3dxQFipfBxgHYyxLtL/MDN/s="
+    },
+    "OperatorAddress": "gonkavaloper1n8zcl8cmlf4606duwygssqq72dzlanrfvcnckp"
+  },
+  {
+    "Power": 286,
+    "ValidatorPubKey": {
+      "key": "cEv11ys4+/IGh5jOTlNwWMNxSDS8oMiILP4UWowU9g8="
+    },
+    "OperatorAddress": "gonkavaloper1n8fxs9k92q7z9r2mffcpwwejll583mkcfe2d5l"
+  },
+  {
+    "Power": 5042,
+    "ValidatorPubKey": {
+      "key": "wWbfADrGCjgSYwlARFcwCulNRMALpY4G1WJAvGbC0Ic="
+    },
+    "OperatorAddress": "gonkavaloper1nfammd4gwrde0jhn7w0tfu0228a5jfmsh7tvxc"
+  },
+  {
+    "Power": 4708,
+    "ValidatorPubKey": {
+      "key": "ubZh+8EGAA8nHU8aemzjpYVbQYdwHLe0HVNq+HitmXc="
+    },
+    "OperatorAddress": "gonkavaloper1ntsw9ufhpvzan82lhe496zhdqvfy9rpt86jyra"
+  },
+  {
+    "Power": 4890,
+    "ValidatorPubKey": {
+      "key": "JLwdrbBHMmT50cET663AmI9MBrIFjf/mKzTp8o5ZKeU="
+    },
+    "OperatorAddress": "gonkavaloper1ntlp35e8cyylh5fjmlzt0qvkhyjszsuw0guaps"
+  },
+  {
+    "Power": 4507,
+    "ValidatorPubKey": {
+      "key": "HDTl5P1EGUpIyIJzt7PMoFBIeuI1DSC70g2XcMZMS74="
+    },
+    "OperatorAddress": "gonkavaloper1nv5twlr9sl69g650apxxe0h4vy7mw6y8yx5hqs"
+  },
+  {
+    "Power": 5157,
+    "ValidatorPubKey": {
+      "key": "f2U/GODR7hyQpOLg6KWyo/4qHw4AAhblXKq6QApBrJQ="
+    },
+    "OperatorAddress": "gonkavaloper1ndga0ugvxa975ftycq908hrscpcnt6en7vj9u2"
+  },
+  {
+    "Power": 472,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1ndlfjnp5d7eruyrhjvn6uape3jp630ql37wznj"
+  },
+  {
+    "Power": 4464,
+    "ValidatorPubKey": {
+      "key": "2EubTcRakkstAPEDg/yVl21xU951XW42G/gA/614Gvw="
+    },
+    "OperatorAddress": "gonkavaloper1n0225yr8w7eqdsw3g4kz45vpnyajy69vs4naf2"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "Xq1gppx3sQYu87o+WvjK2rflztqZfVpfOGs4jVwlaf8="
+    },
+    "OperatorAddress": "gonkavaloper1nsgfcyld8f754tl9eyr5n7yuqdezw94j4wmquq",
+    "Power": 1149
+  },
+  {
+    "Power": 43164,
+    "ValidatorPubKey": {
+      "key": "g2o7c9RYZysCklecuZ3F/RPID8qMC2NDJX/NOtbrLiY="
+    },
+    "OperatorAddress": "gonkavaloper1n3hh2ysxeg37hus7txur32qvxnkmx20faqc8nw"
+  },
+  {
+    "Power": 4253,
+    "ValidatorPubKey": {
+      "key": "VTUeT9pNKLJwqGbNps5xTkDlJdABZ7VDQ59pnfTA50Q="
+    },
+    "OperatorAddress": "gonkavaloper1njzjqpx6t4jwe9t0fu8vtzn5cj5xjlauvsalut"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1nkedq5vefl0xlxf66cgpx5l6eldtjtr3923n8v",
+    "Power": 21737,
+    "ValidatorPubKey": {
+      "key": "8Sa7Ax1hGWSdxjJN8T7jtIpyGJZVXBVySjI05dI6VX4="
+    }
+  },
+  {
+    "Power": 5042,
+    "ValidatorPubKey": {
+      "key": "iLQ7ch0/Qj6tvp9YKJetalpSQB+rf7HgauqxipOuctw="
+    },
+    "OperatorAddress": "gonkavaloper1neug285zahkpplsfmgrhnkmjjwzalk3zm8d7px"
+  },
+  {
+    "Power": 4733,
+    "ValidatorPubKey": {
+      "key": "5QNb/Z/Ui6GoYEWzR829qYHmPTsIeuQITAIvO/JLeYA="
+    },
+    "OperatorAddress": "gonkavaloper1nuhz5kqnmxs3dfd884hdv39kdy2854lf4826s4"
+  },
+  {
+    "Power": 4835,
+    "ValidatorPubKey": {
+      "key": "+7kT36gtg3owRQxzsbfJQhB+0Ou5CcrEVQS/NIZl35s="
+    },
+    "OperatorAddress": "gonkavaloper1nad4h437q7zl6nmwvuxzh9g73vkm5cdy8xamhv"
+  },
+  {
+    "Power": 760,
+    "ValidatorPubKey": {
+      "key": "WyLNTHe79u4nZsX3iTBzfNbs9RM37AIZjdI5ZB1Uu1s="
+    },
+    "OperatorAddress": "gonkavaloper1nauzjd0ke0tw64zcn5xdc5jla95evspdnen90h"
+  },
+  {
+    "Power": 4472,
+    "ValidatorPubKey": {
+      "key": "gmgP9bgahSU+MZBNF6xkymqNTubC5MpNq0cvPxwQgPI="
+    },
+    "OperatorAddress": "gonkavaloper1nl4vtgr88sy088djkxsknau5fwnx8akhdpscdq"
+  },
+  {
+    "Power": 4990,
+    "ValidatorPubKey": {
+      "key": "EWdpELiR/cWfJThRRbBR32B/+9K38acfWP/qjKPhCi0="
+    },
+    "OperatorAddress": "gonkavaloper1nluanlq02cg8qrwyqn2qm2zf0mmlyqdestcads"
+  },
+  {
+    "OperatorAddress": "gonkavaloper15p7s7w2hx0y8095lddd4ummm2y0kwpwlwk7g2d",
+    "Power": 2983,
+    "ValidatorPubKey": {
+      "key": "BUWZfCeWI3O+UXcmCbnjacmi0RY0PzX/8aJKdy3rP48="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper15z0gkfpf69u7rvqng8ueqhh9dhx870sm6wamn4",
+    "Power": 4702,
+    "ValidatorPubKey": {
+      "key": "vBWrAw67Hs+VpHdgHLKbdUxkOYQ/mz5E8es6/XfKpiI="
+    }
+  },
+  {
+    "Power": 1000,
+    "ValidatorPubKey": {
+      "key": "ukm8zeCTn8xtUDW4mcuJ3O45bjwSb7OlLTPHhhwK6A4="
+    },
+    "OperatorAddress": "gonkavaloper1598sglu00mktw3973jmwsu3vdw29mgcfwlg4t8"
+  },
+  {
+    "OperatorAddress": "gonkavaloper15g9vxflt3q92w07kcw099zjtc3lft9vwhrmnzt",
+    "Power": 4583,
+    "ValidatorPubKey": {
+      "key": "r8sEMBfPXCR7wRath5Jm+SbQWGHHXa8cD34atpAtuyg="
+    }
+  },
+  {
+    "Power": 117,
+    "ValidatorPubKey": {
+      "key": "KNZkRnciEBWL+j7aPJjd4ggqS52oPvauX8NR9EQ29VQ="
+    },
+    "OperatorAddress": "gonkavaloper15fpzwc7d2z3r4y5475p6k7uqknnkj38gvupk6g"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "uuloqx+oyWbNYBtkVE8TUt1XBTtfRCWYrNgL8MqZ3Uo="
+    },
+    "OperatorAddress": "gonkavaloper15vunu0new53m83ccvfcmkf84v7q4s8ldvjcmzf",
+    "Power": 4260
+  },
+  {
+    "Power": 4149,
+    "ValidatorPubKey": {
+      "key": "yfSp40gHZFe7MDG68IvrXsS9avJBT4G2MWTwsENvJVU="
+    },
+    "OperatorAddress": "gonkavaloper150qqxu2zf0lzc3nngal79h0n5ls6lhsz7rvrup"
+  },
+  {
+    "Power": 3061,
+    "ValidatorPubKey": {
+      "key": "E6XBb3aCXB8Lk+sftMUmSPWSuhxbkoByzxbPHyu3mI4="
+    },
+    "OperatorAddress": "gonkavaloper1506nmxl7xwehf5egp9qfety7yeh6rc067rlsus"
+  },
+  {
+    "OperatorAddress": "gonkavaloper15nnxl4ywpj58zq34svvent9y2gv3g92dvf75a9",
+    "Power": 455,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "917MiCgaHYZ6/VUG+WtJEfDiqpLmgnZmVl8xKUyMWC8="
+    },
+    "OperatorAddress": "gonkavaloper15nkz4dxslphkty92y0c8m9umule32g9nge9fmk",
+    "Power": 4784
+  },
+  {
+    "Power": 631,
+    "ValidatorPubKey": {
+      "key": "j3K36BUgZcct9BFBiTRm4tzlkDUq2HbHRhmnbmnjNdI="
+    },
+    "OperatorAddress": "gonkavaloper155g6nkjql5sgaz0j8ugr9ghc62heflj958yuh0"
+  },
+  {
+    "OperatorAddress": "gonkavaloper155cnj622zfdl64f23ljmk2tzv7tewl6fa42dqj",
+    "Power": 89835,
+    "ValidatorPubKey": {
+      "key": "BDVeaWl/Lwc5O/7QF+dmFJjiXuZrxL46jESd0o5+gQA="
+    }
+  },
+  {
+    "Power": 4354,
+    "ValidatorPubKey": {
+      "key": "GLj33Y/RxrZbj8KY8wWpWa4xnJDMgmUqtATE4x2RHTY="
+    },
+    "OperatorAddress": "gonkavaloper154j3xc2ke2qutupgc97sydt3fwgl6mmkyhm3rg"
+  },
+  {
+    "Power": 419,
+    "ValidatorPubKey": {
+      "key": "Y9JwceYEcSo79tIeH76Vu0RPRJjLnxlNnXfMTP09Nyg="
+    },
+    "OperatorAddress": "gonkavaloper15k9c2xzuman9mtggecwed2kpts0y7wgn0re9m3"
+  },
+  {
+    "Power": 611,
+    "ValidatorPubKey": {
+      "key": "UbWLvxougIuwoBNc1bJDBPqjMUiZWkVh/F/5nUT0w+E="
+    },
+    "OperatorAddress": "gonkavaloper15hc8eqp4axp7lztjuk0y5z0af6drw5k09l6yt5"
+  },
+  {
+    "Power": 1294,
+    "ValidatorPubKey": {
+      "key": "NDW9Te7KQxGFB3GOUz6nT2HZtBy0Y8iw1fws2p8JvdM="
+    },
+    "OperatorAddress": "gonkavaloper15ckw8wekv69j0mj50e738djj924qy2473l2pqq"
+  },
+  {
+    "Power": 7693,
+    "ValidatorPubKey": {
+      "key": "QjLEw4GH0slNY+ZhkKm0LxjYUk7fbWIHOF/g1MlsX3U="
+    },
+    "OperatorAddress": "gonkavaloper15e2swr409v3c4ydpq9ahsn3zuqxyj47a6nqc7z"
+  },
+  {
+    "Power": 4443,
+    "ValidatorPubKey": {
+      "key": "OWvVh2EBX4ZeIlVaHfipWS9iQjBjKzqJDQitU4mJM8Q="
+    },
+    "OperatorAddress": "gonkavaloper15lxz9w7m77dr04dxv7smxmc4xl2vr4klq2elgy"
+  },
+  {
+    "Power": 733,
+    "ValidatorPubKey": {
+      "key": "8nVtm9mPOwiILBWjjlqYYXy4hwGzWFccJoDQXfqgxPk="
+    },
+    "OperatorAddress": "gonkavaloper15llevgky75a7jknr5m0kzme669xuwrqd6ehn7u"
+  },
+  {
+    "Power": 398,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper14qdqv958j8tmc62jddyj55pl0vhqr8uaqafe9e"
+  },
+  {
+    "Power": 4894,
+    "ValidatorPubKey": {
+      "key": "+s0spJsv0Itka59jK+eYhADtKoYZF6Z0V5mA6XtRrY8="
+    },
+    "OperatorAddress": "gonkavaloper14q3s4vmmlukl936q7e4asuwjnakv7u59tsamek"
+  },
+  {
+    "OperatorAddress": "gonkavaloper14pdvgt025fwkf38cr74hhcj2nfl98c04ftpfns",
+    "Power": 4623,
+    "ValidatorPubKey": {
+      "key": "pDLHItgmzgynJiY2dKTJTcFH7oKMiUArGrvuVtu9WEc="
+    }
+  },
+  {
+    "Power": 452,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper14p0njxtlnx2c8zn570nvvaf730gnnkwv9twf92"
+  },
+  {
+    "Power": 3953,
+    "ValidatorPubKey": {
+      "key": "DSOuDKVUESTKaw/QIBzLx+dO/ba1qsakQG9AFXNt22Y="
+    },
+    "OperatorAddress": "gonkavaloper14zzmvt5esggym639wk0v8s3gdgdmnjzrt6se5p"
+  },
+  {
+    "OperatorAddress": "gonkavaloper14r6ypa2jngcd8pwt22f2nwdhlt2s3cxrfk5py5",
+    "Power": 4545,
+    "ValidatorPubKey": {
+      "key": "bfTPoXnPjs607z3NkQT4IyIEaBlioXYB8o/AmZPLLII="
+    }
+  },
+  {
+    "Power": 4637,
+    "ValidatorPubKey": {
+      "key": "Zne/9AFRlpdcBSrhz39WEXZlpf2PoMs5YdZA/V3vvfg="
+    },
+    "OperatorAddress": "gonkavaloper148eld5kxu6k867pz6yxmwps0kpy7rdxgkxmp23"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "kbquaNCgnndS09K3Qz1Qm+fMm+DSzQ6a/iEiVhMtFvk="
+    },
+    "OperatorAddress": "gonkavaloper14tqh62mangwzrma2lgg2dm375rcjzn2y3ykvuk",
+    "Power": 14919
+  },
+  {
+    "Power": 254,
+    "ValidatorPubKey": {
+      "key": "bnyKBZNZvi3j2VniRCpBB3tSVuRJx6IMZiEnFJCzuH0="
+    },
+    "OperatorAddress": "gonkavaloper14trttth9yraycnhhmtz2anjctnu547pdmw2zkl"
+  },
+  {
+    "Power": 5231,
+    "ValidatorPubKey": {
+      "key": "L2YjnBx2JmdSHK3WdfiAEmSOmMB4j4ZTMnZd6DN2bKg="
+    },
+    "OperatorAddress": "gonkavaloper14vypx85sx0qd4aajmzklhy6s0ygftf577ac2ss"
+  },
+  {
+    "Power": 265,
+    "ValidatorPubKey": {
+      "key": "ah3xbKSgiJvCfpxX0/I8gaCJmGa+DykEV5LCFqBi0Ns="
+    },
+    "OperatorAddress": "gonkavaloper14d939yheufy96w9wjyp5a36qyzg333v00jvjll"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "1C5qZHGoP8ZAVbtoi9RDN2b74DBYtqSB7/S4ENR4Gss="
+    },
+    "OperatorAddress": "gonkavaloper14nyfdumjvclvd5y0q8yckfa09ncatcrftnzpsn",
+    "Power": 4249
+  },
+  {
+    "OperatorAddress": "gonkavaloper14ntugumwzhdlkc66qlzczdmfa02fcm4pyluve0",
+    "Power": 4694,
+    "ValidatorPubKey": {
+      "key": "HU0QpXmJSquz2ZQeeFyd9C+wb1ysJiKHpn7f18etdpI="
+    }
+  },
+  {
+    "Power": 143872,
+    "ValidatorPubKey": {
+      "key": "IFL45RtkPB0ta9/zzimUf0gpLTaHsUon/qfagUDdXYg="
+    },
+    "OperatorAddress": "gonkavaloper145qtr0h90fvz88klshvl4r4htw4thdgcspgrx9"
+  },
+  {
+    "Power": 4469,
+    "ValidatorPubKey": {
+      "key": "gOtr7YVLIdJDkH1pdW5H0JMTp9vHIT08r/ok5pzPNSc="
+    },
+    "OperatorAddress": "gonkavaloper14hruf6ljltha9yklfgpd0s8jleyc3wdrpa6w55"
+  },
+  {
+    "Power": 160,
+    "ValidatorPubKey": {
+      "key": "w/uUhogaLHLJ8JoVHdLIrdmnfdEQNDBMwxA0z6WIfkM="
+    },
+    "OperatorAddress": "gonkavaloper14cqs3cnsahrr52end3twr7sq3rhtwnj8w8sr4p"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "jU3M1aq1EfEcQekABPPc6lDTRyMyHkJHrty2j/MZ8kI="
+    },
+    "OperatorAddress": "gonkavaloper14cfcjj5djk4k38zghtmxktqutu00yc7ut6ltlu",
+    "Power": 4301
+  },
+  {
+    "OperatorAddress": "gonkavaloper14cu38xpsd8pz5zdkkzwf0jwtpc0vv309pkgkdc",
+    "Power": 50589,
+    "ValidatorPubKey": {
+      "key": "lLw66naFq73crGsYNnXqw+5gOklSKNRDF/fkivNUn5A="
+    }
+  },
+  {
+    "Power": 4441,
+    "ValidatorPubKey": {
+      "key": "vY3UJkKn1GEJqtKBOyMrUv03YfS7IkXGoyOlWeNuzjM="
+    },
+    "OperatorAddress": "gonkavaloper14m8tpzysrtjyew3s42mxq9u6gxz3pfacpf3dsm"
+  },
+  {
+    "OperatorAddress": "gonkavaloper14ued4vcdeluj9v9vmsmteap7vtg7t506f0xtvy",
+    "Power": 73186,
+    "ValidatorPubKey": {
+      "key": "GGXtDIYre8ZFsoqDtOR9WG/QwZGb7fvxSeHKQ+5pOtc="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper14ayaxyz859v9vdjvv6e5h06hvnzhxtn62wrnjf",
+    "Power": 95649,
+    "ValidatorPubKey": {
+      "key": "f9EwOvzrOxpm9NEGynEDjdLrNMgiqNei8+SC9V5ipK0="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "WyXRyzo9wgTWDpc++mgVQlRohk9AeI+prexCmZI4ATM="
+    },
+    "OperatorAddress": "gonkavaloper14a0856a3q78pmesxpc946xm9nsj3f275r9cnks",
+    "Power": 4011
+  },
+  {
+    "Power": 39474,
+    "ValidatorPubKey": {
+      "key": "89K6YceihW1VOur5huJlyBTPC+n/Lac/GU0eloPxVfI="
+    },
+    "OperatorAddress": "gonkavaloper14a7gpyhushhjhdmwn6dw45tfypaxyekskks8uq"
+  },
+  {
+    "Power": 4338,
+    "ValidatorPubKey": {
+      "key": "ijdbcuVd5a50w9ToRS7oMJTLXwPxWoerlFhUgUmjEm4="
+    },
+    "OperatorAddress": "gonkavaloper1kzhcxdkfdkdyzvl3sdp34yrwkfngdhjwlmd6cu"
+  },
+  {
+    "Power": 140,
+    "ValidatorPubKey": {
+      "key": "vsJ9jkBhQRL663LykE5t2HxFaj7ZNYpyDGx6s/EKVc0="
+    },
+    "OperatorAddress": "gonkavaloper1kre73lv6ylwaxvfmr3aegesnjvxufj9hyt4hgw"
+  },
+  {
+    "Power": 94586,
+    "ValidatorPubKey": {
+      "key": "vdaPr3nDJS78/ysrb04jwUd0t1CARh9oSVSRYvYBBnQ="
+    },
+    "OperatorAddress": "gonkavaloper1kyr0zzypa62nk9q2hg9pw7e6q626m83mgtujr5"
+  },
+  {
+    "Power": 616,
+    "ValidatorPubKey": {
+      "key": "FODVOcIY8RNoGA7WsiNSL6YQ8N4/A5Ox1IyXgc/FmE0="
+    },
+    "OperatorAddress": "gonkavaloper1kx9mca3xm8u8ypzfuhmxey66u0ufxhs70mtf0e"
+  },
+  {
+    "Power": 4946,
+    "ValidatorPubKey": {
+      "key": "FeFdT2kf5JWBl60Wo28ufiD4Fe+axaJdfYz0qG2sF9Q="
+    },
+    "OperatorAddress": "gonkavaloper1kfsa9q7upj8wnqrkaud755y7w2vwug3pwpkka6"
+  },
+  {
+    "Power": 4577,
+    "ValidatorPubKey": {
+      "key": "8BARgYvAFbcmk/VaRWjM3125+Oz556uv8Nzrp9Q1oZk="
+    },
+    "OperatorAddress": "gonkavaloper1ktd5rha9hghm4hzt2eyc8v2p6g66a0zmly7eh6"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1ktl3kkn9l68c9amanu8u4868mcjmtsr5hgnu9m",
+    "Power": 5061,
+    "ValidatorPubKey": {
+      "key": "jFC9XywnI7hzIEQ1kmSQf8Q1iuqy861P7vBrqa3LQxs="
+    }
+  },
+  {
+    "Power": 1264,
+    "ValidatorPubKey": {
+      "key": "0O8Cpyksi4c2bV7W07jO0miZTLLvLaAlzie+86r2Eic="
+    },
+    "OperatorAddress": "gonkavaloper1k37scwnyck5nzfqxwdq3gnw26squrtjsdlpjpw"
+  },
+  {
+    "Power": 4708,
+    "ValidatorPubKey": {
+      "key": "pCtSC3GOxwo4X1KSc8ibk4OyO+kFHzfyY/tx6r/abHA="
+    },
+    "OperatorAddress": "gonkavaloper1k3lva2jsxu5qx30f65yxdlcey8d6f3un8ym0pa"
+  },
+  {
+    "Power": 204,
+    "ValidatorPubKey": {
+      "key": "bw7PdekMxY2wykxR5HmCIblT8mWTjF9x9uXGDXcBsKo="
+    },
+    "OperatorAddress": "gonkavaloper1kjrvy4xme4ctepdjspjdw677nmvdwlpsfhwnq2"
+  },
+  {
+    "Power": 3823,
+    "ValidatorPubKey": {
+      "key": "Fc0El4kLN9aLdgacZaYWycFziVNODER/xAPh/novi7U="
+    },
+    "OperatorAddress": "gonkavaloper1k445mjg7hxs55jtwvt0p0zk5qu2quqwfp578pr"
+  },
+  {
+    "Power": 54809,
+    "ValidatorPubKey": {
+      "key": "DJFp3wYfBydvAtr944U+RIA52vqugISrdYp/P/YbSW8="
+    },
+    "OperatorAddress": "gonkavaloper1k44asc7sg45hufxyg6jrg9melfcn8wqueuky4k"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1kch7y24sjux5s7qd9l9j02qzusk33xeqjyngp4",
+    "Power": 4935,
+    "ValidatorPubKey": {
+      "key": "1yeCB5jAuPTrlvCwpEfRnRrGEMm80Wbi76n7zcqzlu0="
+    }
+  },
+  {
+    "Power": 4590,
+    "ValidatorPubKey": {
+      "key": "P/CRFEpSm4imuduD6sVhSiIxsPKhQaKsWWVFgNgigNQ="
+    },
+    "OperatorAddress": "gonkavaloper1ke4t935aqvya0kcee2nxcjp82vk8sa3swstg76"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1k7e364gfhqcjngaer7hvlmj6wcezp6fewwpec6",
+    "Power": 2509,
+    "ValidatorPubKey": {
+      "key": "GUbXXlNYEazwDWclqhY9qBDoqP+pC4Ec5w5nvqrMH5Q="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "bw1RHo6eUzdc09sIZlbVH8VNHD5Popu/2/NZVP60XxY="
+    },
+    "OperatorAddress": "gonkavaloper1hqwgkck88d5wnpea0y9dn0gxmyg4rwjgyna60y",
+    "Power": 4641
+  },
+  {
+    "Power": 403,
+    "ValidatorPubKey": {
+      "key": "X1sAPOR6yIgQHPZCdQeW1WaSrROIPD8QCxi55XSSo6w="
+    },
+    "OperatorAddress": "gonkavaloper1hrvp8gaxd9y43uuphgpmgmp3xlau3veeu9ha3l"
+  },
+  {
+    "Power": 4463,
+    "ValidatorPubKey": {
+      "key": "Qiqvpz+y3+9MgIWX3Qrhqjv/dC15Fb0KigULBOuFHfA="
+    },
+    "OperatorAddress": "gonkavaloper1hy4zasaf3knphe923exxm3vl6vyr8m5kmykm0a"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1h9axtmze6nqeeh9azggrk0k2qcx8lz2stdte99",
+    "Power": 5116,
+    "ValidatorPubKey": {
+      "key": "uZ7UPTXm6OZqqLDB2zaqNCgGoRGm0O6x3W3mGfSsv4I="
+    }
+  },
+  {
+    "Power": 1354,
+    "ValidatorPubKey": {
+      "key": "FBEe8ypG/qmxCxq6Lx9hWTM/MxveVUvlfaD62iZBmrg="
+    },
+    "OperatorAddress": "gonkavaloper1h9asnq9x2kux2m8pcwaeegljzmd4ym4hk6sgf7"
+  },
+  {
+    "Power": 10157,
+    "ValidatorPubKey": {
+      "key": "y2P2sUr8mBIZj+a4vi9gsXFSzDgwUNz558oNunNcpe0="
+    },
+    "OperatorAddress": "gonkavaloper1hfum2nzy80k3uq86nla97a4w423u0zh2xahw3x"
+  },
+  {
+    "Power": 4369,
+    "ValidatorPubKey": {
+      "key": "aQ2rOefJajchhQOgR+0rWtSL2VkkqjCwoYQf/bPPOvw="
+    },
+    "OperatorAddress": "gonkavaloper1h2qxkeglzstqhdmuewyuwdkae0rk3l8wuxlyge"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1hvat7x6qspwh5vw2pynwcdh57kc6xjl8560c9t",
+    "Power": 5044,
+    "ValidatorPubKey": {
+      "key": "F6ocssz+pkcsm9drc86y/46oEroQB6JNLLx1SodmzwU="
+    }
+  },
+  {
+    "Power": 1049,
+    "ValidatorPubKey": {
+      "key": "IdghXpVtdjA2u29Sem7nnlsfWJVscFKW7CuneTaG0r0="
+    },
+    "OperatorAddress": "gonkavaloper1hjjse9r0zfe0q8k4hfe4t5xuzstjqvkyzdz4ce"
+  },
+  {
+    "Power": 607,
+    "ValidatorPubKey": {
+      "key": "bPJFk0VvU6CY2f0hu2iUDOBZwhMrXZasd/4HZ+c+zGI="
+    },
+    "OperatorAddress": "gonkavaloper1hnye4t9y9g6t2vg2m9wy3jj7cgcamteuk7w59f"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "BranxVCNHdiJRiX836ErLA5sILOhZ+H1mLgn8PLPwy8="
+    },
+    "OperatorAddress": "gonkavaloper1hn9wmlfe7nha0x26p7nsqvk9g8pnwml7fhjus7",
+    "Power": 133
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "uSzObMZcrphjMJZzgmsidKg4F/e6G/K7mIbhtAPqIsI="
+    },
+    "OperatorAddress": "gonkavaloper1h49wte7d29sag08gg63lcyn4t9a49dk480quy7",
+    "Power": 1088
+  },
+  {
+    "Power": 403,
+    "ValidatorPubKey": {
+      "key": "jtzGicBQXvmezN8jWdBxCMJQEYMxvssmSk0+Y7+YfUk="
+    },
+    "OperatorAddress": "gonkavaloper1hkxve0xr274qfsyjzdgezh5j89teya73rwzfmt"
+  },
+  {
+    "Power": 7277,
+    "ValidatorPubKey": {
+      "key": "etYHemztuKq6VIg8jelSNgb6jgBZE3sr5zBOgZe4icQ="
+    },
+    "OperatorAddress": "gonkavaloper1hhx6pvs6n4ehgv4wzz7h9f68t8hm96t94q7r6q"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "RU/wtJ+FViQb7Bf2r3N1nm2Z6DSJuG1oM1WMJHs1DEE="
+    },
+    "OperatorAddress": "gonkavaloper1hec2h63xkf9qf7gn07uwucveuhjfrqksmfy2v6",
+    "Power": 41825
+  },
+  {
+    "Power": 5070,
+    "ValidatorPubKey": {
+      "key": "FGBqGyrKDK5a7lGXjVTB/qn96cgkZp6VJSZkPB8BuO8="
+    },
+    "OperatorAddress": "gonkavaloper1h6829d8eykrqgev9jr630htpze3j220el9cd29"
+  },
+  {
+    "Power": 189,
+    "ValidatorPubKey": {
+      "key": "eO0VZgWhHN4o7qh01+ItTDNdyvV99lDf0/CdYKyO9xo="
+    },
+    "OperatorAddress": "gonkavaloper1hmjjq6ghykww8f8ujajnnmu2dpk2drrtt82vms"
+  },
+  {
+    "Power": 4531,
+    "ValidatorPubKey": {
+      "key": "1uA0qsauALuwJxR9dFqvnozxSokeZEA8q1fhcfnm3ag="
+    },
+    "OperatorAddress": "gonkavaloper1hmeg4xq8autummlkzathgxaezmwe02ulkqgg0u"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "vUXvmkEL6DiUnINyybjvUOp1SahM+1fOZHop2RUo9x8="
+    },
+    "OperatorAddress": "gonkavaloper1cq9f8uc3hz39qtuf3q77r5kv2y2hy52etm2tnh",
+    "Power": 4520
+  },
+  {
+    "Power": 4939,
+    "ValidatorPubKey": {
+      "key": "6NcYzBGakChHtwUnexZ9I+hLg0l9Zf4n2Q4UWz27z24="
+    },
+    "OperatorAddress": "gonkavaloper1cpjcdc97u67m3x35hjj8znuvq37pldfspt2l6h"
+  },
+  {
+    "Power": 4998,
+    "ValidatorPubKey": {
+      "key": "M0zC75x0nZNoLyUYLc61WiNBJU6bN15mb6bUaA3E0kg="
+    },
+    "OperatorAddress": "gonkavaloper1cz5pcp5wfnkkahasj9vge9snpvl8ayz50vdq4e"
+  },
+  {
+    "Power": 426,
+    "ValidatorPubKey": {
+      "key": "JbSjfXQq0JMwTBfn82cj8YcZWFMiH1zIYAwZAeHa6S4="
+    },
+    "OperatorAddress": "gonkavaloper1cz4d6jc2lrwj8tg69y5gunl39wr8era9r43v2c"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "BDSFduhuy+UylF85/KD/TcsSZttGRQa3B41XGERdTOI="
+    },
+    "OperatorAddress": "gonkavaloper1cze6ecxhaqxmls39l0kwxad50x2skqmkdhpfgy",
+    "Power": 4536
+  },
+  {
+    "OperatorAddress": "gonkavaloper1czmu5smv804kq6pqtyvmjxcjjj720mglfxfkqq",
+    "Power": 10108,
+    "ValidatorPubKey": {
+      "key": "OuA4ImVbHVIM1Gy44Dyey6L2C65XRzSk5GDIuXSHh8E="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1crrknngvl6w2nmff2gjx0fha339432dh5fmepq",
+    "Power": 874,
+    "ValidatorPubKey": {
+      "key": "Q+UsABvIk0o836JXYXH9R3Db9SkelAYBiWwwXm4hYXg="
+    }
+  },
+  {
+    "Power": 4884,
+    "ValidatorPubKey": {
+      "key": "BIT5Z06aQSr1a1hX/ITqaoOAg9bySBE42jORudGXpiE="
+    },
+    "OperatorAddress": "gonkavaloper1cx5jhxlg8mwjgl8v50h8ypcyxrz4qyh49fmglc"
+  },
+  {
+    "Power": 4499,
+    "ValidatorPubKey": {
+      "key": "oBm8r38/Bc/8O0Dg4/y+kVl6o84lv+IZt0lAFuiPveY="
+    },
+    "OperatorAddress": "gonkavaloper1cx4dkft2kzdzfjcuale2lw5cqaptdzgatwj4jz"
+  },
+  {
+    "Power": 3238,
+    "ValidatorPubKey": {
+      "key": "Yip+dK7I1cFddY3p1hi18lHguGspYWKR6w89LKH6Q38="
+    },
+    "OperatorAddress": "gonkavaloper1c88tzjv8upxvhexey9u0dhkes8ym07fycw2mvx"
+  },
+  {
+    "Power": 387,
+    "ValidatorPubKey": {
+      "key": "p9/ib39ChL999IfbZgEjUfvH1n2pMDoZVAToZ3nNk/Y="
+    },
+    "OperatorAddress": "gonkavaloper1c80ja2yjn6jfgv7e7hag9mgq3s538lzwpj8jwz"
+  },
+  {
+    "Power": 4365,
+    "ValidatorPubKey": {
+      "key": "vNfhQZEvmREezoLfsP0zmXohna/mYFkljHRqdlJFJhI="
+    },
+    "OperatorAddress": "gonkavaloper1c8utgl2469d7mjlhhd4afhj3ycm6rq60c7aq6j"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1ct24nkkykeyxwhd0nr9tryhhpaak7zgglfm634",
+    "Power": 445,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    }
+  },
+  {
+    "Power": 10674,
+    "ValidatorPubKey": {
+      "key": "3p6gDWeYwOD4xt+elUofF/6GtFX7nrAJxq/mc/Rp92U="
+    },
+    "OperatorAddress": "gonkavaloper1cw859nqcd9mg3y3alraluswu55xz9j369vpp6u"
+  },
+  {
+    "Power": 1677,
+    "ValidatorPubKey": {
+      "key": "y7i2vUVFEAzlVGgWSFTDiCVq45HGUHO260POQQ7wtrk="
+    },
+    "OperatorAddress": "gonkavaloper1cwgcczr7fng927htuk3nqz9m0xdaka6783dvmv"
+  },
+  {
+    "Power": 4411,
+    "ValidatorPubKey": {
+      "key": "eigTWN6DSK0agejh9L9DY/W9UFfyOpdkINvDXlBPWLM="
+    },
+    "OperatorAddress": "gonkavaloper1c3wplss6ju6fc5mhp0dg4lc7lhvkyrvj52k79j"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "gwSTu1CSvrlqS2G+Uh3YoEPAkrqBYGLkjzSvAU7BdN0="
+    },
+    "OperatorAddress": "gonkavaloper1cnnxxev6yaauzarywk6n6vcs0ej0jygwsfcz30",
+    "Power": 4375
+  },
+  {
+    "Power": 573,
+    "ValidatorPubKey": {
+      "key": "MD4U3UbBtAbCRI64d8224xwWlJicXo2wyGnWVMj1r+U="
+    },
+    "OperatorAddress": "gonkavaloper1cnkw5c7d68rym3yr9yqtsesmjqzxss2a64jfgx"
+  },
+  {
+    "Power": 5163,
+    "ValidatorPubKey": {
+      "key": "LxLuUfZEGBEi3x9X8dNz1NwlIvJIjomFXgprshe8u2k="
+    },
+    "OperatorAddress": "gonkavaloper1cn7jka3lx0ex0dxwdcfeaxkqfjl2as08nmhzcm"
+  },
+  {
+    "Power": 1473,
+    "ValidatorPubKey": {
+      "key": "CGvM/XrwAZ/1jInBJXs5+IGt6ENwqBFnDi/DZLncP90="
+    },
+    "OperatorAddress": "gonkavaloper1ccx63zrqqjny476pxjdw3lslpafsgx66c7dfne"
+  },
+  {
+    "Power": 4194,
+    "ValidatorPubKey": {
+      "key": "apY+O2JYnH/Cp0iQEBylw3wZswjyIB2inXqp1KB0bwc="
+    },
+    "OperatorAddress": "gonkavaloper1cmlns93pn4ddkn9rz4lqcedjacwg6t6v6cu99m"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1ca9pva58lm296uphq5wd2v95h6amfyvv0ysp64",
+    "Power": 4310,
+    "ValidatorPubKey": {
+      "key": "3UiaFAWRzYSvZBtGp6a3RQ1nFTmAhmwbsk29+0bb8NY="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1cajt2dwgsycyc9vwn6y74r38cs27hpnw7umda4",
+    "Power": 2295,
+    "ValidatorPubKey": {
+      "key": "f8+7qjKNGxahbl4luqZJ9KP3s9ulf9quv73GQD0o2Ks="
+    }
+  },
+  {
+    "Power": 9541,
+    "ValidatorPubKey": {
+      "key": "YQNBhJCn1UGH0J/ZsXa5PbbFKiKcrhjsv9J2AYEpVQM="
+    },
+    "OperatorAddress": "gonkavaloper1caju8tg6yg3wkvryhks57jwd8des6ssyafjsql"
+  },
+  {
+    "Power": 3993,
+    "ValidatorPubKey": {
+      "key": "21cDGR/wivGv1fUt9J744iNm/leBmNGD/8pZZg/ORqk="
+    },
+    "OperatorAddress": "gonkavaloper1c7fjlg6p7l0ynydyzkzzkxdwue7y864tctrga9"
+  },
+  {
+    "Power": 656,
+    "ValidatorPubKey": {
+      "key": "vDfwA1KwqDg6E7M3DTXg5jEoM4xA9Cxm8QIFPfiTZH0="
+    },
+    "OperatorAddress": "gonkavaloper1c7nulmsg8enww58gx4tazzmqe0jk5he3et27f9"
+  },
+  {
+    "Power": 5079,
+    "ValidatorPubKey": {
+      "key": "2cKbDHJbm8LgjaSq3AbPAwUDghDrOuoPKrhMoU47ARc="
+    },
+    "OperatorAddress": "gonkavaloper1clm58yldg7zp7dmuwrqyh4quqt339qr3u8c69k"
+  },
+  {
+    "Power": 82579,
+    "ValidatorPubKey": {
+      "key": "wk+ov3dL3IHvpWA7Oq4rek9S54L1ScaZ4OVafeRl880="
+    },
+    "OperatorAddress": "gonkavaloper1eqjy6gy8vapf3xtukyrcva0cn952m07s0tzc4p"
+  },
+  {
+    "Power": 4554,
+    "ValidatorPubKey": {
+      "key": "wrZa53N1dCPBccz0N6QgHtRTyP3VGs4JaC1zyPpZ1IA="
+    },
+    "OperatorAddress": "gonkavaloper1equqcel7hzlu07ekt7tep62yh23wp0cckr48nw"
+  },
+  {
+    "Power": 4456,
+    "ValidatorPubKey": {
+      "key": "B5kjoh6B2Q9KfcY6aTxNdkEO9hQHCwglgVbzKF7asg8="
+    },
+    "OperatorAddress": "gonkavaloper1ezpg20aga2mv3avkda2zqh5nh8jys9pgnqmlyd"
+  },
+  {
+    "Power": 477,
+    "ValidatorPubKey": {
+      "key": "NvMGLNyzUlB1C/kttF30A+voDrtTnYh0eJ9w+PtLiqo="
+    },
+    "OperatorAddress": "gonkavaloper1ey9dfu98ngcjpg3lkmwc69xdsp2d9eak0y4ca2"
+  },
+  {
+    "Power": 4705,
+    "ValidatorPubKey": {
+      "key": "Ah/UZJ7WZM+RZNKHcoEyUicZ4xee9gaEyconqZCP+WA="
+    },
+    "OperatorAddress": "gonkavaloper1e9vdm8ny7saz4n7yx7hng8hvdj0nu85vfeu0yw"
+  },
+  {
+    "Power": 4978,
+    "ValidatorPubKey": {
+      "key": "WUXm15kHcdwFEpSzKWVm+lU9UfxOVVge6ETjTutOdSc="
+    },
+    "OperatorAddress": "gonkavaloper1e9muhlte58rwqrr3493qxcwcj8mqrg5a7xvamc"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "NymQfkc6diPZOPoM109Wdw0GIFGjmtUn5AXKC3PlhJE="
+    },
+    "OperatorAddress": "gonkavaloper1e8d0gt4d3u565208jjn035a6h3nvxzwty4lq9g",
+    "Power": 4868
+  },
+  {
+    "Power": 3710,
+    "ValidatorPubKey": {
+      "key": "6azS9TuvYyzuDkYy6+vkph9eMwgYZW/KQ8dbhPha/O0="
+    },
+    "OperatorAddress": "gonkavaloper1e2rnawlpqumhjgmkqwjkyeyhfnsgaxqd9l2fh4"
+  },
+  {
+    "Power": 617,
+    "ValidatorPubKey": {
+      "key": "Jc5kCtEKOZXLihc3flR47EThH7rpoqDuOcstE6YzF7I="
+    },
+    "OperatorAddress": "gonkavaloper1e20pejla34fwaj7gp4vr0xuxxde9hzrcjj0rax"
+  },
+  {
+    "Power": 4509,
+    "ValidatorPubKey": {
+      "key": "mNYEEVnHsjL0bDg5k30DLoE0JQs81FtLIq+Om3ckego="
+    },
+    "OperatorAddress": "gonkavaloper1evsnmudxqr9lxchjj5gsxq39qk4p3tr0c9dptn"
+  },
+  {
+    "Power": 4459,
+    "ValidatorPubKey": {
+      "key": "vznANPMu/zMqexp0yRaD3s5vMqqzWrnFKZnYcwbIx2w="
+    },
+    "OperatorAddress": "gonkavaloper1evnq82x3j2mpf9a7mgrtuav2r2v635q79k6zd9"
+  },
+  {
+    "Power": 2852,
+    "ValidatorPubKey": {
+      "key": "yCxVIBZAvroPwPBhZg6m6znONeB3rmc8VqKeDjnSL5Y="
+    },
+    "OperatorAddress": "gonkavaloper1ejf2q0yngtw6jmcjwe08aflkz2pgul38e4vapq"
+  },
+  {
+    "Power": 4612,
+    "ValidatorPubKey": {
+      "key": "Auea4rE/NUKSw/3ZhD7UpPJkv7TteTS40hzxXPEsxhY="
+    },
+    "OperatorAddress": "gonkavaloper1e4qcqggpllj4ulsd97ha9agm2e05sd4834wun6"
+  },
+  {
+    "Power": 3932,
+    "ValidatorPubKey": {
+      "key": "t/rV0fHUUYUtnfidHKW2U73ZATt3pOXkjyIvyHUg8/o="
+    },
+    "OperatorAddress": "gonkavaloper1eexhw7ks3cd88cyu6qx5zzq3ag484mgwfmn5f8"
+  },
+  {
+    "Power": 4636,
+    "ValidatorPubKey": {
+      "key": "f7FVnThQfY+OEiSksFEPNAvTsFMKOIxK0ZtEm5dNCQM="
+    },
+    "OperatorAddress": "gonkavaloper1e6q0zgndr833egu2050lqqdg7tg8av623uaawk"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1ea4hhgnahtu4g0zzpmz2p8elcyx7x99hpm8g3c",
+    "Power": 10167,
+    "ValidatorPubKey": {
+      "key": "TxwGc0KYZpmJCu+ugBMzI+0LEt2U2ukKrFFKi98K/Ss="
+    }
+  },
+  {
+    "Power": 38493,
+    "ValidatorPubKey": {
+      "key": "9DA+YBGj67N16Jki3ZoC33Zqsk79iAc8EjFaHIi4GRw="
+    },
+    "OperatorAddress": "gonkavaloper16rtefgwd6qkz6760eyv53s8cuuu87vy0h7h6px"
+  },
+  {
+    "Power": 928,
+    "ValidatorPubKey": {
+      "key": "npEn2Pox1ptFKK78BeTFmHpTclVLcLeZ2LqhmCBDe80="
+    },
+    "OperatorAddress": "gonkavaloper16r4kxszdpa6k7wakgt6wk6vus6txhqwq35uyp6"
+  },
+  {
+    "Power": 3064,
+    "ValidatorPubKey": {
+      "key": "lR+sFazjQ4yyfB4EdWLXj2rJR2ZwCpHUVOrcInuN+kI="
+    },
+    "OperatorAddress": "gonkavaloper16x6z79v5srx95x4xjs429dldps767n0h2d98tl"
+  },
+  {
+    "Power": 3452,
+    "ValidatorPubKey": {
+      "key": "kJh99bgg9TkABSXCqnuZuVPj4/GAsfLChLv6pYRtku0="
+    },
+    "OperatorAddress": "gonkavaloper16g6lr5tzelh4m66gxf5hlvcjf0drcwnyve0r23"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "V0aYLo0HIeGlx73H4Lc5ZITDHatZO1W68r05BiH8oQM="
+    },
+    "OperatorAddress": "gonkavaloper16tlht0m9aanxklqddt3xlwwxr5axw9yy3g9de3",
+    "Power": 124
+  },
+  {
+    "Power": 360,
+    "ValidatorPubKey": {
+      "key": "5pd7rvxEby3fQfytfmckf4uJp/QBQbnbBXT8YsujO2o="
+    },
+    "OperatorAddress": "gonkavaloper16vz2gpallzd2e8gcv3834rr0x4xnqrp2yfj78k"
+  },
+  {
+    "Power": 438,
+    "ValidatorPubKey": {
+      "key": "4AtHc3eweeh0FpvCdbuX9uhSDVbBP/tP7kHTqE3R0VM="
+    },
+    "OperatorAddress": "gonkavaloper16v0ut8km4ccfzr2ste4zeegzpwrvx70zzks9n7"
+  },
+  {
+    "OperatorAddress": "gonkavaloper16dhzkyjqvqt2f6h9s9f0fx0dpqaukq5hq40mtj",
+    "Power": 67,
+    "ValidatorPubKey": {
+      "key": "h+7NvrKyvanuDpkUr2fZ9cqgmRj6RO8A6tJMmyyXtcE="
+    }
+  },
+  {
+    "Power": 4871,
+    "ValidatorPubKey": {
+      "key": "J6Qx0ljiyG91g8tyHYQ3U07xtCnBgVzAtblUDzSykAI="
+    },
+    "OperatorAddress": "gonkavaloper160q92s7d63d3gtcx5lmdxu92uf8fjqutnvtdam"
+  },
+  {
+    "Power": 5051,
+    "ValidatorPubKey": {
+      "key": "3wsGIrMJDUSuPtcYrcaWVQAEnMekt3jTxB2BmoNCekw="
+    },
+    "OperatorAddress": "gonkavaloper16jw23vytrm9cw93s2aea6s4g6f2zkrg63cxaek"
+  },
+  {
+    "Power": 1256,
+    "ValidatorPubKey": {
+      "key": "gVeIoQ/9Y3AjWMITPeR/b+MD3I/aX/7JPxO7ZgiSEZY="
+    },
+    "OperatorAddress": "gonkavaloper16crq00f4jhwvsz2m77mzldnp4uhjg0lt6znu3p"
+  },
+  {
+    "Power": 2520,
+    "ValidatorPubKey": {
+      "key": "CzoK59Sn+XdUDF9Cgvi1EScs9pFgOmQwP5JdlwdU1lw="
+    },
+    "OperatorAddress": "gonkavaloper16cd0xr4pct4990xtjhyt7y3hcrlgyl4dc5hwst"
+  },
+  {
+    "Power": 4743,
+    "ValidatorPubKey": {
+      "key": "cGVcQJRh6qAEZ7v/ZqQPm7fgC3iQz2Xau5L0lnobHLo="
+    },
+    "OperatorAddress": "gonkavaloper16cstfwxnuv08zpyalmv38e48crhe8a9p4t07u9"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "wshiNQ3th0Mnf+YuZrcegsRX0FtDF8+Uvv9rqFyEfwQ="
+    },
+    "OperatorAddress": "gonkavaloper167m8t885t8j4wr8qmh652x9d2jvhtdk443te7q",
+    "Power": 53437
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "0ofL6ZrmtNZMpNAoBez7sGlAwgWW1pK8lF9nvzyllnE="
+    },
+    "OperatorAddress": "gonkavaloper16lksjaqq2gqpeexvqg4xgux6hdtms3wn24r4g5",
+    "Power": 134
+  },
+  {
+    "Power": 5088,
+    "ValidatorPubKey": {
+      "key": "TXzZ9mS5QZ2cVk3Llj7E9CCZaJrqoNy4eO3Z4bJauwQ="
+    },
+    "OperatorAddress": "gonkavaloper1mqmvutyh7h87fgw6k246c4q5n0xjjfn3sm3mkl"
+  },
+  {
+    "Power": 438,
+    "ValidatorPubKey": {
+      "key": "UHIV6xTS4ZJS4rFJPGIs3DKvjnC2oKQpnB4g7tCT2Ag="
+    },
+    "OperatorAddress": "gonkavaloper1myqk82deh6wexqazulwaqm6x340vh8kct4y8ej"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "dvk/WjSeiZrHYOT6aIDyYIgveL1ByiHiwMjqS9wRRWM="
+    },
+    "OperatorAddress": "gonkavaloper1myu058axjs62mc3e7na9krwvqpfl9z3ghclzwa",
+    "Power": 32041
+  },
+  {
+    "Power": 1236,
+    "ValidatorPubKey": {
+      "key": "8+9xVSxZ8wLz7JBPav5Ua5lEGttmCUeIlJW/wAU0jdE="
+    },
+    "OperatorAddress": "gonkavaloper1m9u4n8rthwr0j62j26zjg4a6d39lgut4gyv9ft"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1mxn2p7c0y47syy58dqdmwwr66q77xgqm4d3smd",
+    "Power": 696,
+    "ValidatorPubKey": {
+      "key": "bFLl1bD+IKIzu6WSugbvzftUj6Fltt7rnQnVeGTkPTc="
+    }
+  },
+  {
+    "Power": 5047,
+    "ValidatorPubKey": {
+      "key": "nS0N5iuMz9dpxIlfZGU9D2WyObmQW6/qlZylWv8Doik="
+    },
+    "OperatorAddress": "gonkavaloper1mxa996t7rjsuj8l7g82qfwcgy5yed5ck49wyrm"
+  },
+  {
+    "Power": 623,
+    "ValidatorPubKey": {
+      "key": "eo39dj9KaUu9Fj72rSjLz3v7gLFilvWJ4OS8j/MYgv8="
+    },
+    "OperatorAddress": "gonkavaloper1m8z74q6y6hcykh4t9s83l0qyt47lhdtxnwsj0f"
+  },
+  {
+    "Power": 4979,
+    "ValidatorPubKey": {
+      "key": "b+CwiDMldFwQXXCn3GSVzAkXjsdz3lfdSiKNGyjYEXA="
+    },
+    "OperatorAddress": "gonkavaloper1mfxj2hdjlhaus0julkl042sque2krql7f5j7vw"
+  },
+  {
+    "Power": 4904,
+    "ValidatorPubKey": {
+      "key": "fn6kJRm+v5tKpaQy4gNbUmDt6dkAO7V91y3m4CSQgvk="
+    },
+    "OperatorAddress": "gonkavaloper1m2rsvln78rv2rt4m0ypvzmg6z9pm803n9f9npg"
+  },
+  {
+    "Power": 7611,
+    "ValidatorPubKey": {
+      "key": "1JT/IhaCxzQRyLZhLiadLaThUcoM+Q/e/GnMWZIUdVY="
+    },
+    "OperatorAddress": "gonkavaloper1mdpv608e3ft4mcky9mm9pjr5u6e9ge2m83ttx8"
+  },
+  {
+    "Power": 230,
+    "ValidatorPubKey": {
+      "key": "onXw/XQKeiPpaJlNiW14ciZ2vJh4h49+HmSkp2Syags="
+    },
+    "OperatorAddress": "gonkavaloper1md534cgw67whyacx43e4z805frz40m3pwlj3ny"
+  },
+  {
+    "Power": 10071,
+    "ValidatorPubKey": {
+      "key": "4acZhDVm1IkCbim/XqKJQTSn+w41lWGgyz5La7e8Fq8="
+    },
+    "OperatorAddress": "gonkavaloper1m08n5646hjpavvmjfarad9kr9pxufe7s4yqtf5"
+  },
+  {
+    "Power": 4293,
+    "ValidatorPubKey": {
+      "key": "98RT3cSVp6A+dUpvqYLswFqelng2MX2dJHPASSewrPo="
+    },
+    "OperatorAddress": "gonkavaloper1m0ftrwltdf7dntqhx9juwgadzyl2h4m3vm0e4l"
+  },
+  {
+    "Power": 4740,
+    "ValidatorPubKey": {
+      "key": "8k7KyTlizsUSwBP60JUFZmCAOylBPl8AD89mESzdI84="
+    },
+    "OperatorAddress": "gonkavaloper1m3hfvjy92ewcvykqkk69j7kgkhffwxw0083g27"
+  },
+  {
+    "Power": 5110,
+    "ValidatorPubKey": {
+      "key": "9orcAZU6CFzltqlPL0Jn2xAARrwpEySuZfi6ZCXNnoA="
+    },
+    "OperatorAddress": "gonkavaloper1mklzy8yt48wkk7qrgz485dn995zkvfmjc25570"
+  },
+  {
+    "Power": 1307,
+    "ValidatorPubKey": {
+      "key": "QWI/H9NZ1ZzaZLJuIn86wDkDaUqmj9z6r/r4PiKQ5rk="
+    },
+    "OperatorAddress": "gonkavaloper1mc59jg0j8exezfcv6lrgfyfrpzyehwtjsz9593"
+  },
+  {
+    "Power": 5211,
+    "ValidatorPubKey": {
+      "key": "s3TIw1hoZTFcqExEandmgdFuMzy5MO+vQTRmknltc24="
+    },
+    "OperatorAddress": "gonkavaloper1mev8s38pz9u55jkg46ql6lw8xlsnvf4g5cgw68"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "MZ2yQtkE7LEAQHIM+cxsBpRYApxpVNoVaPHkeVjKY7Q="
+    },
+    "OperatorAddress": "gonkavaloper1mmd53mj5u5uepcznq3u4apyc8l7rg9g030gldq",
+    "Power": 4169
+  },
+  {
+    "OperatorAddress": "gonkavaloper1mmwngrtpc4fd4jquv5vfsnscqdzmcz0z5rarc9",
+    "Power": 77,
+    "ValidatorPubKey": {
+      "key": "ZyB6l0gFZP/VwbJzHLH8kFrV7Mt1lGar+vNTWAG9YNc="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "lpRz/+dhTytrW3fk75Y2ltZnOr7CcwIvlSrDjiv1glw="
+    },
+    "OperatorAddress": "gonkavaloper1m7df6745x0vr02pf2lr369vapfzddh3j6hvfmd",
+    "Power": 182
+  },
+  {
+    "Power": 2761,
+    "ValidatorPubKey": {
+      "key": "/JcHPqroyigIqi1H9NC5A7RK7XToBjvFQODhh+boTQU="
+    },
+    "OperatorAddress": "gonkavaloper1upwyydk6y4562u4u6stpxytmamxfs8tr8jwtmg"
+  },
+  {
+    "Power": 1497,
+    "ValidatorPubKey": {
+      "key": "CstrEB1fckihjzExa0WlTAycJrB+oVA0ICqws1++F80="
+    },
+    "OperatorAddress": "gonkavaloper1upkmkts5wxa9ashk6hqtwvsw8x6em8st8jsmcj"
+  },
+  {
+    "Power": 4949,
+    "ValidatorPubKey": {
+      "key": "ZcGwPxyd3wv2uwYHDI6+fDEK0IUfEKmmXPJAse9a+Q0="
+    },
+    "OperatorAddress": "gonkavaloper1urf86dzpmgx44afh32ug7yy3x6hw86gp8967cz"
+  },
+  {
+    "Power": 4131,
+    "ValidatorPubKey": {
+      "key": "lo3kWNEatKrDPMML7tPpILQDIEyaAcSRzsLQoUlrW1c="
+    },
+    "OperatorAddress": "gonkavaloper1u9832k7znn5k4an7a9ad8nmej0jswc7ea278x7"
+  },
+  {
+    "Power": 5166,
+    "ValidatorPubKey": {
+      "key": "zVTO7cRnmOIJDM6qX+PA6D2Q1jBxSQqFiwZZiiwG6iM="
+    },
+    "OperatorAddress": "gonkavaloper1u894qk409f4rt7fta590n7fu6szsu6s80q3g6l"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1u88dwqlx6ew6mhg0pp3wtjaf9d590w2zm77a03",
+    "Power": 5047,
+    "ValidatorPubKey": {
+      "key": "0Ri4XVjvCCiSHIn1okbGnB0Veo/l5KjHEra3Pug2fOA="
+    }
+  },
+  {
+    "Power": 419,
+    "ValidatorPubKey": {
+      "key": "TpNELoHLbq5hGp+9p5gyEieJNM4fn2Jrvaectp0T5d8="
+    },
+    "OperatorAddress": "gonkavaloper1uf85kdk97p45cazueu0jmyxyd5h63c3grwz5t9"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1u2g98h3hwphu278djwh4zwdqpumvzyu5xzz9r5",
+    "Power": 1529,
+    "ValidatorPubKey": {
+      "key": "tEpYwSbJR0ywz88sgsqrN8ptx316XM5pA6l3sQttRMM="
+    }
+  },
+  {
+    "Power": 4941,
+    "ValidatorPubKey": {
+      "key": "neAvj41NaIl+HdL14KlQ1QZ3Kn0nPSN8TLd+pdQYVTc="
+    },
+    "OperatorAddress": "gonkavaloper1ut2k5s0jgnwx09nrkzvuprcd58m3afumyvke9k"
+  },
+  {
+    "Power": 3876,
+    "ValidatorPubKey": {
+      "key": "fVvS+/a+veKwrlGhOj1wj9gcPEdP/RYC/5tASMwMbMI="
+    },
+    "OperatorAddress": "gonkavaloper1uv8lw89ththtj05c54wehfnqls9u2pzag33kx0"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "0GIF/bM8t0WvzrSF0hlk+8lL0gZBA8VHpWqdz3pXaGs="
+    },
+    "OperatorAddress": "gonkavaloper1udx48lyqzrc2ygpkzjq6wthh3ejm6x5cctap96",
+    "Power": 4501
+  },
+  {
+    "Power": 4514,
+    "ValidatorPubKey": {
+      "key": "PWgZg6yqSv0SOju/BeArH7Z8TuK6hYBqZRG3rrScEwA="
+    },
+    "OperatorAddress": "gonkavaloper1uw0kpk6hcmm0sh05l27sq6m5max7pg0nkp6htm"
+  },
+  {
+    "Power": 4532,
+    "ValidatorPubKey": {
+      "key": "yBZ1xTQncd1NdDSHBgvaFIPA0Uog8RG3EKkMTfzGFgw="
+    },
+    "OperatorAddress": "gonkavaloper1usa7alwmkwrvsu22fg4p8k2ftan35glplk8pz0"
+  },
+  {
+    "Power": 8598,
+    "ValidatorPubKey": {
+      "key": "jhcmz50tX4xNIIYESG81RVw02cML4Y59x2UtIGFVafs="
+    },
+    "OperatorAddress": "gonkavaloper1ujfwdfe0tq667vt5sz2pus524zpjveeda46398"
+  },
+  {
+    "Power": 4283,
+    "ValidatorPubKey": {
+      "key": "OUpTAyy4j0qckBt9Sq4s8S0JGea2CN6woNKlokmprdc="
+    },
+    "OperatorAddress": "gonkavaloper1ujskhylfq7xqzvanuy90fm640zf459x0utev3f"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1ujnc662v6g69jm6fgxnr79a2m7ehzeutn55dxg",
+    "Power": 610,
+    "ValidatorPubKey": {
+      "key": "UJT9l+NwWiwTKLBZQ6BUzjMSnPzMB/bHEgyhWUmoXy0="
+    }
+  },
+  {
+    "Power": 4556,
+    "ValidatorPubKey": {
+      "key": "ZNGiquR+jMTetUiWPHfcVqL4SGDrahXtMdi+zN7RuG8="
+    },
+    "OperatorAddress": "gonkavaloper1u5t8ue2699e9z92kytnxys2l0eehywsx9qa5yt"
+  },
+  {
+    "Power": 4062,
+    "ValidatorPubKey": {
+      "key": "6gEE2c3EzE68fv669tAOtEutzf23TEROEI5Khnsbn4Y="
+    },
+    "OperatorAddress": "gonkavaloper1u4zxypjgcr8khlzefwjr0vwdaj2uzruwkcgs9u"
+  },
+  {
+    "Power": 2564,
+    "ValidatorPubKey": {
+      "key": "ualKIP3629UIEf9f2hvSXvayHEJVgAK0kvLBsBWqHsM="
+    },
+    "OperatorAddress": "gonkavaloper1ukafttpmx6m9ch3ke2v3dwfa5x5um5jtcg4dv9"
+  },
+  {
+    "Power": 3994,
+    "ValidatorPubKey": {
+      "key": "RO6i5g2qXZtvJV6QUAKFcFs1S3HaD/tUsadxsZpqoSM="
+    },
+    "OperatorAddress": "gonkavaloper1uk73fw4tnfv9rfdeekxycvt0v8cncr64vyg45s"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1uup559m63mjcq6wyewff2su0e2wv5lsycrfygj",
+    "Power": 4207,
+    "ValidatorPubKey": {
+      "key": "XNhBWIZaVsZR+ALs49tbFwzn1TqMq+AQLSDjIjwFgm4="
+    }
+  },
+  {
+    "Power": 623,
+    "ValidatorPubKey": {
+      "key": "CRmFRdlCbfV7dvbA0Ap2C5fnnkdCpcJ2IqOcMBtWm5o="
+    },
+    "OperatorAddress": "gonkavaloper1uuf3jr427y6hhx00nuk4g930vmyvjeesa8ymd0"
+  },
+  {
+    "Power": 4527,
+    "ValidatorPubKey": {
+      "key": "1en1riMX+/eekoh32K/vfcd5dCnqEl3NphjZ70g6rUs="
+    },
+    "OperatorAddress": "gonkavaloper1u7l9jg4krgl8kpu9lc2ml8hscjhmyrgts6z2ad"
+  },
+  {
+    "Power": 4541,
+    "ValidatorPubKey": {
+      "key": "lUWy17nq5nxqRmq4k/JwCH2JUg+SDBV+YghB0S+g5tA="
+    },
+    "OperatorAddress": "gonkavaloper1apdtylf7dfskdy545zv2pxvrfja286vrr7f8q2"
+  },
+  {
+    "Power": 83786,
+    "ValidatorPubKey": {
+      "key": "VgSf62nF1I1atljNgnSnwQOISW/t+BbCwV5yErQDU5k="
+    },
+    "OperatorAddress": "gonkavaloper1apw5tzk6a3l9hdpdx5q9v2leehvz5rvvj4ypsa"
+  },
+  {
+    "Power": 4780,
+    "ValidatorPubKey": {
+      "key": "MRTVUkaumUkWmPBGYZ65G+8TnDVe6C+Jx9+piU2bvvo="
+    },
+    "OperatorAddress": "gonkavaloper1ap3tj4grfc000wqyxw8hna7aa96xkd655f3j7a"
+  },
+  {
+    "Power": 9852,
+    "ValidatorPubKey": {
+      "key": "2inIHjRTUMEjKkEJQNjr9W3Nlwfb7k5UiicxBYphK6s="
+    },
+    "OperatorAddress": "gonkavaloper1apnzzz6wlpevze3vzsmk7n0vp6az56098ae27h"
+  },
+  {
+    "Power": 3770,
+    "ValidatorPubKey": {
+      "key": "NANAFlk3COtteAWA/z8SIvoHOscqr9W41FYQ8avf4FY="
+    },
+    "OperatorAddress": "gonkavaloper1azuz6leyh94mjyal7deprr2wpwqesr55d0keaw"
+  },
+  {
+    "Power": 4365,
+    "ValidatorPubKey": {
+      "key": "Y/JJIkrbnbc8oAbWpJi5VZnFVO5QvBoFl/rquWEP2r0="
+    },
+    "OperatorAddress": "gonkavaloper1a90lj3ks0fg7mxrvqy7dx4g09g72hrln3p2f8l"
+  },
+  {
+    "Power": 4555,
+    "ValidatorPubKey": {
+      "key": "bojBw1bF55CBf0P3vHUCA9T2hZfGTDniztyG6TPs8lk="
+    },
+    "OperatorAddress": "gonkavaloper1ax52nxfepvshvatstyd3t3v56feaph246znwfg"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1agpg82nyn9gh2wu7txegdg3aydfs2ynqu0px6h",
+    "Power": 4334,
+    "ValidatorPubKey": {
+      "key": "O14SE99qlrwE4O/fqW27SHuD+KW3DP0SSTRXHxZH6h0="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper1ag5r7em9qp7dn8nf6jecudhu38amu3nwhqak09",
+    "Power": 2332,
+    "ValidatorPubKey": {
+      "key": "b4vBX/jPjRowlKpgA+oBwNGcLsUx/UIdoEKlOIopvkA="
+    }
+  },
+  {
+    "Power": 4611,
+    "ValidatorPubKey": {
+      "key": "NHqC+R7DuaBhMqBhHIsjao6IlWZcrOABr0+RFPWdw0o="
+    },
+    "OperatorAddress": "gonkavaloper1ag6cukxq4nklq309rydjl29q2ptx7xlsx76yu3"
+  },
+  {
+    "Power": 4477,
+    "ValidatorPubKey": {
+      "key": "+f+GAB6GiTKe7JJXE0aGV8yaq5KfPCK0JD7lRQcwhGg="
+    },
+    "OperatorAddress": "gonkavaloper1af4yltv435t3f2mx0qkw2mafdrkmqng0gg0css"
+  },
+  {
+    "Power": 1364,
+    "ValidatorPubKey": {
+      "key": "xBvmgt9swV7Mqfmo5XclobA/UO9B3h1P0XtbiEWgZsE="
+    },
+    "OperatorAddress": "gonkavaloper1af40hp4pl2rhupsss33j964a8uyrcn9jk4y8ga"
+  },
+  {
+    "Power": 4207,
+    "ValidatorPubKey": {
+      "key": "o0BOI9VKHv52FYbE/N6hZ9tfkJby7/LHZWI2eJkuboc="
+    },
+    "OperatorAddress": "gonkavaloper1a2k2pz759kj543yzxse4hvvsyjkaw0f4km8xg8"
+  },
+  {
+    "Power": 4997,
+    "ValidatorPubKey": {
+      "key": "M6DmFLQ+34Yq0ANPv58VnIAGbDT0prIJP27T0LN0Q0Q="
+    },
+    "OperatorAddress": "gonkavaloper1a2hgufj4f8d307cfa8n4kc8xts56rtnvvx42p0"
+  },
+  {
+    "Power": 1011,
+    "ValidatorPubKey": {
+      "key": "uwDNoOt1cEw6bOUYF5gdrfn62hRtYTgQNw2yzI4QBpk="
+    },
+    "OperatorAddress": "gonkavaloper1avvxhsspwlj6c0w3p5xwqdvlpl26dc5snckxvy"
+  },
+  {
+    "Power": 249,
+    "ValidatorPubKey": {
+      "key": "Z8p4fI3YhIuttbjzFbhw6xdjp5iQnfXVlncItcR7fz0="
+    },
+    "OperatorAddress": "gonkavaloper1adzm2h68q36j0lzcgl8cnhe7qse0jnlf3nwqpe"
+  },
+  {
+    "Power": 23205,
+    "ValidatorPubKey": {
+      "key": "O6DVp5NDkooD64qyXuj4GNvnKIsIkmRTbPPMElmk3dI="
+    },
+    "OperatorAddress": "gonkavaloper1adacqpq6z6sg9qqsy4f0p02p0sfn2f6nxdw225"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1awp2fxe98uq5s4lpxrhfms099ugxff752s5p6h",
+    "Power": 2224,
+    "ValidatorPubKey": {
+      "key": "6TakjdkvseVnwW64MVv+7HLtQddirZ2ixhlhd7PCZ7Y="
+    }
+  },
+  {
+    "Power": 427,
+    "ValidatorPubKey": {
+      "key": "kaiWchdPLL2KHnUuyX6QkiBg8NNfapnr7/FREUYF3H0="
+    },
+    "OperatorAddress": "gonkavaloper1a32tfg0a3xe7zer9m3ttuxr57wdffpc8kqz60d"
+  },
+  {
+    "Power": 4711,
+    "ValidatorPubKey": {
+      "key": "GeHG1vYcmAxMhJfQ6xneOV+1tWPGHgP+cu46LAaZ4hE="
+    },
+    "OperatorAddress": "gonkavaloper1a357vdludl6kpmx0c7cstf3vc0muu7t7rtlq8q"
+  },
+  {
+    "Power": 471,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    },
+    "OperatorAddress": "gonkavaloper1a59eyhlm8cla6f0mcw8nagasg36nu0dn7nxzgn"
+  },
+  {
+    "Power": 3083,
+    "ValidatorPubKey": {
+      "key": "FLZj6Hw3Sda7o00ZyQxmF8n0GNdNv4sE/FrmRzLiwqI="
+    },
+    "OperatorAddress": "gonkavaloper1a4crzzl7wr52aydzvqjqmh44l4ygh9e2y73d2e"
+  },
+  {
+    "Power": 4338,
+    "ValidatorPubKey": {
+      "key": "380gyIfe0dQU+OMDDw4vqRFOP082qMr+I92bxO87bMs="
+    },
+    "OperatorAddress": "gonkavaloper1ah2y5uemn9fs3xtzrm6xur88e75rzdv05cjqz8"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "RZoBDZe93NIlK47vKWlxajKvA+Gncmvxfn1lbGQc1Hc="
+    },
+    "OperatorAddress": "gonkavaloper1ach2c5kms3ds2728a7dlqwsgddftxljs9fh2x3",
+    "Power": 4726
+  },
+  {
+    "Power": 4391,
+    "ValidatorPubKey": {
+      "key": "VgSiaCQMY7ZwM4d7G95fpSCM6cmIr9IXLMkaxZI1W5w="
+    },
+    "OperatorAddress": "gonkavaloper1aevup75mz4q3vd89ljkqjlrkxvfpwk3dhv6th8"
+  },
+  {
+    "Power": 2175,
+    "ValidatorPubKey": {
+      "key": "CQ2al1NwSi/EQmm2vCk2+bjmgQodLavZWSPzHs+BKcU="
+    },
+    "OperatorAddress": "gonkavaloper1amlmhjym02shahjv8ldmupg4cx0qc66qxfkn5l"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "7x3lsDNSXrVYcItDr2hRF/BuV13/nXOhV9x5/sF3a1k="
+    },
+    "OperatorAddress": "gonkavaloper1au034ld8fsrvtyxpzxx8nnnqe5kmhe20rmxmek",
+    "Power": 798
+  },
+  {
+    "Power": 2189,
+    "ValidatorPubKey": {
+      "key": "ga4b3mfBUfNtl82eMPbuc64y8O2FB9s7shaiWw+XNJI="
+    },
+    "OperatorAddress": "gonkavaloper1aujpuzrahe8pvf86yr5gjd8u38wfce8xn5fl2x"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "qbhFDiycC3ri7CtiS+EJ3A3za17DrG8seELi6vkknnM="
+    },
+    "OperatorAddress": "gonkavaloper1aun6f73uq2r5fujk38xe0tww980r6a0l76vjr9",
+    "Power": 103077
+  },
+  {
+    "Power": 4029,
+    "ValidatorPubKey": {
+      "key": "6xWReonX2RKDcjyrf7E2Hn/7UNUzUbzZZ2s15OF3fxE="
+    },
+    "OperatorAddress": "gonkavaloper1auert95hm33pzvzau2pe2ft62krx7d39cp853k"
+  },
+  {
+    "Power": 42063,
+    "ValidatorPubKey": {
+      "key": "Z+QAeAveGeDJDYPQff5WYYAJo/kBV/dzSpFamGV6hr0="
+    },
+    "OperatorAddress": "gonkavaloper17rfqamx8vr4zpd6z0jnulre4acht2lj7hqmgr5"
+  },
+  {
+    "Power": 2487,
+    "ValidatorPubKey": {
+      "key": "Ge2rewzRvwholb31MoCBloOEOs+dEfTb80FexAaVqP4="
+    },
+    "OperatorAddress": "gonkavaloper179aq77jrmqmtymq0sh0qt86hkdwqsnc9qxvz7y"
+  },
+  {
+    "Power": 992,
+    "ValidatorPubKey": {
+      "key": "gSSJimVDgzCASPbWqSf5rze9j6H3ZnwvkygERKDBi2g="
+    },
+    "OperatorAddress": "gonkavaloper17gxetlx3d90zfzpflldnf2n4wyj0naerrzgg6t"
+  },
+  {
+    "OperatorAddress": "gonkavaloper17gffv7lusn36e3sqxymn94khnq709py2fucp70",
+    "Power": 429,
+    "ValidatorPubKey": {
+      "key": "HfnUh92l4/vTJO96k12EnYGeca9zKJA/maxsVDk89gU="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper17ftklmd8esnj47nr7dg7c5c6wujvqxqjs0qefc",
+    "Power": 4658,
+    "ValidatorPubKey": {
+      "key": "+ozSlnsjTmLaKX1XpdKgFI6nA+hx776gYrhZdqVvxB4="
+    }
+  },
+  {
+    "Power": 1251,
+    "ValidatorPubKey": {
+      "key": "vzisevQdLVso+pbc9sep/O4eKTOyAM2YMASRP/lE+vs="
+    },
+    "OperatorAddress": "gonkavaloper17w8dqjk6qf8jraddt5j8spcrtvxjwnn8kx9lwp"
+  },
+  {
+    "Power": 2582,
+    "ValidatorPubKey": {
+      "key": "xBXsIP7UAGMkU8yNey5s6DUihbbWkmkpB/Gqh318pPc="
+    },
+    "OperatorAddress": "gonkavaloper170wwtpvhwzgghd638z84z35gjggl7cvy7r8ssv"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1707yvgk9wgpzrp35wd84mcps4pujelx3xn92tg",
+    "Power": 4498,
+    "ValidatorPubKey": {
+      "key": "hBUD54986JHuISpeJJPj1UpxX48anUy9++P/wUiAl/U="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper17sxv5v9x57xvwt37dtza28f7z658z42c7qntyf",
+    "Power": 1445,
+    "ValidatorPubKey": {
+      "key": "iT1r3pCzHuuuna/G20ynXwQ2QmMDGev2r/BWo2VcByQ="
+    }
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "lUu0UrOXwOQPm4QqXDhr7abEOk08dT1qVXvv2seJtpA="
+    },
+    "OperatorAddress": "gonkavaloper17ss43vkwh7x0a23cld333v8n33k7ut90w5fkfe",
+    "Power": 2100
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "WYSaLLnL5JsxP9C+Et4Ztognzny8p/7DbrOT+WYTjJg="
+    },
+    "OperatorAddress": "gonkavaloper1756ph2flj5y6kw5xqktfgwj3s2ct54dd70r4c5",
+    "Power": 4385
+  },
+  {
+    "Power": 1266,
+    "ValidatorPubKey": {
+      "key": "23QqmtrCT9W8J8hxmLxiEvLIAqswJUKVSBCuFbPFITo="
+    },
+    "OperatorAddress": "gonkavaloper175m43rc7dg6xarxksu9meg9l6fp3tg2ejtgap6"
+  },
+  {
+    "Power": 34256,
+    "ValidatorPubKey": {
+      "key": "DlJQMDHFnHC6PGR65ZT2UhuZyt9aq9VWNWYE5z8TGP4="
+    },
+    "OperatorAddress": "gonkavaloper17hjy6s7d8u3umauk69wmc7whpckttm2ltgmk9n"
+  },
+  {
+    "Power": 889,
+    "ValidatorPubKey": {
+      "key": "zmGC3ddpSuQuAsLXcBNWbwqSKQxY+3lpwQ5hLsfe5WY="
+    },
+    "OperatorAddress": "gonkavaloper17exwulhw83ehh6lzkkj2nfdusjwlls2mdwpw6r"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "Y9JwceYEcSo79tIeH76Vu0RPRJjLnxlNnXfMTP09Nyg="
+    },
+    "OperatorAddress": "gonkavaloper17et3ctw6t4d5ylnuc2kwc8xrlwk69y0c5gn4hk",
+    "Power": 461
+  },
+  {
+    "OperatorAddress": "gonkavaloper17eha2wcrge8zp36tn85ywgx7dqmwu6hu63l8k3",
+    "Power": 4598,
+    "ValidatorPubKey": {
+      "key": "L6XKIqtuBOA1KGQg1vEe8LFz6Ydt57Q1uXaKfV55I6M="
+    }
+  },
+  {
+    "OperatorAddress": "gonkavaloper17mw34tnvce5jg8s2lrn07556guh7yj253g2jky",
+    "Power": 4323,
+    "ValidatorPubKey": {
+      "key": "oLtZOBAA5kebQrOWoq0wdQzKjd0velDfUQJOdJjzHLc="
+    }
+  },
+  {
+    "Power": 3106,
+    "ValidatorPubKey": {
+      "key": "FYa57GmPrO0JEVKIFQ4LSiAVh8MevdIMrOFq8PaS3zY="
+    },
+    "OperatorAddress": "gonkavaloper17le4nn342z6jr8jnlwt2d04sxeuhhm8pjv6tfg"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "o6J8zsWb4yI72djYunlJ94vXz3FSowijGzYvBvhe3yo="
+    },
+    "OperatorAddress": "gonkavaloper1lp3q5zammhv5a7fmn5u58clz5k7wr020ghtcgm",
+    "Power": 4823
+  },
+  {
+    "Power": 4850,
+    "ValidatorPubKey": {
+      "key": "YNBJNNoKYymgJyMhEzZcfQoZUFRUnlNU4Qhp5qaD/5I="
+    },
+    "OperatorAddress": "gonkavaloper1lzxwqhc5fqwltg57emk2lprd7qzmapp2kmagqn"
+  },
+  {
+    "Power": 3699,
+    "ValidatorPubKey": {
+      "key": "oBRmASvkTQ4ct2gqF3DfLlx+Hbwyn44jX/48Hlr1TsA="
+    },
+    "OperatorAddress": "gonkavaloper1lzngx5unw6qu7f97zkq6wkvmk5aze4qujn0yyx"
+  },
+  {
+    "Power": 1307,
+    "ValidatorPubKey": {
+      "key": "whPbaEt+ihjFz6CloiVXZUVHhEbTPTMpB/zWRzlqmc8="
+    },
+    "OperatorAddress": "gonkavaloper1lrnzluw7jqsyt883z2540882zczlnpa7ymqjrc"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1l922skaf4ytgw7m9x5t08z0enrmmnxnq6uxqt4",
+    "Power": 1249,
+    "ValidatorPubKey": {
+      "key": "51aRaCAJPZWUI9NwLGnYcxre4hSdcxrgTFh+yhtSU1U="
+    }
+  },
+  {
+    "Power": 2366,
+    "ValidatorPubKey": {
+      "key": "6BhTSQXKXXxCHd1jxF1owRsUZiKAWXw5wSqjA2pL0c8="
+    },
+    "OperatorAddress": "gonkavaloper1l9d2djn93t8hk204lnwst24zsxjhf0tmmyx7we"
+  },
+  {
+    "Power": 2476,
+    "ValidatorPubKey": {
+      "key": "5Z/Bq6O9durwUbprtEFOBbJ22YQFhp7ESzV7zRJzpdw="
+    },
+    "OperatorAddress": "gonkavaloper1lxnfxu7t2wwerxhjpaxm0sk5rhd7w99tw8urnz"
+  },
+  {
+    "Power": 2054,
+    "ValidatorPubKey": {
+      "key": "vW39hbUBmHca42z7HFFitO1LBea0WCaAXCMVu9X41is="
+    },
+    "OperatorAddress": "gonkavaloper1lf8zrnapty4nny6l9dr66nd7xc4j4ktrxrd4qs"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1lf3jye2fvsvkjtaqj0v0fk36ejumg5f5zqk6ql",
+    "Power": 862,
+    "ValidatorPubKey": {
+      "key": "rVfAaQd041ChlWLpwOuojdK2eiHJ5UmRUFn/xTWeHSw="
+    }
+  },
+  {
+    "Power": 66225,
+    "ValidatorPubKey": {
+      "key": "Kr6vy5keia7uwCSuITH7P9e5+1pf4pSPxg7CIgo+4Rw="
+    },
+    "OperatorAddress": "gonkavaloper1l0jr5p0nuyxu2ed3xlwnwpz3alqf2hg54vmgml"
+  },
+  {
+    "Power": 4859,
+    "ValidatorPubKey": {
+      "key": "13j0SCUZxdSwwd23gEnL8aCNgsetJjnzaIBzSajogj4="
+    },
+    "OperatorAddress": "gonkavaloper1l059p34y0lcsuudgs8ln83nt6htjnmjcyc35fp"
+  },
+  {
+    "Power": 33066,
+    "ValidatorPubKey": {
+      "key": "vMNYhRrqmsxYTx3fg4Q5q6Hrbt9bxRcCbsihJexQgT0="
+    },
+    "OperatorAddress": "gonkavaloper1ln28jur0gvuwf8frx63lwwagysdf03e8rdvr7u"
+  },
+  {
+    "Power": 4941,
+    "ValidatorPubKey": {
+      "key": "Civse/OTzgCsx7ljjdALEj2SktfljjSTD5aEc1lCEj8="
+    },
+    "OperatorAddress": "gonkavaloper1lnus3x4dy0ze8naktrldft5edx4e36qcg34p9y"
+  },
+  {
+    "ValidatorPubKey": {
+      "key": "FshXut8ylAkThrnbSx2QOgUvyrhkFwRJ4xuV/welFsI="
+    },
+    "OperatorAddress": "gonkavaloper1l5y7amaux93wgd60wn0446h97ezl3vjdxs4gae",
+    "Power": 4694
+  },
+  {
+    "Power": 4647,
+    "ValidatorPubKey": {
+      "key": "Qow03iMLljHIdQZjwTZF6d607M6hgbQeS6kGRc6TRnE="
+    },
+    "OperatorAddress": "gonkavaloper1l5v6g8xahf88pqnv3htq72c6kf792yvwda3pxg"
+  },
+  {
+    "Power": 4496,
+    "ValidatorPubKey": {
+      "key": "EackQUp6qq8AmSxpQvMxDMpqEnHB39XDHpKu8dvomOI="
+    },
+    "OperatorAddress": "gonkavaloper1l42zhzv3hy6d3y88aq37mdgux4u9crd9x8az8c"
+  },
+  {
+    "Power": 38770,
+    "ValidatorPubKey": {
+      "key": "gu2+Rt4mHgoJhOiO8fyXc9ct1pQT6LC6sNv9f4Avbgk="
+    },
+    "OperatorAddress": "gonkavaloper1l4vfzkwd555pvxqzr3ksphgwgv8xsh89ct24kz"
+  },
+  {
+    "OperatorAddress": "gonkavaloper1lh0danzlvxm5qtaly7myqd3n5sus0fq9knkhqt",
+    "Power": 1424,
+    "ValidatorPubKey": {
+      "key": "QGgUzlRIy3i1liW2RO8oPpUziPPfGLyS+jj5l3b5APU="
+    }
+  },
+  {
+    "Power": 3915,
+    "ValidatorPubKey": {
+      "key": "bwgGuRKc6QtSjvmxDaD51TapDFsS8Jd69uI/LiEkmCk="
+    },
+    "OperatorAddress": "gonkavaloper1lc80tv6k38xc6qagx67wy42mkdl3zplgckx44u"
+  },
+  {
+    "Power": 4182,
+    "ValidatorPubKey": {
+      "key": "yWmQGAPbJByUTgEwVsJaSwKZioBPIzNi87YHy6Bbi8E="
+    },
+    "OperatorAddress": "gonkavaloper1lajfpxh74xse4xxease0trz5gwecze99m79v9y"
+  },
+  {
+    "Power": 453,
+    "ValidatorPubKey": {
+      "key": "NHAgqPYwbk0Rgls11YV5qVhZXKJh8poeCPatSwpbPVE="
+    },
+    "OperatorAddress": "gonkavaloper1lan2x2er0djczj7rumtdn29rnr5g870c006wpz"
+  },
+  {
+    "Power": 562,
+    "ValidatorPubKey": {
+      "key": "OCjQp+CacJz0c8z8ChwrmHdLdDgIsTP+fLzB1uOs9Do="
+    },
+    "OperatorAddress": "gonkavaloper1l7kftz35d67xnzppm3esrrrpumhwajhgzljn00"
+  },
+  {
+    "Power": 1358,
+    "ValidatorPubKey": {
+      "key": "WuuiiTXw2TFIoxvNP61UP653ZCKdTI9TcMSslIw6r4w="
+    },
+    "OperatorAddress": "gonkavaloper1l763nf87r604swhrwyjh4dl804ytvgkz8djwtd"
+  },
+  {
+    "Power": 32258,
+    "ValidatorPubKey": {
+      "key": "dmPhage6QGYQAwSt0QespJ40fYpNu5hP2SR3953n/Bg="
+    },
+    "OperatorAddress": "gonkavaloper1llxvtg0657ldmqn4l3t0ag496ff355j52al6lf"
+  }
+]

@@ -22,6 +22,57 @@ var _ types.ValidatorSet = Keeper{}
 // Implements DelegationSet interface
 var _ types.DelegationSet = Keeper{}
 
+// NoOpBankKeeper is a wrapper that makes all bank keeper operations no-ops
+type NoOpBankKeeper struct {
+	inner types.BankKeeper
+}
+
+// NewNoOpBankKeeper creates a new no-op bank keeper wrapper
+func NewNoOpBankKeeper(bk types.BankKeeper) *NoOpBankKeeper {
+	return &NoOpBankKeeper{inner: bk}
+}
+
+// Read operations delegate to the inner keeper
+func (n *NoOpBankKeeper) GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
+	return n.inner.GetAllBalances(ctx, addr)
+}
+
+func (n *NoOpBankKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	return n.inner.GetBalance(ctx, addr, denom)
+}
+
+func (n *NoOpBankKeeper) LockedCoins(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
+	return n.inner.LockedCoins(ctx, addr)
+}
+
+func (n *NoOpBankKeeper) SpendableCoins(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
+	return n.inner.SpendableCoins(ctx, addr)
+}
+
+func (n *NoOpBankKeeper) GetSupply(ctx context.Context, denom string) sdk.Coin {
+	return n.inner.GetSupply(ctx, denom)
+}
+
+func (n *NoOpBankKeeper) SendCoinsFromModuleToModule(ctx context.Context, senderPool, recipientPool string, amt sdk.Coins) error {
+	return nil
+}
+
+func (n *NoOpBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+	return nil
+}
+
+func (n *NoOpBankKeeper) UndelegateCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
+	return nil
+}
+
+func (n *NoOpBankKeeper) DelegateCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+	return nil
+}
+
+func (n *NoOpBankKeeper) BurnCoins(ctx context.Context, name string, amt sdk.Coins) error {
+	return nil
+}
+
 // Keeper of the x/staking store
 type Keeper struct {
 	storeService          storetypes.KVStoreService
@@ -32,6 +83,9 @@ type Keeper struct {
 	authority             string
 	validatorAddressCodec addresscodec.Codec
 	consensusAddressCodec addresscodec.Codec
+	// tombstoneChecker, when set, reports whether a validator is tombstoned in the
+	// slashing module. Injected via SetTombstoneChecker to avoid a circular import.
+	tombstoneChecker TombstoneChecker
 }
 
 // NewKeeper creates a new staking Keeper instance
@@ -66,11 +120,14 @@ func NewKeeper(
 		panic("validator and/or consensus address codec are nil")
 	}
 
+	// Wrap the bank keeper with no-op wrapper
+	wrappedBankKeeper := NewNoOpBankKeeper(bk)
+
 	return &Keeper{
 		storeService:          storeService,
 		cdc:                   cdc,
 		authKeeper:            ak,
-		bankKeeper:            bk,
+		bankKeeper:            wrappedBankKeeper,
 		hooks:                 nil,
 		authority:             authority,
 		validatorAddressCodec: validatorAddressCodec,
@@ -102,6 +159,14 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) {
 	}
 
 	k.hooks = sh
+}
+
+// SetTombstoneChecker injects a function reporting whether a validator (by consensus
+// address) is tombstoned in the slashing module. The epoch validator-set recompute
+// (SetComputeValidators) uses it so a permanently-banned (e.g. equivocating) validator
+// is not resurrected. Wired in app setup once the slashing keeper exists; nil = unchanged.
+func (k *Keeper) SetTombstoneChecker(fn TombstoneChecker) {
+	k.tombstoneChecker = fn
 }
 
 // GetLastTotalPower loads the last total validator power.
@@ -145,10 +210,6 @@ func (k Keeper) ValidatorAddressCodec() addresscodec.Codec {
 	return k.validatorAddressCodec
 }
 
-// RestoreValidatorIndex satisfies the slashing keeper. The Proof-of-Compute
-// scan replaces this empty method in the staking port.
-func (k Keeper) RestoreValidatorIndex(context.Context) {}
-
 // ConsensusAddressCodec returns the app consensus address codec.
 func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 	return k.consensusAddressCodec
@@ -157,6 +218,16 @@ func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 // SetValidatorUpdates sets the ABCI validator power updates for the current block.
 func (k Keeper) SetValidatorUpdates(ctx context.Context, valUpdates []abci.ValidatorUpdate) error {
 	store := k.storeService.OpenKVStore(ctx)
+	if len(valUpdates) == 0 {
+		// Most blocks have no updates and the stored list is already empty: skip the rewrite.
+		prev, err := store.Get(types.ValidatorUpdatesKey)
+		if err != nil {
+			return err
+		}
+		if len(prev) == 0 {
+			return nil
+		}
+	}
 	bz, err := k.cdc.Marshal(&types.ValidatorUpdates{Updates: valUpdates})
 	if err != nil {
 		return err

@@ -20,106 +20,182 @@ import (
 // BlockValidatorUpdates calculates the ValidatorUpdates for the current block
 // Called in each EndBlock
 func (k Keeper) BlockValidatorUpdates(ctx context.Context) ([]abci.ValidatorUpdate, error) {
-	// Calculate validator set changes.
-	//
-	// NOTE: ApplyAndReturnValidatorSetUpdates has to come before
-	// UnbondAllMatureValidatorQueue.
-	// This fixes a bug when the unbonding period is instant (is the case in
-	// some of the tests). The test expected the validator to be completely
-	// unbonded after the Endblocker (go from Bonded -> Unbonding during
-	// ApplyAndReturnValidatorSetUpdates and then Unbonding -> Unbonded during
-	// UnbondAllMatureValidatorQueue).
+	// Delete zero-power validators from previous block (respects CometBFT's 1-block ValidatorUpdateDelay)
+	if err := k.DeleteZeroPowerValidators(ctx); err != nil {
+		return nil, err
+	}
+
+	// Calculate validator set changes and send updates to CometBFT
 	validatorUpdates, err := k.ApplyAndReturnValidatorSetUpdates(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// unbond all mature validators from the unbonding queue
-	err = k.UnbondAllMatureValidators(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	// Remove all mature unbonding delegations from the ubd queue.
-	matureUnbonds, err := k.DequeueAllMatureUBDQueue(ctx, sdkCtx.BlockHeader().Time)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, dvPair := range matureUnbonds {
-		addr, err := k.validatorAddressCodec.StringToBytes(dvPair.ValidatorAddress)
-		if err != nil {
-			return nil, err
-		}
-		delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(dvPair.DelegatorAddress)
-		if err != nil {
-			return nil, err
-		}
-
-		balances, err := k.CompleteUnbonding(ctx, delegatorAddress, addr)
-		if err != nil {
-			continue
-		}
-
-		sdkCtx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeCompleteUnbonding,
-				sdk.NewAttribute(sdk.AttributeKeyAmount, balances.String()),
-				sdk.NewAttribute(types.AttributeKeyValidator, dvPair.ValidatorAddress),
-				sdk.NewAttribute(types.AttributeKeyDelegator, dvPair.DelegatorAddress),
-			),
-		)
-	}
-
-	// Remove all mature redelegations from the red queue.
-	matureRedelegations, err := k.DequeueAllMatureRedelegationQueue(ctx, sdkCtx.BlockHeader().Time)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, dvvTriplet := range matureRedelegations {
-		valSrcAddr, err := k.validatorAddressCodec.StringToBytes(dvvTriplet.ValidatorSrcAddress)
-		if err != nil {
-			return nil, err
-		}
-		valDstAddr, err := k.validatorAddressCodec.StringToBytes(dvvTriplet.ValidatorDstAddress)
-		if err != nil {
-			return nil, err
-		}
-		delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(dvvTriplet.DelegatorAddress)
-		if err != nil {
-			return nil, err
-		}
-
-		balances, err := k.CompleteRedelegation(
-			ctx,
-			delegatorAddress,
-			valSrcAddr,
-			valDstAddr,
-		)
-		if err != nil {
-			continue
-		}
-
-		sdkCtx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeCompleteRedelegation,
-				sdk.NewAttribute(sdk.AttributeKeyAmount, balances.String()),
-				sdk.NewAttribute(types.AttributeKeyDelegator, dvvTriplet.DelegatorAddress),
-				sdk.NewAttribute(types.AttributeKeySrcValidator, dvvTriplet.ValidatorSrcAddress),
-				sdk.NewAttribute(types.AttributeKeyDstValidator, dvvTriplet.ValidatorDstAddress),
-			),
-		)
-	}
-
 	// prune consensus key rotations that have fallen out of the current
-	// unbonding period.
+	// unbonding period. RotateConsPubKey is disabled, so this is an empty-queue no-op.
 	if err := k.PruneMaturedConsKeyRotations(ctx); err != nil {
 		return nil, err
 	}
 
 	return validatorUpdates, nil
+}
+
+// DeleteZeroPowerValidators deletes validators with zero power that are not in LastValidatorPower.
+// Only deletes validators already processed by ApplyAndReturnValidatorSetUpdates (not in LastValidatorPower),
+// preventing errors from deleting validators that ApplyAndReturnValidatorSetUpdates still needs to fetch.
+//
+// For UNBONDING validators with zero tokens, the unbonding queue entry and per-id unbonding indexes
+// are also removed so that a later UnbondAllMatureValidators run does not error when it tries to
+// fetch the now-deleted validator. This is safe for compute-power validators because there are no
+// staked tokens to wait for the unbonding period — the queue entry would otherwise just expire
+// 21 days later against a non-existent validator.
+//
+// A validator becomes deletable only when its tokens drop to zero (SetValidator) or it leaves
+// LastValidatorPower (DeleteLastValidatorPower); both clear ZeroPowerSweptKey, so a block
+// without either reads one key instead of every validator.
+func (k Keeper) DeleteZeroPowerValidators(ctx context.Context) error {
+	logger := k.Logger(ctx)
+
+	store := k.storeService.OpenKVStore(ctx)
+	if swept, err := store.Has(types.ZeroPowerSweptKey); err != nil || swept {
+		return err
+	}
+	swept := true
+
+	allValidators, err := k.GetAllValidators(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get all validators: %w", err)
+	}
+
+	for _, validator := range allValidators {
+		if err := k.tryDeleteZeroPowerValidator(ctx, validator); err != nil {
+			logger.Error("failed to delete zero-power validator", "operator", validator.GetOperator(), "error", err)
+			swept = false
+		}
+	}
+
+	if swept {
+		return store.Set(types.ZeroPowerSweptKey, []byte{1})
+	}
+	return nil
+}
+
+// tryDeleteZeroPowerValidator deletes a single zero-power validator if it is eligible.
+// Returns nil for both "deleted" and "skipped (still in LastValidatorPower / non-zero tokens)";
+// only returns an error if a store operation failed.
+func (k Keeper) tryDeleteZeroPowerValidator(ctx context.Context, validator types.Validator) error {
+	if !validator.GetTokens().IsZero() {
+		return nil
+	}
+
+	logger := k.Logger(ctx)
+	store := k.storeService.OpenKVStore(ctx)
+
+	valAddr, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
+	if err != nil {
+		return fmt.Errorf("failed to convert operator address: %w", err)
+	}
+
+	// Only delete if already removed from LastValidatorPower (ApplyAndReturnValidatorSetUpdates processed it).
+	// We check the store key directly because GetLastValidatorPower returns (0, nil) for both
+	// "key absent" and "value is the encoded int 0", so the err value alone can't disambiguate.
+	hasLastPower, err := store.Has(types.GetLastValidatorPowerKey(valAddr))
+	if err != nil {
+		return fmt.Errorf("failed to read LastValidatorPower: %w", err)
+	}
+	if hasLastPower {
+		logger.Debug("skipping zero-power validator still in LastValidatorPower",
+			"operator", validator.GetOperator())
+		return nil
+	}
+
+	// UNBONDING validators have an entry in the validator unbonding queue (time-slice + per-id index).
+	// UnbondAllMatureValidators will later iterate that queue and call GetValidator on this address;
+	// if we delete the validator without dequeuing, that call returns ErrNoValidatorFound and the
+	// staking EndBlocker returns an error (chain halt). Dequeue first, then delete.
+	if validator.IsUnbonding() {
+		for _, id := range validator.UnbondingIds {
+			if err := k.DeleteUnbondingIndex(ctx, id); err != nil {
+				return fmt.Errorf("failed to delete unbonding index id=%d: %w", id, err)
+			}
+		}
+		if err := k.DeleteValidatorQueue(ctx, validator); err != nil {
+			return fmt.Errorf("failed to dequeue validator from unbonding queue: %w", err)
+		}
+	}
+
+	logger.Info("deleting zero-power validator", "operator", validator.GetOperator())
+
+	if err := k.deleteValidatorInternal(ctx, validator, valAddr); err != nil {
+		return fmt.Errorf("failed to delete validator: %w", err)
+	}
+
+	return nil
+}
+
+// deleteValidatorInternal performs the actual deletion of a validator from all stores.
+// This is the common deletion logic used by both RemoveValidator and DeleteZeroPowerValidators.
+func (k Keeper) deleteValidatorInternal(ctx context.Context, validator types.Validator, valAddr sdk.ValAddress) error {
+	consAddr, err := validator.GetConsAddr()
+	if err != nil {
+		return err
+	}
+
+	store := k.storeService.OpenKVStore(ctx)
+	if err := store.Delete(types.ValidatorIndexIntactKey); err != nil {
+		return err
+	}
+
+	// Delete main validator record
+	if err := store.Delete(types.GetValidatorKey(valAddr)); err != nil {
+		return err
+	}
+
+	// Delete consensus address mapping, but only if it still points to this validator.
+	// In stale-validator-replacement (GON-191), a new validator may have taken over the
+	// same consensus key in the same block via SetValidatorByConsAddr. Unconditionally
+	// deleting here would orphan the new validator's cons-addr index entry.
+	consAddrKey := types.GetValidatorByConsAddrKey(consAddr)
+	existingOp, err := store.Get(consAddrKey)
+	if err != nil {
+		return err
+	}
+	if existingOp != nil && bytes.Equal(existingOp, valAddr) {
+		if err := store.Delete(consAddrKey); err != nil {
+			return err
+		}
+	}
+
+	// Delete power index
+	if err := store.Delete(types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx), k.validatorAddressCodec)); err != nil {
+		return err
+	}
+
+	// Delete from LastValidatorPower if present (may not exist for unbonding validators)
+	_ = k.DeleteLastValidatorPower(ctx, valAddr)
+
+	// Delete self-delegation if exists
+	delegator := sdk.AccAddress(valAddr)
+	if delegation, err := k.GetDelegation(ctx, delegator, valAddr); err == nil {
+		if err := k.RemoveDelegation(ctx, delegation); err != nil {
+			return err
+		}
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentHeight := sdkCtx.BlockHeight()
+	if currentHeight >= ValidatorIndexFixHeight {
+		if err = k.RemoveValidator(ctx, valAddr); err != nil {
+			return err
+		}
+	}
+
+	// Call hook to notify other modules
+	if err := k.Hooks().AfterValidatorRemoved(ctx, consAddr, valAddr); err != nil {
+		k.Logger(ctx).Error("error in after validator removed hook", "error", err)
+	}
+
+	return nil
 }
 
 // ApplyAndReturnValidatorSetUpdates applies and return accumulated updates to the bonded validator set. Also,
@@ -135,6 +211,7 @@ func (k Keeper) BlockValidatorUpdates(ctx context.Context) ([]abci.ValidatorUpda
 // at the previous block height or were removed from the validator set entirely
 // are returned to CometBFT.
 func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates []abci.ValidatorUpdate, err error) {
+	k.Logger(ctx).Debug("applying validator set updates")
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -178,6 +255,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		if err != nil {
 			return nil, fmt.Errorf("validator record not found for address: %X", valAddr)
 		}
+		k.Logger(ctx).Debug("iterating validator", "operator", validator.OperatorAddress, "power", validator.Tokens, "status", validator.Status)
 
 		if validator.Jailed {
 			return nil, errors.New("should never retrieve a jailed validator from the power store")
@@ -186,18 +264,21 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		// if we get to a zero-power validator (which we don't bond),
 		// there are no more possible bonded validators
 		if validator.PotentialConsensusPower(k.PowerReduction(ctx)) == 0 {
+			k.Logger(ctx).Debug("validator has zero power", "reduction", k.PowerReduction(ctx), "power", validator.PotentialConsensusPower(k.PowerReduction(ctx)))
 			break
 		}
 
 		// apply the appropriate state change if necessary
 		switch {
 		case validator.IsUnbonded():
+			k.Logger(ctx).Info("moving unbonded to bonded", "reduction", k.PowerReduction(ctx), "power", validator.PotentialConsensusPower(k.PowerReduction(ctx)))
 			validator, err = k.unbondedToBonded(ctx, validator)
 			if err != nil {
 				return nil, err
 			}
 			amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(validator.GetTokens())
 		case validator.IsUnbonding():
+			k.Logger(ctx).Info("moving unbonding to bonded", "reduction", k.PowerReduction(ctx), "power", validator.PotentialConsensusPower(k.PowerReduction(ctx)))
 			validator, err = k.unbondingToBonded(ctx, validator)
 			if err != nil {
 				return nil, err
@@ -239,18 +320,23 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		if err != nil {
 			return nil, fmt.Errorf("validator record not found for address: %X", sdk.ValAddress(valAddrBytes))
 		}
-		validator, err = k.bondedToUnbonding(ctx, validator)
-		if err != nil {
-			return nil, err
+
+		if validator.IsBonded() {
+			validator, err = k.bondedToUnbonding(ctx, validator)
+			if err != nil {
+				return nil, err
+			}
+			amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(validator.GetTokens())
 		}
+
 		str, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
 		if err != nil {
 			return nil, fmt.Errorf("failed to get validator operator address: %w", err)
 		}
-		amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(validator.GetTokens())
 		if err = k.DeleteLastValidatorPower(ctx, str); err != nil {
 			return nil, err
 		}
+		k.Logger(ctx).Info("removing validator", "validator", validator.String(), "power", validator.Tokens, "status", validator.Status)
 
 		updates = append(updates, validator.ABCIValidatorUpdateZero())
 	}
@@ -260,24 +346,25 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		return nil, err
 	}
 
+	// PoC does not move bonded-pool coins. Validator tokens are compute weight.
 	// Update the pools based on the recent updates in the validator set:
 	// - The tokens from the non-bonded candidates that enter the new validator set need to be transferred
 	// to the Bonded pool.
 	// - The tokens from the bonded validators that are being kicked out from the validator set
 	// need to be transferred to the NotBonded pool.
-	switch {
-	// Compare and subtract the respective amounts to only perform one transfer.
-	// This is done in order to avoid doing multiple updates inside each iterator/loop.
-	case amtFromNotBondedToBonded.GT(amtFromBondedToNotBonded):
-		if err = k.notBondedTokensToBonded(ctx, amtFromNotBondedToBonded.Sub(amtFromBondedToNotBonded)); err != nil {
-			return nil, err
-		}
-	case amtFromNotBondedToBonded.LT(amtFromBondedToNotBonded):
-		if err = k.bondedTokensToNotBonded(ctx, amtFromBondedToNotBonded.Sub(amtFromNotBondedToBonded)); err != nil {
-			return nil, err
-		}
-	default: // equal amounts of tokens; no update required
-	}
+	//switch {
+	//// Compare and subtract the respective amounts to only perform one transfer.
+	//// This is done in order to avoid doing multiple updates inside each iterator/loop.
+	//case amtFromNotBondedToBonded.GT(amtFromBondedToNotBonded):
+	//	if err = k.notBondedTokensToBonded(ctx, amtFromNotBondedToBonded.Sub(amtFromBondedToNotBonded)); err != nil {
+	//		return nil, err
+	//	}
+	//case amtFromNotBondedToBonded.LT(amtFromBondedToNotBonded):
+	//	if err = k.bondedTokensToNotBonded(ctx, amtFromBondedToNotBonded.Sub(amtFromNotBondedToBonded)); err != nil {
+	//		return nil, err
+	//	}
+	//default: // equal amounts of tokens; no update required
+	//}
 
 	// set total power on lookup index if there are any updates
 	if len(updates) > 0 {
@@ -291,6 +378,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		return nil, err
 	}
 
+	for _, update := range updates {
+		k.Logger(ctx).Info("final:validator update", "power", update.Power, "pubKey", update.PubKey)
+	}
 	return updates, err
 }
 

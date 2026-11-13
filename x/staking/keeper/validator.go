@@ -90,6 +90,11 @@ func (k Keeper) SetValidator(ctx context.Context, validator types.Validator) err
 	if err != nil {
 		return err
 	}
+	if validator.Tokens.IsZero() {
+		if err := store.Delete(types.ZeroPowerSweptKey); err != nil {
+			return err
+		}
+	}
 	return store.Set(types.GetValidatorKey(str), bz)
 }
 
@@ -141,9 +146,16 @@ func (k Keeper) SetNewValidatorByPowerIndex(ctx context.Context, validator types
 }
 
 // AddValidatorTokensAndShares updates the tokens of an existing validator, updates the validators power index key
+// PROOF OF COMPUTE: Only allowed during genesis (block height <= 1). After genesis, validator power
+// can only be set via SetComputeValidators to prevent bypassing compute-based validation.
 func (k Keeper) AddValidatorTokensAndShares(ctx context.Context, validator types.Validator,
 	tokensToAdd math.Int,
 ) (valOut types.Validator, addedShares math.LegacyDec, err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockHeight() > 1 {
+		return validator, math.LegacyZeroDec(), fmt.Errorf("AddValidatorTokensAndShares is disabled after genesis in Proof of Compute mode")
+	}
+
 	err = k.DeleteValidatorByPowerIndex(ctx, validator)
 	if err != nil {
 		return valOut, addedShares, err
@@ -160,9 +172,16 @@ func (k Keeper) AddValidatorTokensAndShares(ctx context.Context, validator types
 }
 
 // RemoveValidatorTokensAndShares updates the tokens of an existing validator, updates the validators power index key
+// PROOF OF COMPUTE: Only allowed during genesis (block height <= 1). After genesis, validator power
+// can only be set via SetComputeValidators to prevent bypassing compute-based validation.
 func (k Keeper) RemoveValidatorTokensAndShares(ctx context.Context, validator types.Validator,
 	sharesToRemove math.LegacyDec,
 ) (valOut types.Validator, removedTokens math.Int, err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockHeight() > 1 {
+		return validator, math.ZeroInt(), fmt.Errorf("RemoveValidatorTokensAndShares is disabled after genesis in Proof of Compute mode")
+	}
+
 	err = k.DeleteValidatorByPowerIndex(ctx, validator)
 	if err != nil {
 		return valOut, removedTokens, err
@@ -249,6 +268,9 @@ func (k Keeper) RemoveValidator(ctx context.Context, address sdk.ValAddress) err
 
 	// delete the old validator record
 	store := k.storeService.OpenKVStore(ctx)
+	if err = store.Delete(types.ValidatorIndexIntactKey); err != nil {
+		return err
+	}
 	if err = store.Delete(types.GetValidatorKey(address)); err != nil {
 		return err
 	}
@@ -390,6 +412,9 @@ func (k Keeper) SetLastValidatorPower(ctx context.Context, operator sdk.ValAddre
 // DeleteLastValidatorPower deletes the last validator power.
 func (k Keeper) DeleteLastValidatorPower(ctx context.Context, operator sdk.ValAddress) error {
 	store := k.storeService.OpenKVStore(ctx)
+	if err := store.Delete(types.ZeroPowerSweptKey); err != nil {
+		return err
+	}
 	return store.Delete(types.GetLastValidatorPowerKey(operator))
 }
 
@@ -636,13 +661,63 @@ func (k Keeper) UnbondAllMatureValidators(ctx context.Context) error {
 }
 
 // IsValidatorJailed checks and returns boolean of a validator status jailed or not.
+// It reads only the jailed field: slashing calls it for every vote of every block.
 func (k Keeper) IsValidatorJailed(ctx context.Context, addr sdk.ConsAddress) (bool, error) {
-	v, err := k.GetValidatorByConsAddr(ctx, addr)
+	store := k.storeService.OpenKVStore(ctx)
+	opAddr, err := store.Get(types.GetValidatorByConsAddrKey(addr))
 	if err != nil {
 		return false, err
 	}
+	if opAddr == nil {
+		return false, types.ErrNoValidatorFound
+	}
 
-	return v.Jailed, nil
+	value, err := store.Get(types.GetValidatorKey(opAddr))
+	if err != nil {
+		return false, err
+	}
+	if value == nil {
+		return false, types.ErrNoValidatorFound
+	}
+
+	return types.ValidatorJailedFromBytes(value)
+}
+
+// RestoreValidatorIndex restores the validator index.
+// Only a validator deletion can break the index, so the full pass runs once after each deletion.
+func (k Keeper) RestoreValidatorIndex(ctx context.Context) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentHeight := sdkCtx.BlockHeight()
+	if currentHeight < ValidatorIndexFixHeight {
+		return
+	}
+	store := k.storeService.OpenKVStore(ctx)
+	if intact, err := store.Has(types.ValidatorIndexIntactKey); err != nil || intact {
+		return
+	}
+	allValidators, err := k.GetAllValidators(ctx)
+	if err != nil {
+		return
+	}
+	restored := true
+	for _, validator := range allValidators {
+		consAddr, err := validator.GetConsAddr()
+		if err != nil {
+			continue
+		}
+		_, err = k.GetValidatorByConsAddr(ctx, sdk.ConsAddress(consAddr))
+		if err == nil {
+			continue
+		}
+		errConsAddr := k.SetValidatorByConsAddr(ctx, validator)
+		errPower := k.SetValidatorByPowerIndex(ctx, validator)
+		if errConsAddr != nil || errPower != nil {
+			restored = false
+		}
+	}
+	if restored {
+		_ = store.Set(types.ValidatorIndexIntactKey, []byte{1})
+	}
 }
 
 // GetPubKeyByConsAddr returns the consensus public key by consensus address.

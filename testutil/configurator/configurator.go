@@ -19,6 +19,7 @@ import (
 	vestingmodulev1 "cosmossdk.io/api/cosmos/vesting/module/v1"
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
+	groupmodulev1 "github.com/cosmos/cosmos-sdk/x/group/api/cosmos/group/module/v1"
 )
 
 // Config should never need to be instantiated manually and is solely used for ModuleOption.
@@ -254,6 +255,15 @@ func EvidenceModule() ModuleOption {
 		config.ModuleConfigs["evidence"] = &appv1alpha1.ModuleConfig{
 			Name:   "evidence",
 			Config: appconfig.WrapAny(&evidencemodulev1.Module{}),
+		}
+	}
+}
+
+func GroupModule() ModuleOption {
+	return func(config *Config) {
+		config.ModuleConfigs["group"] = &appv1alpha1.ModuleConfig{
+			Name:   "group",
+			Config: appconfig.WrapAny(&groupmodulev1.Module{}),
 		}
 	}
 }

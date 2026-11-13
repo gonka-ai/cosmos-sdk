@@ -16,6 +16,48 @@ func TestMetrics_Disabled(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestSlowQueryConfig(t *testing.T) {
+	t.Cleanup(func() {
+		_, _ = New(Config{})
+	})
+
+	m, err := New(Config{
+		Enabled:                  false,
+		SlowQueryEnabled:         true,
+		SlowQueryThresholdMS:     750,
+		SlowQueryRateLimit:       0,
+		SlowQueryRequestContent:  true,
+		SlowQueryRequestMaxBytes: 0,
+	})
+	require.NoError(t, err)
+	require.Nil(t, m)
+	require.Equal(t, SlowQueryConfig{
+		Enabled:         true,
+		ThresholdMS:     750,
+		RateLimit:       0,
+		RequestContent:  true,
+		RequestMaxBytes: 0,
+	}, GetSlowQueryConfig())
+}
+
+func TestSlowQueryConfigDefaultsAndValidation(t *testing.T) {
+	cfg, err := normalizeSlowQueryConfig(Config{})
+	require.NoError(t, err)
+	require.Equal(t, DefaultSlowQueryThresholdMS, cfg.ThresholdMS)
+	require.Zero(t, cfg.RateLimit)
+	require.Zero(t, cfg.RequestMaxBytes)
+
+	tests := []Config{
+		{SlowQueryThresholdMS: -1},
+		{SlowQueryRateLimit: -1},
+		{SlowQueryRequestMaxBytes: -1},
+	}
+	for _, tt := range tests {
+		_, err := normalizeSlowQueryConfig(tt)
+		require.Error(t, err)
+	}
+}
+
 func TestMetrics_InMem(t *testing.T) {
 	m, err := New(Config{
 		MetricsSink:    MetricSinkInMem,

@@ -288,8 +288,13 @@ func DefaultConfig() *Config {
 		},
 		//nolint:staticcheck // TODO: switch to OpenTelemetry
 		Telemetry: telemetry.Config{
-			Enabled:      false,
-			GlobalLabels: [][]string{},
+			Enabled:                  false,
+			GlobalLabels:             [][]string{},
+			SlowQueryEnabled:         true,
+			SlowQueryThresholdMS:     telemetry.DefaultSlowQueryThresholdMS,
+			SlowQueryRateLimit:       0,
+			SlowQueryRequestContent:  true,
+			SlowQueryRequestMaxBytes: telemetry.DefaultSlowQueryRequestMaxBytes,
 		},
 		API: APIConfig{
 			Enable:             false,

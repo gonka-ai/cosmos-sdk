@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	gogogrpc "github.com/cosmos/gogoproto/grpc"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -11,11 +12,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
 	errorsmod "cosmossdk.io/errors"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/v2/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 )
@@ -24,12 +28,81 @@ import (
 // It creates the query sdk.Context and returns the block height as a response header (or trailer
 // if headers were already sent). If skipCheckHeader is true, header checks are bypassed.
 func (app *BaseApp) grpcQueryInterceptor(skipCheckHeader bool) grpc.UnaryServerInterceptor {
-	return func(grpcCtx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+	return func(grpcCtx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+		method := info.FullMethod
+		transport := GonkaTransportGRPC
+
 		// If there's some metadata in the context, retrieve it.
 		md, ok := metadata.FromIncomingContext(grpcCtx)
 		if !ok {
 			return nil, status.Error(codes.Internal, "unable to retrieve metadata")
 		}
+
+		if len(md.Get("grpcgateway-user-agent")) > 0 {
+			transport = GonkaTransportREST
+		}
+
+		peerLabel := GonkaPeerUnknown
+		if p, pok := peer.FromContext(grpcCtx); pok && p.Addr != nil {
+			peerLabel = gonkaSanitizePeer(p.Addr.String())
+		}
+
+		//nolint:staticcheck // TODO: switch to OpenTelemetry
+		telemetry.IncrCounter(1, "query", "count")
+		//nolint:staticcheck // TODO: switch to OpenTelemetry
+		telemetry.IncrCounter(1, "query", method)
+		//nolint:staticcheck // TODO: switch to OpenTelemetry
+		defer telemetry.MeasureSince(telemetry.Now(), method)
+
+		gonkaQueryInFlight.WithLabelValues(method, transport).Inc()
+		defer gonkaQueryInFlight.WithLabelValues(method, transport).Dec()
+
+		var (
+			sdkCtx          sdk.Context
+			sdkCtxValid     bool
+			requestedHeight int64
+			start           = time.Now()
+			setupDuration   time.Duration
+			handlerStart    time.Time
+			handlerDuration time.Duration
+		)
+
+		defer func() {
+			totalDuration := time.Since(start)
+			requestSize := -1
+			if s, ok := req.(interface{ Size() int }); ok {
+				requestSize = s.Size()
+			}
+			rec := gonkaQueryRecord{
+				method:          method,
+				transport:       transport,
+				status:          gonkaClassifyGRPCErr(err),
+				peer:            peerLabel,
+				start:           start,
+				setupDuration:   setupDuration,
+				handlerDuration: handlerDuration,
+				totalDuration:   totalDuration,
+				respBytes:       -1,
+				requestedHeight: requestedHeight,
+				currentHeight:   app.LastBlockHeight(),
+				requestSummary: func(includeContent bool) string {
+					if includeContent {
+						return fmt.Sprintf("%v", req)
+					}
+					return fmt.Sprintf("type=%T size=%dB", req, requestSize)
+				},
+			}
+			if s, sok := resp.(interface{ Size() int }); sok {
+				rec.respBytes = s.Size()
+			}
+			if sdkCtxValid {
+				if gm := sdkCtx.GasMeter(); gm != nil {
+					rec.gasConsumed = gm.GasConsumed()
+				}
+			}
+			gonkaObserve(rec)
+			gonkaMaybeSlowLog(app.logger, rec)
+		}()
 
 		// Get height header from the request context, if present.
 		var height int64
@@ -44,13 +117,17 @@ func (app *BaseApp) grpcQueryInterceptor(skipCheckHeader bool) grpc.UnaryServerI
 				return nil, err
 			}
 		}
+		requestedHeight = height
 
 		// Create the sdk.Context. Passing false as 2nd arg, as we can't
 		// actually support proofs with gRPC right now.
-		sdkCtx, err := app.CreateQueryContextWithCheckHeader(height, false, !skipCheckHeader)
+		setupStart := time.Now()
+		sdkCtx, err = app.CreateQueryContextWithCheckHeader(height, false, !skipCheckHeader)
+		setupDuration = time.Since(setupStart)
 		if err != nil {
 			return nil, err
 		}
+		sdkCtxValid = true
 
 		// Add relevant gRPC headers
 		if height == 0 {
@@ -83,7 +160,9 @@ func (app *BaseApp) grpcQueryInterceptor(skipCheckHeader bool) grpc.UnaryServerI
 			app.logger.Debug("failed to set gRPC header", "err", setHeaderErr)
 		}
 
+		handlerStart = time.Now()
 		resp, err = handler(sdkCtx, req)
+		handlerDuration = time.Since(handlerStart)
 
 		// If headers were already sent, attach block height as a trailer.
 		if setHeaderErr != nil {

@@ -2,6 +2,7 @@ package keyring
 
 import (
 	"bufio"
+	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -20,12 +21,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto"
+	"github.com/cosmos/cosmos-sdk/crypto/ecies"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/ledger"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	dcredsecp256k1 "github.com/decred/dcrd/dcrec/secp256k1/v4"
 )
 
 // Backend options for Keyring
@@ -101,6 +105,7 @@ type Keyring interface {
 
 	Importer
 	Exporter
+	ECIESCrypto
 
 	Migrator
 }
@@ -146,6 +151,33 @@ type Exporter interface {
 	// It returns an error if the key does not exist or a wrong encryption passphrase is supplied.
 	ExportPrivKeyArmor(uid, encryptPassphrase string) (armor string, err error)
 	ExportPrivKeyArmorByAddress(address sdk.Address, encryptPassphrase string) (armor string, err error)
+}
+
+// ECIESCrypto is implemented by key stores that support ECIES encryption/decryption using Ethereum's approach.
+type ECIESCrypto interface {
+	// Encrypt encrypts data using ECIES with the public key identified by uid.
+	// s1 and s2 contain shared information that is not part of the resulting ciphertext.
+	// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+	// The output format is compatible with Ethereum's ECIES encryption.
+	Encrypt(rand io.Reader, uid string, plaintext, s1, s2 []byte) ([]byte, error)
+
+	// EncryptByAddress encrypts data using ECIES with the public key identified by address.
+	// s1 and s2 contain shared information that is not part of the resulting ciphertext.
+	// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+	// The output format is compatible with Ethereum's ECIES encryption.
+	EncryptByAddress(rand io.Reader, address sdk.Address, plaintext, s1, s2 []byte) ([]byte, error)
+
+	// Decrypt decrypts ECIES encrypted data using the private key identified by uid.
+	// s1 and s2 contain shared information that was used during encryption.
+	// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+	// The ciphertext should be in the format produced by Ethereum's ECIES encryption.
+	Decrypt(uid string, ciphertext, s1, s2 []byte) ([]byte, error)
+
+	// DecryptByAddress decrypts ECIES encrypted data using the private key identified by address.
+	// s1 and s2 contain shared information that was used during encryption.
+	// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+	// The ciphertext should be in the format produced by Ethereum's ECIES encryption.
+	DecryptByAddress(address sdk.Address, ciphertext, s1, s2 []byte) ([]byte, error)
 }
 
 // Option overrides keyring configuration options.
@@ -1057,4 +1089,135 @@ func (ks keystore) convertFromLegacyInfo(info LegacyInfo) (*Record, error) {
 
 func addrHexKeyAsString(address sdk.Address) string {
 	return fmt.Sprintf("%s.%s", hex.EncodeToString(address.Bytes()), addressSuffix)
+}
+
+// Encrypt encrypts data using ECIES with the public key identified by uid.
+// s1 and s2 contain shared information that is not part of the resulting ciphertext.
+// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+// The output format is compatible with Ethereum's ECIES encryption.
+func (ks keystore) Encrypt(rand io.Reader, uid string, plaintext, s1, s2 []byte) ([]byte, error) {
+	k, err := ks.Key(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	pubKey, err := k.GetPubKey()
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert the Cosmos SDK public key to ECDSA format
+	ecdsaPubKey, err := cosmosPubKeyToECDSA(pubKey)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to convert public key to ECDSA format")
+	}
+
+	// Convert ECDSA public key to ECIES format and encrypt
+	eciesPubKey := ecies.ImportECDSAPublic(ecdsaPubKey)
+	ciphertext, err := ecies.Encrypt(rand, eciesPubKey, plaintext, s1, s2)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "ECIES encryption failed")
+	}
+
+	return ciphertext, nil
+}
+
+// EncryptByAddress encrypts data using ECIES with the public key identified by address.
+// s1 and s2 contain shared information that is not part of the resulting ciphertext.
+// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+// The output format is compatible with Ethereum's ECIES encryption.
+func (ks keystore) EncryptByAddress(rand io.Reader, address sdk.Address, plaintext, s1, s2 []byte) ([]byte, error) {
+	k, err := ks.KeyByAddress(address)
+	if err != nil {
+		return nil, err
+	}
+
+	return ks.Encrypt(rand, k.Name, plaintext, s1, s2)
+}
+
+// Decrypt decrypts ECIES encrypted data using the private key identified by uid.
+// s1 and s2 contain shared information that was used during encryption.
+// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+// The ciphertext should be in the format produced by Ethereum's ECIES encryption.
+func (ks keystore) Decrypt(uid string, ciphertext, s1, s2 []byte) ([]byte, error) {
+	k, err := ks.Key(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	// Only local keys can be used for decryption
+	if k.GetLocal() == nil {
+		return nil, errorsmod.Wrap(ErrPrivKeyExtr, "decryption works only for Local keys")
+	}
+
+	priv, err := extractPrivKeyFromLocal(k.GetLocal())
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert the Cosmos SDK private key to ECDSA private key
+	ecdsaPrivKey, err := cosmosPrivKeyToECDSA(priv)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to convert private key to ECDSA format")
+	}
+
+	// Convert ECDSA private key to ECIES format and decrypt
+	eciesPrivKey := ecies.ImportECDSA(ecdsaPrivKey)
+	plaintext, err := eciesPrivKey.Decrypt(ciphertext, s1, s2)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "ECIES decryption failed")
+	}
+
+	return plaintext, nil
+}
+
+// DecryptByAddress decrypts ECIES encrypted data using the private key identified by address.
+// s1 and s2 contain shared information that was used during encryption.
+// s1 is fed into key derivation, s2 is fed into the MAC. If not used, they should be nil.
+// The ciphertext should be in the format produced by Ethereum's ECIES encryption.
+func (ks keystore) DecryptByAddress(address sdk.Address, ciphertext, s1, s2 []byte) ([]byte, error) {
+	k, err := ks.KeyByAddress(address)
+	if err != nil {
+		return nil, err
+	}
+
+	return ks.Decrypt(k.Name, ciphertext, s1, s2)
+}
+
+// cosmosPrivKeyToECDSA converts a Cosmos SDK private key to an ECDSA private key.
+// Currently supports secp256k1 private keys.
+func cosmosPrivKeyToECDSA(privKey types.PrivKey) (*ecdsa.PrivateKey, error) {
+	// Check if it's a secp256k1 private key
+	switch pk := privKey.(type) {
+	case *secp256k1.PrivKey:
+		// Use the decred secp256k1 library to get the curve and derive public key
+		privKeyDecred := dcredsecp256k1.PrivKeyFromBytes(pk.Key)
+
+		// Create a complete ECDSA private key with curve and public key coordinates
+		ecdsaPrivKey := privKeyDecred.ToECDSA()
+
+		return ecdsaPrivKey, nil
+	default:
+		return nil, errorsmod.Wrap(errors.New("unsupported private key type"), fmt.Sprintf("key type: %T", privKey))
+	}
+}
+
+// cosmosPubKeyToECDSA converts a Cosmos SDK public key to an ECDSA public key.
+// Currently supports secp256k1 public keys.
+func cosmosPubKeyToECDSA(pubKey types.PubKey) (*ecdsa.PublicKey, error) {
+	// Check if it's a secp256k1 public key
+	switch pk := pubKey.(type) {
+	case *secp256k1.PubKey:
+		// Parse the compressed public key using decred library
+		pubKeyDecred, err := dcredsecp256k1.ParsePubKey(pk.Key)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to parse public key")
+		}
+
+		ecdsaPubKey := pubKeyDecred.ToECDSA()
+
+		return ecdsaPubKey, nil
+	default:
+		return nil, errorsmod.Wrap(errors.New("unsupported public key type"), fmt.Sprintf("key type: %T", pubKey))
+	}
 }

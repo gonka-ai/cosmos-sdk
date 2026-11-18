@@ -40,6 +40,8 @@ import (
 	"hash"
 	"io"
 	"math/big"
+
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 )
 
 var (
@@ -95,7 +97,12 @@ func ImportECDSA(prv *ecdsa.PrivateKey) *PrivateKey {
 // GenerateKey generates an elliptic curve public / private keypair. If params is nil,
 // the recommended default parameters for the key will be chosen.
 func GenerateKey(rand io.Reader, curve elliptic.Curve, params *ECIESParams) (prv *PrivateKey, err error) {
-	sk, err := ecdsa.GenerateKey(curve, rand)
+	var sk *ecdsa.PrivateKey
+	if curve == secp256k1.S256() {
+		sk, err = generateSecp256k1Key(rand)
+	} else {
+		sk, err = ecdsa.GenerateKey(curve, rand)
+	}
 	if err != nil {
 		return
 	}
@@ -109,6 +116,27 @@ func GenerateKey(rand io.Reader, curve elliptic.Curve, params *ECIESParams) (prv
 	}
 	prv.PublicKey.Params = params
 	return
+}
+
+// generateSecp256k1Key preserves the pre-Go 1.26 ECIES entropy layout: reject
+// zero and out-of-range 32-byte scalars, then leave the reader positioned at
+// the IV. Reducing a scalar modulo the order would change legacy ciphertexts.
+func generateSecp256k1Key(entropy io.Reader) (*ecdsa.PrivateKey, error) {
+	var raw [32]byte
+	defer clear(raw[:])
+	var scalar secp256k1.ModNScalar
+	defer scalar.Zero()
+	for {
+		if _, err := io.ReadFull(entropy, raw[:]); err != nil {
+			return nil, err
+		}
+		if scalar.SetByteSlice(raw[:]) || scalar.IsZero() {
+			continue
+		}
+		key := secp256k1.NewPrivateKey(&scalar)
+		defer key.Zero()
+		return key.ToECDSA(), nil
+	}
 }
 
 // MaxSharedKeyLength returns the maximum length of the shared key the
